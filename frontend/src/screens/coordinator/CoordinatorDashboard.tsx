@@ -1,0 +1,430 @@
+import { CoordinatorPOChart } from './CoordinatorPOChart'
+import DashboardShell from '../../components/DashboardShell'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+export default function CoordinatorDashboard() {
+  const navigate = useNavigate()
+  const [section, setSection] = useState('')
+  const [selectedWeek, setSelectedWeek] = useState<number>(1)
+  const [studentId, setStudentId] = useState('')
+  const [students, setStudents] = useState<Array<{ studentId: string; userName: string; companyName?: string }>>([])
+  const [selectedStudent, setSelectedStudent] = useState<{ studentId: string; userName: string; companyName?: string } | null>(null)
+  const [companyDetails, setCompanyDetails] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sections, setSections] = useState<string[]>([])
+
+  const ALL_WEEKS = Array.from({ length: 13 }, (_, i) => i + 1) // Weeks 1-13
+
+  // Load sections from Supabase (approved coordinator sections)
+  useEffect(() => {
+    const loadSections = async () => {
+      try {
+        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const res = await fetch(`${base}/api/admin?action=getCoordinatorSections`)
+        if (res.ok) {
+          const data: string[] = await res.json()
+          setSections(data || [])
+          if ((data || []).length > 0) {
+            setSection(prev => prev || data[0])
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load sections', e)
+      }
+    }
+    loadSections()
+  }, [])
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch students: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        
+        // Check if response contains error
+        if (data.error) {
+          throw new Error(data.error)
+        }
+        
+        // Ensure we always set an array
+        if (Array.isArray(data)) {
+          setStudents(data)
+          console.log(`Loaded ${data.length} students for section ${section}:`, data)
+        } else {
+          console.error('Expected array but got:', data)
+          setStudents([])
+          setError('Invalid response format from server')
+        }
+      } catch (err: any) {
+        console.error('Error fetching students:', err)
+        setStudents([])
+        setError(err.message || 'Failed to load students')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudents()
+  }, [section])
+
+  const handleStudentChange = async (selectedStudentId: string) => {
+    setStudentId(selectedStudentId)
+    if (selectedStudentId) {
+      const student = students.find(s => s.studentId === selectedStudentId)
+      setSelectedStudent(student || null)
+      
+      // Fetch detailed student information including company details
+      try {
+        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const response = await fetch(`${base}/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setCompanyDetails(data.company)
+        }
+      } catch (error) {
+        console.error('Error fetching student details:', error)
+        setCompanyDetails(null)
+      }
+    } else {
+      setSelectedStudent(null)
+      setCompanyDetails(null)
+    }
+  }
+
+  const refreshStudents = () => {
+    const fetchStudents = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch students: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        
+        // Check if response contains error
+        if (data.error) {
+          throw new Error(data.error)
+        }
+        
+        // Ensure we always set an array
+        if (Array.isArray(data)) {
+          setStudents(data)
+          console.log(`Refreshed ${data.length} students for section ${section}:`, data)
+        } else {
+          console.error('Expected array but got:', data)
+          setStudents([])
+          setError('Invalid response format from server')
+        }
+      } catch (err: any) {
+        console.error('Error fetching students:', err)
+        setStudents([])
+        setError(err.message || 'Failed to load students')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudents()
+  }
+
+  return (
+    <DashboardShell>
+      <div style={{ 
+        width: '100vw', 
+        height: '100vh', 
+        padding: '0',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'white',
+        borderRadius: '0',
+        boxShadow: 'none',
+        overflow: 'hidden',
+        position: 'fixed',
+        top: '0',
+        left: '0'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '20px',
+          padding: '20px 20px 0 20px'
+        }}>
+            <h2 style={{ margin: 0, color: '#000000' }}>Coordinator Dashboard - Student Analysis</h2>
+          <button 
+            onClick={() => {
+              try {
+                localStorage.removeItem('token')
+                localStorage.removeItem('role')
+                localStorage.removeItem('userName')
+                localStorage.removeItem('studentId')
+                localStorage.removeItem('section')
+              } catch {}
+              navigate('/')
+            }}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Logout
+          </button>
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          gap: 16, 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          margin: '0 auto 20px auto',
+          padding: '12px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          border: '1px solid #e5e7eb',
+          width: '100%',
+          maxWidth: '900px'
+        }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontWeight: '500', color: '#000000' }}>Section:</span>
+            <select 
+              value={section} 
+              onChange={(e) => { setSection(e.target.value); setStudentId(''); setSelectedStudent(null); setCompanyDetails(null); }}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                color: '#000000',
+                minWidth: '140px'
+              }}
+            >
+              <option value="" disabled>{sections.length ? 'Select Section' : 'No sections available'}</option>
+              {sections.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontWeight: '500', color: '#000000' }}>Student:</span>
+            <select 
+              value={studentId} 
+              onChange={(e) => handleStudentChange(e.target.value)}
+              disabled={loading}
+              style={{
+                padding: '6px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '4px',
+                backgroundColor: loading ? '#f3f4f6' : 'white',
+                color: loading ? '#6b7280' : '#000000',
+                minWidth: '200px',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <option value="">
+                {loading ? 'Loading students...' : students.length === 0 ? 'No students found' : 'Select Student'}
+              </option>
+              {students.map((s) => (
+                <option key={s.studentId} value={s.studentId}>{s.studentId} — {s.userName}</option>
+              ))}
+            </select>
+          </label>
+          <button
+            onClick={refreshStudents}
+            disabled={loading}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: loading ? '#9ca3af' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            🔄 {loading ? 'Loading...' : 'Refresh'}
+          </button>
+        </div>
+        
+        {error && (
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '12px',
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            color: '#dc2626'
+          }}>
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+        
+        {loading && (
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '12px',
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #bae6fd',
+            borderRadius: '8px',
+            color: '#0369a1',
+            textAlign: 'center'
+          }}>
+            Loading students for section {section}...
+          </div>
+        )}
+        
+        <div style={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          padding: '20px',
+          width: '100%',
+          boxSizing: 'border-box',
+          overflow: 'auto',
+          position: 'relative'
+        }}>
+          {section && studentId && selectedStudent ? (
+            <>
+              <div style={{ 
+                marginBottom: '20px', 
+                padding: '16px', 
+                backgroundColor: '#f8f9fa', 
+                borderRadius: '8px', 
+                border: '1px solid #e5e7eb',
+                textAlign: 'center',
+                minWidth: '300px',
+                width: '100%',
+                maxWidth: '800px'
+              }}>
+                <h3 style={{ margin: '0 0 12px 0', color: '#000000' }}>Student Information</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, color: '#000000', marginBottom: '16px' }}>
+                  <div>
+                    <strong>Name:</strong> {selectedStudent.userName}
+                  </div>
+                  <div>
+                    <strong>Student ID:</strong> {selectedStudent.studentId}
+                  </div>
+                </div>
+                
+                {/* Company Details Section */}
+                {companyDetails && (
+                  <div style={{ 
+                    marginTop: '16px', 
+                    padding: '12px', 
+                    backgroundColor: '#fef3c7', 
+                    borderRadius: '6px', 
+                    border: '1px solid #f59e0b',
+                    textAlign: 'left',
+                    color: '#000000'
+                  }}>
+                    <h4 style={{ margin: '0 0 8px 0', color: '#000000', fontSize: '14px' }}>Company Details</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, fontSize: '13px', color: '#000000' }}>
+                      <div>
+                        <strong>Company Name:</strong> {companyDetails.name || selectedStudent.companyName || 'N/A'}
+                      </div>
+                      <div>
+                        <strong>Address:</strong> {companyDetails.address || 'N/A'}
+                      </div>
+                      <div>
+                        <strong>Supervisor:</strong> {companyDetails.supervisor || 'N/A'}
+                      </div>
+                      <div>
+                        <strong>Contact:</strong> {companyDetails.contactNumber || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Week Selection Controls */}
+              <div style={{ 
+                display: 'flex', 
+                gap: 16, 
+                alignItems: 'center', 
+                margin: '0 auto 20px auto',
+                padding: '12px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                width: '100%',
+                maxWidth: '600px',
+                justifyContent: 'center'
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
+                  <select 
+                    value={selectedWeek} 
+                    onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                    style={{
+                      padding: '6px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: 'white',
+                      color: '#000000'
+                    }}
+                  >
+                    {ALL_WEEKS.map(week => (
+                      <option key={week} value={week}>
+                        Week {week}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              
+              <div style={{ width: '100%', maxWidth: '1200px', marginTop: '20px' }}>
+                <CoordinatorPOChart 
+                  section={section}
+                  studentId={studentId}
+                  selectedWeek={selectedWeek}
+                  title={`Student ${selectedStudent.userName} - Week ${selectedWeek} Analysis`}
+                />
+              </div>
+            </>
+          ) : (
+            <div style={{
+              marginTop: '20px',
+              padding: '16px',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              color: '#111827',
+              textAlign: 'center',
+              maxWidth: '700px',
+              width: '100%'
+            }}>
+              Please select a section, a student, and a week to display the analysis.
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardShell>
+  )
+}
+
+

@@ -1,0 +1,62 @@
+# Student Practicum Report Management System
+# Environment Variables Template
+# Copy this content to summarit/.env.local and fill in your actual values
+
+# ===========================================
+# DATABASE CONFIGURATION
+# ===========================================
+
+# Option 1: Supabase (Recommended - Cloud Database)
+# Get these values from your Supabase project dashboard
+DATABASE_URL="postgresql://postgres.dfmcfpxwccazbwilyaxh:W9jq-H%23NhqRGzYA@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres"
+
+#project URL
+SUPABASE_URL=https://dfmcfpxwccazbwilyaxh.supabase.co
+
+#anon public
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmbWNmcHh3Y2NhemJ3aWx5YXhoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTI3MTA1OSwiZXhwIjoyMDc0ODQ3MDU5fQ.lpZYQL38ImwKAUlp6tPol_ubVtqPYKdBTC-U95-HUu4
+
+# Option 2: Local PostgreSQL
+# DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+
+# ===========================================
+# OPENAI API CONFIGURATION
+# ===========================================
+
+# Get your API key from: https://platform.openai.com/api-keys
+OPENAI_API_KEY=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
+
+# ===========================================
+# APPLICATION SETTINGS
+# ===========================================
+
+# Frontend URL (usually localhost:5173 in development)
+NEXT_PUBLIC_FRONTEND_URL="http://localhost:5173"
+
+# Backend URL (usually localhost:3000 in development)
+NEXT_PUBLIC_BACKEND_URL="http://localhost:3000"
+
+# ===========================================
+# SETUP INSTRUCTIONS
+# ===========================================
+
+# 1. Copy this content to summarit/.env.local
+
+# 2. Fill in your actual values above
+
+# 3. For Supabase setup:
+#    - Go to https://supabase.com
+#    - Create a new project
+#    - Go to Settings > Database
+#    - Copy the connection string and update DATABASE_URL
+#    - Go to Settings > API
+#    - Copy the service role key and update SUPABASE_KEY
+
+# 4. For OpenAI setup:
+#    - Go to https://platform.openai.com/api-keys
+#    - Create a new API key
+#    - Copy the key and update OPENAI_API_KEY
+
+# 5. Initialize the database:
+#    npx prisma generate
+#    npx prisma db push
