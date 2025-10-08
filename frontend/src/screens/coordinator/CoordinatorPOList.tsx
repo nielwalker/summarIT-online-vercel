@@ -27,7 +27,7 @@ const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
 export default function CoordinatorPOList({ section, studentId, selectedWeek }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [analysis, setAnalysis] = useState<{ scores: number[]; bullets: Array<{ idx: number; score: number; hits: string[] }>; summary: string } | null>(null)
+  const [analysis, setAnalysis] = useState<{ scores: number[]; bullets: Array<{ idx: number; score: number; hits: string[] }>; summary: string; weekRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> } | null>(null)
 
   function extractHighlights(text: string): { scores: number[]; hitsPerPO: string[][] } {
     const lower = text.toLowerCase()
@@ -73,16 +73,25 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
       const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       const { scores, hitsPerPO } = extractHighlights(text)
       const items = scores
         .map((score, idx) => ({ idx, score, hits: hitsPerPO[idx] }))
         .filter(i => i.score > 0)
         .sort((a, b) => b.score - a.score)
-      const summary = filtered.length
-        ? `Based on ${filtered.length} report${filtered.length > 1 ? 's' : ''}, keywords indicate the strongest evidence for the POs listed below. Only terms directly linked to the PO definitions are counted; generic words are ignored.`
-        : 'No reports found for analysis.'
-      setAnalysis({ scores, bullets: items, summary })
+      const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
+      const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
+      const summary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}` : 'No submissions for this week.'
+      const uniqByDate = new Map<string, { date: string; hours: number }>()
+      filtered.forEach(r => {
+        const key = String(r.date || '')
+        if (!uniqByDate.has(key)) uniqByDate.set(key, { date: key || '—', hours: Number(r.hours || 0) })
+      })
+      const submittedRows = Array.from(uniqByDate.values()).slice(0, 5).map(r => ({ date: r.date || '—', hours: r.hours || 0, status: 'Submitted' as const }))
+      const paddedRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> = [...submittedRows]
+      while (paddedRows.length < 5) paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
+      setAnalysis({ scores, bullets: items, summary, weekRows: paddedRows })
     } catch (e: any) {
       setError(e.message || 'Analysis failed')
       setAnalysis(null)
@@ -116,14 +125,37 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
       )}
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>
-          <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000' }}>
+          <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'left' }}>
             <strong>Summary:</strong> {analysis.summary}
           </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {bulletContent}
           </ul>
+          <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+            <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8f9fa' }}>
+                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Date</th>
+                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Hours</th>
+                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analysis.weekRows.map((r, i) => (
+                  <tr key={i} style={{ background: i % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.date}</td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.hours}</td>
+                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb' }}>
+                      <span style={{ padding: '2px 8px', borderRadius: 12, background: r.status === 'Submitted' ? '#dcfce7' : '#fee2e2', color: r.status === 'Submitted' ? '#166534' : '#991b1b', fontSize: 12, fontWeight: 600 }}>{r.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div style={{ padding: 12, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8, color: '#7c2d12' }}>
-            <strong>Note on PO hits:</strong> We count explicit action words linked to each PO. Generic or vague words are ignored to avoid false positives. For more accurate interpretation, combine this with a context-based review (e.g., GPT) that reads the whole entry, not just keywords.
+            <strong>Note on PO hits:</strong> We count explicit action words linked to each PO. Generic or vague words are ignored to avoid false positives.
           </div>
         </div>
       )}

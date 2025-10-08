@@ -154,6 +154,7 @@ export default function CoordinatorDashboard() {
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         backgroundColor: 'white',
         borderRadius: '0',
         boxShadow: 'none',
@@ -163,13 +164,15 @@ export default function CoordinatorDashboard() {
         left: '0'
       }}>
         <div style={{ 
+          position: 'relative',
           display: 'flex', 
-          justifyContent: 'space-between', 
+          justifyContent: 'center', 
           alignItems: 'center',
+          width: '100%',
           marginBottom: '20px',
-          padding: '20px 20px 0 20px'
+          padding: '20px'
         }}>
-            <h2 style={{ margin: 0, color: '#000000' }}>Coordinator Dashboard - Student Analysis</h2>
+          <h2 style={{ margin: 0, color: '#000000', textAlign: 'center' }}>Coordinator Dashboard - Student Analysis</h2>
           <button 
             onClick={() => {
               try {
@@ -182,6 +185,9 @@ export default function CoordinatorDashboard() {
               navigate('/')
             }}
             style={{
+              position: 'absolute',
+              right: '20px',
+              top: '16px',
               padding: '8px 16px',
               backgroundColor: '#dc2626',
               color: 'white',
@@ -305,6 +311,7 @@ export default function CoordinatorDashboard() {
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center',
+          justifyContent: 'flex-start',
           padding: '20px',
           width: '100%',
           boxSizing: 'border-box',
