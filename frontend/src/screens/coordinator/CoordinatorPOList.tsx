@@ -116,7 +116,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
   }, [analysis])
 
   return (
-    <div style={{ width: '100%', maxWidth: 900 }}>
+    <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
       {error && (
         <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626' }}>{error}</div>
       )}
@@ -125,13 +125,13 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
       )}
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>
-          <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'left' }}>
+          <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'center', margin: '0 auto', width: '100%', maxWidth: 900 }}>
             <strong>Summary:</strong> {analysis.summary}
           </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {bulletContent}
           </ul>
-          <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8 }}>
+          <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
             <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
