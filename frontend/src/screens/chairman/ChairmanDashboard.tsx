@@ -1,5 +1,5 @@
-import { CoordinatorPOChart } from '../coordinator/CoordinatorPOChart'
-import CoordinatorPOList from '../coordinator/CoordinatorPOList'
+import ChairmanPOChart from './ChairmanPOChart'
+import ChairmanDashboardPOList from './ChairmanDashboardPOList'
 import DashboardShell from '../../components/DashboardShell'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -703,9 +703,9 @@ export default function ChairmanDashboard() {
                 padding: '20px 0'
               }}>
                 <div style={{ width: '100%', maxWidth: '900px', marginBottom: '16px' }}>
-                  <CoordinatorPOList section={section} selectedWeek={selectedWeek} showMonitoring={false} />
+                  <ChairmanDashboardPOList section={section} selectedWeek={selectedWeek} />
                 </div>
-                <CoordinatorPOChart 
+                <ChairmanPOChart 
                   section={section} 
                   selectedWeek={selectedWeek}
                   title={`Section ${section} - Week ${selectedWeek}`} 
