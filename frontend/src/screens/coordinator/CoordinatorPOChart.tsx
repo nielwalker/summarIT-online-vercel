@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
-
+ 
 const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
   { code: "A", label: "PO1", desc: "Apply knowledge of computing, science, and mathematics in solving computing/IT-related problems." },
   { code: "B", label: "PO2", desc: "Use current best practices and standards in solving complex computing/IT-related problems and requirements." },
