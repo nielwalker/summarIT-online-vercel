@@ -75,7 +75,7 @@ export default function StudentLoginPage() {
               type="password"
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
-              placeholder="Password (same as Student ID)"
+              placeholder="Password"
               disabled={loading}
             />
           </label>

@@ -98,11 +98,20 @@ export async function GET(req: NextRequest) {
 
     if (action === 'listAllCoordinators') {
       try {
-        const { data: coordinators, error } = await supabase
+        // Try selecting with coordinatorId; if column doesn't exist, fallback without it
+        let { data: coordinators, error } = await supabase
           .from('Coordinator')
           .select('id, coordinatorId, userName, sections, approved')
           .order('userName')
-        
+        if (error) {
+          console.warn('listAllCoordinators with coordinatorId failed, falling back:', error?.message)
+          const fallback = await supabase
+            .from('Coordinator')
+            .select('id, userName, sections, approved')
+            .order('userName')
+          coordinators = fallback.data as any
+          error = fallback.error as any
+        }
         if (error) throw error
         return NextResponse.json(coordinators || [], { headers: corsHeaders as Record<string, string> })
       } catch (error: any) {
@@ -268,12 +277,23 @@ export async function POST(req: NextRequest) {
       if (coordinatorId == null || isNaN(Number(coordinatorId))) return NextResponse.json({ error: 'coordinatorId (integer) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       
       try {
-        const coordinator = await createCoordinator({
-          userName,
-          coordinatorId: Number(coordinatorId),
-          sections: Array.isArray(sections) ? sections : [sections].filter(Boolean),
-          approved: true
-        })
+        let coordinator: any
+        try {
+          coordinator = await createCoordinator({
+            userName,
+            coordinatorId: Number(coordinatorId),
+            sections: Array.isArray(sections) ? sections : [sections].filter(Boolean),
+            approved: true
+          })
+        } catch (e: any) {
+          // Fallback when coordinatorId column doesn't exist yet
+          console.warn('createCoordinator with coordinatorId failed, falling back:', e?.message)
+          coordinator = await createCoordinator({
+            userName,
+            sections: Array.isArray(sections) ? sections : [sections].filter(Boolean),
+            approved: true
+          })
+        }
 
         return NextResponse.json({ 
           success: true, 
@@ -402,18 +422,26 @@ export async function POST(req: NextRequest) {
       if (!coordinatorId) return NextResponse.json({ error: 'coordinatorId (record id) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       
       try {
-        const updateData: any = {
+        let updateData: any = {
           userName,
           sections,
           updatedAt: new Date().toISOString()
         }
-        if (coordinatorIdValue !== undefined && coordinatorIdValue !== null) {
-          updateData.coordinatorId = Number(coordinatorIdValue)
-        }
-        const { error } = await supabase
+        let { error } = await supabase
           .from('Coordinator')
-          .update(updateData)
+          .update({
+            ...updateData,
+            ...(coordinatorIdValue !== undefined && coordinatorIdValue !== null ? { coordinatorId: Number(coordinatorIdValue) } : {})
+          })
           .eq('id', coordinatorId)
+        if (error && /column .*coordinatorId.* does not exist/i.test(error.message || '')) {
+          console.warn('updateCoordinator coordinatorId update failed, retrying without column:', error.message)
+          const retry = await supabase
+            .from('Coordinator')
+            .update(updateData)
+            .eq('id', coordinatorId)
+          error = retry.error as any
+        }
 
         if (error) throw error
 
