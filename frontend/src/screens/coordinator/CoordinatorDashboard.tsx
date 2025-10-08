@@ -1,4 +1,4 @@
-import { CoordinatorPOChart } from './CoordinatorPOChart'
+import CoordinatorPOList from './CoordinatorPOList'
 import DashboardShell from '../../components/DashboardShell'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -401,11 +401,10 @@ export default function CoordinatorDashboard() {
               </div>
               
               <div style={{ width: '100%', maxWidth: '1200px', marginTop: '20px' }}>
-                <CoordinatorPOChart 
+                <CoordinatorPOList 
                   section={section}
                   studentId={studentId}
                   selectedWeek={selectedWeek}
-                  title={`Student ${selectedStudent.userName} - Week ${selectedWeek} Analysis`}
                 />
               </div>
             </>
