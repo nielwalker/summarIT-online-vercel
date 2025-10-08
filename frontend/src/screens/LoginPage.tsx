@@ -16,18 +16,10 @@ export default function LoginPage() {
 
     // Role detection and attempt order
     const looksChairman = /^chairman$/i.test(userId)
-    const looksNumeric = /^\d+$/.test(userId)
-    const looksDashedStudent = /\d{4}-/.test(userId)
-    const isEightDigitNumeric = looksNumeric && userId.length === 8
+    // For any non-chairman input, always try student first then coordinator
     const rolesToTry: Array<'student' | 'coordinator' | 'chairman'> = looksChairman
       ? ['chairman']
-      : isEightDigitNumeric
-        ? ['coordinator', 'student'] // ambiguous → try coordinator first
-        : looksDashedStudent
-          ? ['student']
-          : looksNumeric
-            ? ['coordinator']
-            : ['chairman']
+      : ['student', 'coordinator']
 
     try {
       setLoading(true)
