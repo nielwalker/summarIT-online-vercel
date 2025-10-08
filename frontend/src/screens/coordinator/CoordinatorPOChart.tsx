@@ -370,22 +370,6 @@ export function CoordinatorPOChart({ section, studentId, title, selectedWeek }: 
 
   // extractHighlights provides both scores and keyword-based sentence
 
-  function CustomTooltip({ active, payload, label }: any) {
-    if (active && payload && payload.length) {
-      const p = payload[0];
-      const idx = payload[0]?.payload?.index ?? 0;
-      const def = PO_DEFS[idx];
-      return (
-        <div style={{ background: '#ffffff', color: '#000000', padding: 8, borderRadius: 6, border: '1px solid #d1d5db', maxWidth: 320, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-          <div style={{ fontWeight: 600, marginBottom: 4, color: '#000000' }}>{label}</div>
-          <div style={{ marginBottom: 4, color: '#000000' }}>Score: {p.value}%</div>
-          <div style={{ fontSize: 12, color: '#000000' }}>{def?.desc}</div>
-        </div>
-      );
-    }
-    return null;
-  }
-
   return (
     <div style={{ 
       width: '100%', 
