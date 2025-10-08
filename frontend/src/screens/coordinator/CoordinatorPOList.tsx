@@ -128,7 +128,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>
           <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'center', margin: '0 auto', width: '100%', maxWidth: 900 }}>
-            <strong>Summary:</strong> {analysis.summary}
+           {analysis.summary}
           </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {bulletContent}
