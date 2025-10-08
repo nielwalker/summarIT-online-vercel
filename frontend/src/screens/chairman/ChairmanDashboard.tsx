@@ -14,6 +14,12 @@ export default function ChairmanDashboard() {
   const [coordId, setCoordId] = useState('')
   const [coordSection, setCoordSection] = useState<string>('')
   const [msg, setMsg] = useState<string>('')
+  // Auto-dismiss notifications after a few seconds
+  useEffect(() => {
+    if (!msg) return
+    const t = setTimeout(() => setMsg(''), 4000)
+    return () => clearTimeout(t)
+  }, [msg])
 
   // Company registration states
   const [companyName, setCompanyName] = useState('')
@@ -350,6 +356,7 @@ export default function ChairmanDashboard() {
         body: JSON.stringify({
           action: 'updateStudent',
           studentId: editingStudent,
+          newStudentId: editStudentId && editStudentId !== editingStudent ? editStudentId : undefined,
           userName: editStudentName,
           section: editStudentSection,
           companyName: companyNameToSave
@@ -361,8 +368,8 @@ export default function ChairmanDashboard() {
         loadAllData()
         cancelEdit()
       } else {
-        const error = await res.json()
-        setMsg(`Update failed: ${error.error}`)
+        const error = await res.json().catch(() => ({} as any))
+        setMsg(`Update failed: ${error.error || 'Unexpected error'}`)
       }
     } catch (e: any) {
       setMsg(`Update error: ${e?.message || String(e)}`)

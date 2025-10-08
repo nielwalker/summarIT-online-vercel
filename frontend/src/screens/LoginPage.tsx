@@ -14,14 +14,20 @@ export default function LoginPage() {
     if (!userId) { setError('User ID is required'); return }
     if (!password) { setError('Password is required'); return }
 
-    // Determine role by simple heuristic:
-    // - All-digit => treat as coordinator (password must equal ID per current rules)
-    // - Contains dash or starts with year => student (password must equal ID)
-    // - Otherwise => chairman (password can be any string; UI previously had no password)
+    // Role detection and attempt order
     const looksChairman = /^chairman$/i.test(userId)
     const looksNumeric = /^\d+$/.test(userId)
-    const looksStudent = /\d{4}-/.test(userId) || (looksNumeric && userId.length >= 8)
-    let role: 'student' | 'coordinator' | 'chairman' = looksChairman ? 'chairman' : (looksStudent ? 'student' : 'coordinator')
+    const looksDashedStudent = /\d{4}-/.test(userId)
+    const isEightDigitNumeric = looksNumeric && userId.length === 8
+    const rolesToTry: Array<'student' | 'coordinator' | 'chairman'> = looksChairman
+      ? ['chairman']
+      : isEightDigitNumeric
+        ? ['coordinator', 'student'] // ambiguous → try coordinator first
+        : looksDashedStudent
+          ? ['student']
+          : looksNumeric
+            ? ['coordinator']
+            : ['chairman']
 
     try {
       setLoading(true)
@@ -34,49 +40,43 @@ export default function LoginPage() {
         r === 'coordinator' ? { role: r, coordinatorId: Number(userId), password } :
         { role: r }
       )
-      let body = bodyFor(role)
-
-      const resp = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      })
-      if (!resp.ok && role === 'coordinator' && looksStudent) {
-        // If numeric student-like ID tried as coordinator first and failed, try as student
-        role = 'student'
-        body = bodyFor(role)
-        const retry = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-        if (!retry.ok) {
-          const tt = await retry.text().catch(() => '')
-          throw new Error(tt || 'Login failed')
+      // Helper to extract a clean error message
+      const extractError = async (resp: Response) => {
+        const text = await resp.text().catch(() => '')
+        try {
+          const json = JSON.parse(text)
+          return json.error || json.message || json.details || 'Login failed'
+        } catch {
+          return text || 'Login failed'
         }
-        const data = await retry.json()
+      }
+
+      let lastErr = ''
+      for (const role of rolesToTry) {
+        const body = bodyFor(role)
+        const resp = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        if (!resp.ok) {
+          lastErr = await extractError(resp)
+          continue
+        }
+        const data = await resp.json()
         localStorage.setItem('token', data.token)
         localStorage.setItem('role', data.role)
         if (data.userName) localStorage.setItem('userName', data.userName)
-        localStorage.setItem('studentId', userId)
-        if (data.section) localStorage.setItem('section', data.section)
-        navigate('/student')
+        if (role === 'student') {
+          localStorage.setItem('studentId', userId)
+          if (data.section) localStorage.setItem('section', data.section)
+          navigate('/student')
+        } else if (role === 'coordinator') {
+          localStorage.setItem('coordinatorId', String(userId))
+          if (Array.isArray(data.sections)) localStorage.setItem('sections', JSON.stringify(data.sections))
+          navigate('/coordinator')
+        } else {
+          navigate('/chairman')
+        }
         return
-      } else if (!resp.ok) {
-        const t = await resp.text().catch(() => '')
-        throw new Error(t || 'Login failed')
       }
-      const data = await resp.json()
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('role', data.role)
-      if (data.userName) localStorage.setItem('userName', data.userName)
-      if (role === 'student') {
-        localStorage.setItem('studentId', userId)
-        if (data.section) localStorage.setItem('section', data.section)
-        navigate('/student')
-      } else if (role === 'coordinator') {
-        localStorage.setItem('coordinatorId', String(userId))
-        if (Array.isArray(data.sections)) localStorage.setItem('sections', JSON.stringify(data.sections))
-        navigate('/coordinator')
-      } else {
-        navigate('/chairman')
-      }
+      throw new Error(lastErr || 'Login failed')
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {
