@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 
 type Props = {
   section: string
-  studentId: string
+  studentId?: string
   selectedWeek?: number
+  showMonitoring?: boolean
 }
 
 const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
@@ -24,7 +25,7 @@ const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
   { code: 'O', label: 'PO15', desc: 'Preserve and promote Filipino historical and cultural heritage.' },
 ]
 
-export default function CoordinatorPOList({ section, studentId, selectedWeek }: Props) {
+export default function CoordinatorPOList({ section, studentId, selectedWeek, showMonitoring = true }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<{ scores: number[]; bullets: Array<{ idx: number; score: number; hits: string[] }>; summary: string; weekRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> } | null>(null)
@@ -69,7 +70,8 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
       setLoading(true)
       setError(null)
       const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
-      const resp = await fetch(`${base}/api/reports?section=${encodeURIComponent(section)}&studentId=${encodeURIComponent(studentId)}`)
+      const url = `${base}/api/reports?section=${encodeURIComponent(section)}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`
+      const resp = await fetch(url)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
       const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
@@ -131,29 +133,31 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek }: 
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {bulletContent}
           </ul>
-          <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
-            <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#f8f9fa' }}>
-                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Date</th>
-                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Hours</th>
-                  <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analysis.weekRows.map((r, i) => (
-                  <tr key={i} style={{ background: i % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.date}</td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.hours}</td>
-                    <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: 12, background: r.status === 'Submitted' ? '#dcfce7' : '#fee2e2', color: r.status === 'Submitted' ? '#166534' : '#991b1b', fontSize: 12, fontWeight: 600 }}>{r.status}</span>
-                    </td>
+          {showMonitoring && (
+            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
+              <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f8f9fa' }}>
+                    <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Date</th>
+                    <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Hours</th>
+                    <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {analysis.weekRows.map((r, i) => (
+                    <tr key={i} style={{ background: i % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                      <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.date}</td>
+                      <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{r.hours}</td>
+                      <td style={{ padding: 8, borderBottom: '1px solid #e5e7eb' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: 12, background: r.status === 'Submitted' ? '#dcfce7' : '#fee2e2', color: r.status === 'Submitted' ? '#166534' : '#991b1b', fontSize: 12, fontWeight: 600 }}>{r.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           <div style={{ padding: 12, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8, color: '#7c2d12' }}>
             <strong>Note on PO hits:</strong> We count explicit action words linked to each PO. Generic or vague words are ignored to avoid false positives.
           </div>
