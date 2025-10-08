@@ -15,11 +15,15 @@ export async function POST(req: NextRequest) {
   try {
     const { studentId, role, coordinatorId, password } = await req.json()
     
-    if (!studentId || !role) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: corsHeaders as Record<string, string> })
+    // Validate required fields per role to avoid false 400s
+    if (!role) {
+      return NextResponse.json({ error: 'role required' }, { status: 400, headers: corsHeaders as Record<string, string> })
     }
 
     if (role === 'student') {
+      if (!studentId) {
+        return NextResponse.json({ error: 'studentId required' }, { status: 400, headers: corsHeaders as Record<string, string> })
+      }
       try {
         // Check if student is registered by chairman in database (SECURITY VALIDATION)
         const { data: student, error } = await supabase
@@ -60,6 +64,9 @@ export async function POST(req: NextRequest) {
       // Validate coordinatorId exists and get assigned sections
       if (coordinatorId == null || isNaN(Number(coordinatorId))) {
         return NextResponse.json({ error: 'coordinatorId (integer) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
+      }
+      if (password == null) {
+        return NextResponse.json({ error: 'password required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       }
       if (String(password) !== String(coordinatorId)) {
         return NextResponse.json({ error: 'Invalid password' }, { status: 401, headers: corsHeaders as Record<string, string> })
