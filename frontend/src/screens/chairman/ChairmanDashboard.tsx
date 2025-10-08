@@ -11,6 +11,7 @@ export default function ChairmanDashboard() {
   const [studentName, setStudentName] = useState('')
   const [selectedCompanyId, setSelectedCompanyId] = useState('')
   const [coordName, setCoordName] = useState('')
+  const [coordId, setCoordId] = useState('')
   const [coordSection, setCoordSection] = useState<string>('')
   const [msg, setMsg] = useState<string>('')
 
@@ -202,13 +203,13 @@ export default function ChairmanDashboard() {
 
   async function registerCoordinator() {
     setMsg('')
-    if (!coordName || !coordSection) { setMsg('Coordinator name and section are required'); return }
+    if (!coordName || !coordSection || !coordId) { setMsg('Coordinator ID, name, and section are required'); return }
     try {
       const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'registerCoordinator', userName: coordName, sections: [coordSection.trim()] })
+        body: JSON.stringify({ action: 'registerCoordinator', userName: coordName, coordinatorId: Number(coordId), sections: [coordSection.trim()] })
       })
       if (!res.ok) {
         const t = await res.text().catch(() => '')
@@ -218,6 +219,7 @@ export default function ChairmanDashboard() {
       setMsg('Coordinator registered successfully')
       setCoordName('')
       setCoordSection('')
+      setCoordId('')
       loadCoordinatorSections() // Reload coordinator sections
       loadAllData() // Reload all data tables
     } catch (e: any) {
@@ -973,6 +975,22 @@ export default function ChairmanDashboard() {
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Coordinator Registration</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
+              <label>
+                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
+                <input 
+                  value={coordId} 
+                  onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, ''))} 
+                  placeholder="e.g. 1001"
+                  style={{ 
+                    width: '100%', 
+                    padding: 8, 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    color: '#000000'
+                  }}
+                />
+              </label>
               <label>
                 <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator Name</div>
                 <input 

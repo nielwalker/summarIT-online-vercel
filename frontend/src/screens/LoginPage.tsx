@@ -1,14 +1,13 @@
-import { useNavigate } from 'react-router-dom'
+// No router hook needed; we force hash navigation for Vercel reliability
 
 export default function LoginPage() {
-  const navigate = useNavigate()
 
   return (
     <div style={{ maxWidth: 440, margin: '64px auto', padding: 16 }}>
       <h2>Select Your Role</h2>
       <div style={{ display: 'grid', gap: 16 }}>
         <button 
-          onClick={() => navigate('/login/student')}
+          onClick={() => { window.location.hash = '/login/student' }}
           style={{
             padding: '16px 24px',
             fontSize: '16px',
@@ -25,7 +24,7 @@ export default function LoginPage() {
         </button>
 
         <button 
-          onClick={() => navigate('/login/coordinator')}
+          onClick={() => { window.location.hash = '/login/coordinator' }}
           style={{
             padding: '16px 24px',
             fontSize: '16px',
@@ -42,7 +41,7 @@ export default function LoginPage() {
         </button>
 
         <button 
-          onClick={() => navigate('/login/chairman')}
+          onClick={() => { window.location.hash = '/login/chairman' }}
           style={{
             padding: '16px 24px',
             fontSize: '16px',

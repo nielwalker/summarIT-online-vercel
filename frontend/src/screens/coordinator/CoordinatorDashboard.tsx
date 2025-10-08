@@ -17,12 +17,15 @@ export default function CoordinatorDashboard() {
 
   const ALL_WEEKS = Array.from({ length: 13 }, (_, i) => i + 1) // Weeks 1-13
 
-  // Load sections from Supabase (approved coordinator sections)
+  // Load sections assigned to the logged-in coordinator
   useEffect(() => {
     const loadSections = async () => {
       try {
+        const coordIdStr = localStorage.getItem('coordinatorId')
+        const coordId = coordIdStr ? Number(coordIdStr) : null
         const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
-        const res = await fetch(`${base}/api/admin?action=getCoordinatorSections`)
+        const url = coordId ? `${base}/api/admin?action=getCoordinatorSections&coordinatorId=${coordId}` : `${base}/api/admin?action=getCoordinatorSections`
+        const res = await fetch(url)
         if (res.ok) {
           const data: string[] = await res.json()
           setSections(data || [])

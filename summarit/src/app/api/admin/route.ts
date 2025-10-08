@@ -54,10 +54,15 @@ export async function GET(req: NextRequest) {
 
     if (action === 'getCoordinatorSections') {
       try {
-        const { data: coordinators, error } = await supabase
+        const coordinatorId = url.searchParams.get('coordinatorId')
+        let query = supabase
           .from('Coordinator')
           .select('sections')
           .eq('approved', true)
+        if (coordinatorId) {
+          query = query.eq('coordinatorId', Number(coordinatorId))
+        }
+        const { data: coordinators, error } = await query
         
         if (error) throw error
         
@@ -258,12 +263,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === 'registerCoordinator') {
-      const { userName, sections } = body
+      const { userName, sections, coordinatorId } = body
       if (!userName) return NextResponse.json({ error: 'userName required' }, { status: 400, headers: corsHeaders as Record<string, string> })
+      if (coordinatorId == null || isNaN(Number(coordinatorId))) return NextResponse.json({ error: 'coordinatorId (integer) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       
       try {
         const coordinator = await createCoordinator({
           userName,
+          coordinatorId: Number(coordinatorId),
           sections: Array.isArray(sections) ? sections : [sections].filter(Boolean),
           approved: true
         })
@@ -273,6 +280,7 @@ export async function POST(req: NextRequest) {
           message: 'Coordinator registered successfully',
           coordinator: { 
             id: coordinator.id,
+            coordinatorId: coordinator.coordinatorId,
             userName: coordinator.userName, 
             sections: coordinator.sections,
             approved: coordinator.approved

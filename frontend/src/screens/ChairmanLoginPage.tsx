@@ -63,7 +63,7 @@ export default function ChairmanLoginPage() {
           <button type="button" onClick={() => navigate('/')}>Back</button>
           <button type="submit">Login</button>
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280' }}>Use username "chairman" and password "chairman"</div>
+        <div style={{ fontSize: 12, color: '#6b7280' }}>Log in to Continue</div>
       </form>
       </div>
     </div>

@@ -4,12 +4,18 @@ import { useNavigate } from 'react-router-dom'
 export default function StudentLoginPage() {
   const navigate = useNavigate()
   const [studentId, setStudentId] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!studentId.trim()) {
       alert('Please enter your Student ID')
+      return
+    }
+
+    if (password !== studentId) {
+      alert('Wrong Password')
       return
     }
 
@@ -20,7 +26,7 @@ export default function StudentLoginPage() {
       const base = envBase || (isVercel ? 'https://summar-it.vercel.app' : 'http://localhost:3000')
       console.log('Student login API base:', base)
       const apiUrl = `${base}/api/login`
-      const body = { studentId, role: 'student' }
+      const body = { studentId, role: 'student', password }
 
       const resp = await fetch(apiUrl, {
         method: 'POST', 
@@ -61,6 +67,15 @@ export default function StudentLoginPage() {
               value={studentId} 
               onChange={(e) => setStudentId(e.target.value)} 
               placeholder="Student ID"
+              disabled={loading}
+            />
+          </label>
+          <label>
+            <input 
+              type="password"
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              placeholder="Password (same as Student ID)"
               disabled={loading}
             />
           </label>

@@ -13,7 +13,7 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { studentId, role } = await req.json()
+    const { studentId, role, coordinatorId, password } = await req.json()
     
     if (!studentId || !role) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: corsHeaders as Record<string, string> })
@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
             details: 'Only students registered by the chairman can access the system.'
           }, { status: 404, headers: corsHeaders as Record<string, string> })
         }
+        if (String(password) !== String(studentId)) {
+          return NextResponse.json({ error: 'Invalid password' }, { status: 401, headers: corsHeaders as Record<string, string> })
+        }
         
         const token = `token-${Math.random().toString(36).slice(2)}`
         
@@ -53,16 +56,35 @@ export async function POST(req: NextRequest) {
           details: 'Unable to verify student registration.'
         }, { status: 500, headers: corsHeaders as Record<string, string> })
       }
-    } else {
-      // For coordinator and chairman, simple validation
+    } else if (role === 'coordinator') {
+      // Validate coordinatorId exists and get assigned sections
+      if (coordinatorId == null || isNaN(Number(coordinatorId))) {
+        return NextResponse.json({ error: 'coordinatorId (integer) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
+      }
+      if (String(password) !== String(coordinatorId)) {
+        return NextResponse.json({ error: 'Invalid password' }, { status: 401, headers: corsHeaders as Record<string, string> })
+      }
+      const { data: coordinator, error } = await supabase
+        .from('Coordinator')
+        .select('userName, sections, approved')
+        .eq('coordinatorId', Number(coordinatorId))
+        .single()
+      if (error || !coordinator || coordinator.approved !== true) {
+        return NextResponse.json({ error: 'Coordinator not found or not approved' }, { status: 404, headers: corsHeaders as Record<string, string> })
+      }
       const token = `token-${Math.random().toString(36).slice(2)}`
-      
       return NextResponse.json({ 
         success: true, 
         token,
         role,
-        userName: role === 'coordinator' ? 'Coordinator User' : 'Chairman User'
+        userName: coordinator.userName,
+        coordinatorId: Number(coordinatorId),
+        sections: coordinator.sections
       }, { headers: corsHeaders as Record<string, string> })
+    } else {
+      // Chairman simple validation
+      const token = `token-${Math.random().toString(36).slice(2)}`
+      return NextResponse.json({ success: true, token, role, userName: 'Chairman User' }, { headers: corsHeaders as Record<string, string> })
     }
     
   } catch (error: any) {

@@ -3,21 +3,45 @@ import { useState } from 'react'
 
 export default function CoordinatorLoginPage() {
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [coordinatorId, setCoordinatorId] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (username.trim().toLowerCase() === 'coordinator' && password === 'coordinator') {
-      localStorage.setItem('token', `token-${Math.random().toString(36).slice(2)}`)
-      localStorage.setItem('role', 'coordinator')
-      localStorage.setItem('userName', 'Coordinator')
-      navigate('/coordinator')
-    } else {
-      setError('Invalid username or password')
+    if (!coordinatorId) { setError('Coordinator ID is required'); return }
+    if (password !== coordinatorId) { setError('Wrong Password'); return }
+    // Call backend to validate coordinatorId and fetch sections
+    const run = async () => {
+      try {
+        const envBase = (import.meta as any).env?.VITE_API_URL
+        const isVercel = typeof window !== 'undefined' && /vercel\.app$/i.test(window.location.hostname)
+        const base = envBase || (isVercel ? 'https://summar-it.vercel.app' : 'http://localhost:3000')
+        const apiUrl = `${base}/api/login`
+        const resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'coordinator', coordinatorId: Number(coordinatorId), password })
+        })
+        if (!resp.ok) {
+          const t = await resp.text().catch(() => '')
+          throw new Error(t || 'Login failed')
+        }
+        const data = await resp.json()
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('role', 'coordinator')
+        localStorage.setItem('userName', data.userName || 'Coordinator')
+        localStorage.setItem('coordinatorId', String(coordinatorId))
+        if (Array.isArray(data.sections)) {
+          localStorage.setItem('sections', JSON.stringify(data.sections))
+        }
+        navigate('/coordinator')
+      } catch (err: any) {
+        setError(err.message || 'Login failed')
+      }
     }
+    run()
   }
 
   return (
@@ -44,9 +68,9 @@ export default function CoordinatorLoginPage() {
           )}
           <label style={{ width: '100%' }}>
             <input 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username"
+              value={coordinatorId}
+              onChange={(e) => setCoordinatorId(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="Coordinator ID"
               style={{ width: '100%' }}
             />
           </label>
@@ -63,7 +87,7 @@ export default function CoordinatorLoginPage() {
             <button type="button" onClick={() => navigate('/')}>Back</button>
             <button type="submit">Login</button>
           </div>
-          <div style={{ fontSize: 12, color: '#6b7280' }}>Use username "coordinator" and password "coordinator"</div>
+          <div style={{ fontSize: 12, color: '#6b7280' }}>Log in to Continue"</div>
         </form>
       </div>
     </div>

@@ -52,6 +52,7 @@ async function checkAndCreateTables() {
       await prisma.$executeRaw`
         CREATE TABLE IF NOT EXISTS "Coordinator" (
           "id" SERIAL PRIMARY KEY,
+          "coordinatorId" INTEGER UNIQUE,
           "userName" TEXT NOT NULL UNIQUE,
           "sections" TEXT[] NOT NULL,
           "approved" BOOLEAN NOT NULL DEFAULT false,
