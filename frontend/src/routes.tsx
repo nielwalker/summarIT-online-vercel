@@ -1,7 +1,7 @@
 import { createHashRouter, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 // Auth not required per latest requirement
-
+ 
 const LoginPage = lazy(() => import('./screens/LoginPage'))
 const StudentLoginPage = lazy(() => import('./screens/StudentLoginPage'))
 const CoordinatorLoginPage = lazy(() => import('./screens/CoordinatorLoginPage'))
