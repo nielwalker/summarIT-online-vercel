@@ -714,13 +714,14 @@ export default function ChairmanDashboard() {
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Student Registration</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
               <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student ID</div>
+              <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student ID</div>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={studentId} 
-                  onChange={(e) => setStudentId(e.target.value)} 
-                  placeholder="e.g. 2025-12345"
+                  onChange={(e) => setStudentId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
+                  placeholder="e.g. 20251234"
                   style={{ 
-                    width: '100%', 
+                    flex: 1,
                     padding: 8, 
                     border: '1px solid #d1d5db', 
                     borderRadius: 4,
@@ -728,6 +729,14 @@ export default function ChairmanDashboard() {
                     color: '#000000'
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setStudentId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                  style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                >
+                  Generate
+                </button>
+              </div>
               </label>
               <label>
                 <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student Name</div>
@@ -929,18 +938,27 @@ export default function ChairmanDashboard() {
                     <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
                       <label>
                         <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student ID</div>
-                        <input 
-                          value={editStudentId} 
-                          onChange={(e) => setEditStudentId(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input 
+                            value={editStudentId} 
+                            onChange={(e) => setEditStudentId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
+                            style={{ 
+                              flex: 1,
+                              padding: 8, 
+                              border: '1px solid #d1d5db', 
+                              borderRadius: 4,
+                              backgroundColor: 'white',
+                              color: '#000000'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditStudentId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                            style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                          >
+                            Generate
+                          </button>
+                        </div>
                       </label>
                       <label>
                         <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student Name</div>
@@ -1013,10 +1031,10 @@ export default function ChairmanDashboard() {
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
               <label>
                 <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
-                <input 
-                  value={coordId} 
-                  onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, ''))} 
-                  placeholder="e.g. 1001"
+                  <input 
+                    value={coordId} 
+                    onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
+                    placeholder="e.g. 20251234"
                   style={{ 
                     width: '100%', 
                     padding: 8, 
@@ -1026,6 +1044,15 @@ export default function ChairmanDashboard() {
                     color: '#000000'
                   }}
                 />
+                <div style={{ marginTop: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setCoordId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                    style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                  >
+                    Generate
+                  </button>
+                </div>
               </label>
               <label>
                 <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator Name</div>
@@ -1247,22 +1274,31 @@ export default function ChairmanDashboard() {
               }}
                         />
           </label>
-                  <label>
-                    <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
-                    <input 
-                      value={editCoordIdValue} 
-                      onChange={(e) => setEditCoordIdValue(e.target.value.replace(/[^0-9]/g, ''))} 
-                      placeholder="e.g. 1001"
-                      style={{
-                        width: '100%',
-                        padding: 8,
-                        border: '1px solid #d1d5db',
-                        borderRadius: 4,
-                        backgroundColor: 'white',
-                        color: '#000000'
-                      }}
-                    />
-                  </label>
+                      <label>
+                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input 
+                            value={editCoordIdValue} 
+                            onChange={(e) => setEditCoordIdValue(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
+                            placeholder="e.g. 20251234"
+                            style={{
+                              flex: 1,
+                              padding: 8,
+                              border: '1px solid #d1d5db',
+                              borderRadius: 4,
+                              backgroundColor: 'white',
+                              color: '#000000'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditCoordIdValue(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                            style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                          >
+                            Generate
+                          </button>
+                        </div>
+                      </label>
         </div>
                   </div>
                 )}

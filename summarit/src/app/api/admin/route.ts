@@ -389,18 +389,20 @@ export async function POST(req: NextRequest) {
 
     // Update operations
     if (body.action === 'updateStudent') {
-      const { studentId, userName, section, companyName } = body
+      const { studentId, userName, section, companyName, newStudentId } = body
       if (!studentId) return NextResponse.json({ error: 'studentId required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       
       try {
+        const updates: any = {
+          userName,
+          section,
+          companyName,
+          updatedAt: new Date().toISOString()
+        }
+        if (newStudentId) updates.studentId = newStudentId
         const { error } = await supabase
           .from('StudentEnrollment')
-          .update({
-            userName,
-            section,
-            companyName,
-            updatedAt: new Date().toISOString()
-          })
+          .update(updates)
           .eq('studentId', studentId)
 
         if (error) throw error

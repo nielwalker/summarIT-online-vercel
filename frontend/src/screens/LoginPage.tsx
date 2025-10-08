@@ -21,7 +21,7 @@ export default function LoginPage() {
     const looksChairman = /^chairman$/i.test(userId)
     const looksNumeric = /^\d+$/.test(userId)
     const looksStudent = /\d{4}-/.test(userId) || (looksNumeric && userId.length >= 8)
-    const role: 'student' | 'coordinator' | 'chairman' = looksChairman ? 'chairman' : (looksStudent ? 'student' : 'coordinator')
+    let role: 'student' | 'coordinator' | 'chairman' = looksChairman ? 'chairman' : (looksStudent ? 'student' : 'coordinator')
 
     try {
       setLoading(true)
@@ -29,18 +29,36 @@ export default function LoginPage() {
       const isVercel = typeof window !== 'undefined' && /vercel\.app$/i.test(window.location.hostname)
       const base = envBase || (isVercel ? 'https://summar-it.vercel.app' : 'http://localhost:3000')
       const apiUrl = `${base}/api/login`
-      const body = role === 'student'
-        ? { role, studentId: userId, password }
-        : role === 'coordinator'
-          ? { role, coordinatorId: Number(userId), password }
-          : { role }
+      const bodyFor = (r: 'student' | 'coordinator' | 'chairman') => (
+        r === 'student' ? { role: r, studentId: userId, password } :
+        r === 'coordinator' ? { role: r, coordinatorId: Number(userId), password } :
+        { role: r }
+      )
+      let body = bodyFor(role)
 
       const resp = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       })
-      if (!resp.ok) {
+      if (!resp.ok && role === 'coordinator' && looksStudent) {
+        // If numeric student-like ID tried as coordinator first and failed, try as student
+        role = 'student'
+        body = bodyFor(role)
+        const retry = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        if (!retry.ok) {
+          const tt = await retry.text().catch(() => '')
+          throw new Error(tt || 'Login failed')
+        }
+        const data = await retry.json()
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('role', data.role)
+        if (data.userName) localStorage.setItem('userName', data.userName)
+        localStorage.setItem('studentId', userId)
+        if (data.section) localStorage.setItem('section', data.section)
+        navigate('/student')
+        return
+      } else if (!resp.ok) {
         const t = await resp.text().catch(() => '')
         throw new Error(t || 'Login failed')
       }
