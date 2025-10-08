@@ -27,7 +27,7 @@ export default function ChairmanDashboard() {
   
   // Data tables states
   const [allStudents, setAllStudents] = useState<Array<{ studentId: string; userName: string; section: string; companyName: string | null }>>([])
-  const [allCoordinators, setAllCoordinators] = useState<Array<{ id: number; userName: string; sections: string[]; approved: boolean }>>([])
+  const [allCoordinators, setAllCoordinators] = useState<Array<{ id: number; coordinatorId?: number | null; userName: string; sections: string[]; approved: boolean }>>([])
   const [allCompanies, setAllCompanies] = useState<Array<{ id: number; name: string; address: string; supervisor: string; contactNumber: string }>>([])
   
   // Edit states
@@ -652,6 +652,39 @@ export default function ChairmanDashboard() {
                   </select>
                 </label>
               </div>
+
+              {/* Section Summary Info */}
+              {section && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: 12,
+                  padding: '12px',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                }}>
+                  {(() => {
+                    const sectionStudents = allStudents.filter(s => s.section === section)
+                    const totalInterns = sectionStudents.length
+                    const coordinator = allCoordinators.find(c => Array.isArray(c.sections) && c.sections.includes(section))
+                    const companies = Array.from(new Set(sectionStudents.map(s => s.companyName).filter(Boolean))) as string[]
+                    return (
+                      <>
+                        <div style={{ color: '#000000' }}>
+                          <strong>Coordinator:</strong> {coordinator ? `${coordinator.userName}${coordinator.coordinatorId ? ` (ID: ${coordinator.coordinatorId})` : ''}` : '—'}
+                        </div>
+                        <div style={{ color: '#000000' }}>
+                          <strong>Total Interns:</strong> {totalInterns}
+                        </div>
+                        <div style={{ color: '#000000' }}>
+                          <strong>Companies:</strong> {companies.length ? companies.join(', ') : '—'}
+                        </div>
+                      </>
+                    )
+                  })()}
+                </div>
+              )}
         
               <div style={{ 
                 flex: 1, 
@@ -1070,6 +1103,7 @@ export default function ChairmanDashboard() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f8f9fa' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Coordinator ID</th>
                         <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Name</th>
                         <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Sections</th>
                         <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
@@ -1079,6 +1113,7 @@ export default function ChairmanDashboard() {
                     <tbody>
                       {allCoordinators.map((coordinator, index) => (
                         <tr key={coordinator.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb' }}>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.coordinatorId ?? '—'}</td>
                           <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.userName}</td>
                           <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>
                             {coordinator.sections.join(', ')}
