@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
 
 const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
   { code: "A", label: "PO1", desc: "Apply knowledge of computing, science, and mathematics in solving computing/IT-related problems." },
@@ -485,15 +478,10 @@ export function CoordinatorPOChart({ section, studentId, title, selectedWeek }: 
                 style: { textAnchor: 'middle', fill: '#000000' } 
               }}
             />
-            {/* Tooltip - Hover information display */}
-            <Tooltip content={<CustomTooltip />} />
-            {/* Bar Configuration - Main chart bars */}
-            <Bar 
-              dataKey="value" 
-              fill="#3b82f6"                  // Blue color for bars
-              radius={[2, 2, 0, 0]}          // Rounded top corners
-              maxBarSize={50}                 // Maximum bar width
-            />
+            {/* No Tooltip; show values inside bars */}
+            <Bar dataKey="value" fill="#3b82f6" radius={[2, 2, 0, 0]} maxBarSize={50}>
+              <LabelList dataKey="value" position="insideTop" formatter={(v: any) => `${v}%`} fill="#ffffff" style={{ fontSize: 12 }} />
+            </Bar>
         </BarChart>
       </ResponsiveContainer>
         </div>
