@@ -18,9 +18,10 @@ export default function LoginPage() {
     // - All-digit => treat as coordinator (password must equal ID per current rules)
     // - Contains dash or starts with year => student (password must equal ID)
     // - Otherwise => chairman (password can be any string; UI previously had no password)
+    const looksChairman = /^chairman$/i.test(userId)
     const looksNumeric = /^\d+$/.test(userId)
-    const looksStudent = /\d{4}-/.test(userId) || /student/i.test(userId)
-    const role: 'student' | 'coordinator' | 'chairman' = looksNumeric && !looksStudent ? 'coordinator' : (looksStudent ? 'student' : 'chairman')
+    const looksStudent = /\d{4}-/.test(userId) || (looksNumeric && userId.length >= 8)
+    const role: 'student' | 'coordinator' | 'chairman' = looksChairman ? 'chairman' : (looksStudent ? 'student' : 'coordinator')
 
     try {
       setLoading(true)
@@ -66,8 +67,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e5e7eb', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 480, background: 'white', borderRadius: 8, padding: 24, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+    <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'white', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 480, background: 'white', borderRadius: 8, padding: 24, boxShadow: '0 10px 25px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb' }}>
         <h2 style={{ margin: '0 0 16px 0', color: '#111827' }}>Welcome</h2>
         <form onSubmit={handleLogin} style={{ display: 'grid', gap: 12 }}>
           {error && (
