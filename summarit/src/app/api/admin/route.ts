@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
       try {
         const { data: coordinators, error } = await supabase
           .from('Coordinator')
-          .select('id, userName, sections, approved')
+          .select('id, coordinatorId, userName, sections, approved')
           .order('userName')
         
         if (error) throw error
@@ -398,17 +398,21 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === 'updateCoordinator') {
-      const { coordinatorId, userName, sections } = body
-      if (!coordinatorId) return NextResponse.json({ error: 'coordinatorId required' }, { status: 400, headers: corsHeaders as Record<string, string> })
+      const { coordinatorId, userName, sections, coordinatorIdValue } = body
+      if (!coordinatorId) return NextResponse.json({ error: 'coordinatorId (record id) required' }, { status: 400, headers: corsHeaders as Record<string, string> })
       
       try {
+        const updateData: any = {
+          userName,
+          sections,
+          updatedAt: new Date().toISOString()
+        }
+        if (coordinatorIdValue !== undefined && coordinatorIdValue !== null) {
+          updateData.coordinatorId = Number(coordinatorIdValue)
+        }
         const { error } = await supabase
           .from('Coordinator')
-          .update({
-            userName,
-            sections,
-            updatedAt: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', coordinatorId)
 
         if (error) throw error

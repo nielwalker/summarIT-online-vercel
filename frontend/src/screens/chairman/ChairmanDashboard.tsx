@@ -44,6 +44,7 @@ export default function ChairmanDashboard() {
   
   const [editCoordName, setEditCoordName] = useState('')
   const [editCoordSections, setEditCoordSections] = useState('')
+  const [editCoordIdValue, setEditCoordIdValue] = useState('')
   
   const [editCompanyName, setEditCompanyName] = useState('')
   const [editCompanyAddress, setEditCompanyAddress] = useState('')
@@ -307,6 +308,7 @@ export default function ChairmanDashboard() {
     setEditingCoordinator(coordinator.id)
     setEditCoordName(coordinator.userName)
     setEditCoordSections(coordinator.sections.join(', '))
+    setEditCoordIdValue(String(coordinator.coordinatorId || ''))
   }
 
   function startEditCompany(company: any) {
@@ -377,7 +379,8 @@ export default function ChairmanDashboard() {
           action: 'updateCoordinator',
           coordinatorId: editingCoordinator,
           userName: editCoordName,
-          sections: editCoordSections.split(',').map(s => s.trim()).filter(Boolean)
+          sections: editCoordSections.split(',').map(s => s.trim()).filter(Boolean),
+          coordinatorIdValue: editCoordIdValue ? Number(editCoordIdValue) : undefined
         })
       })
       
@@ -1177,7 +1180,7 @@ export default function ChairmanDashboard() {
                     border: '1px solid #3b82f6' 
                   }}>
                     <h5 style={{ margin: '0 0 16px 0', color: '#000000' }}>Edit Coordinator</h5>
-                    <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
+                <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
                       <label>
                         <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator Name</div>
                         <input 
@@ -1209,6 +1212,22 @@ export default function ChairmanDashboard() {
               }}
                         />
           </label>
+                  <label>
+                    <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
+                    <input 
+                      value={editCoordIdValue} 
+                      onChange={(e) => setEditCoordIdValue(e.target.value.replace(/[^0-9]/g, ''))} 
+                      placeholder="e.g. 1001"
+                      style={{
+                        width: '100%',
+                        padding: 8,
+                        border: '1px solid #d1d5db',
+                        borderRadius: 4,
+                        backgroundColor: 'white',
+                        color: '#000000'
+                      }}
+                    />
+                  </label>
         </div>
                   </div>
                 )}
