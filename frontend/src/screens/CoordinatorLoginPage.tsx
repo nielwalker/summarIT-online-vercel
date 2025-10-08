@@ -1,14 +1,23 @@
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 export default function CoordinatorLoginPage() {
   const navigate = useNavigate()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const handleLogin = () => {
-    // Direct login without API call - similar to chairman
-    localStorage.setItem('token', `token-${Math.random().toString(36).slice(2)}`)
-    localStorage.setItem('role', 'coordinator')
-    localStorage.setItem('userName', 'Coordinator')
-    navigate('/coordinator')
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (username.trim().toLowerCase() === 'coordinator' && password === 'coordinator') {
+      localStorage.setItem('token', `token-${Math.random().toString(36).slice(2)}`)
+      localStorage.setItem('role', 'coordinator')
+      localStorage.setItem('userName', 'Coordinator')
+      navigate('/coordinator')
+    } else {
+      setError('Invalid username or password')
+    }
   }
 
   return (
@@ -29,17 +38,33 @@ export default function CoordinatorLoginPage() {
         textAlign: 'center'
       }}>
         <h2>Coordinator Login</h2>
-        <div style={{ display: 'grid', gap: 12, width: '100%' }}>
-          <p>Click continue to access the Coordinator Dashboard</p>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12, width: '100%' }}>
+          {error && (
+            <div style={{ padding: 8, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 6 }}>{error}</div>
+          )}
+          <label style={{ width: '100%' }}>
+            <input 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              style={{ width: '100%' }}
+            />
+          </label>
+          <label style={{ width: '100%' }}>
+            <input 
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              style={{ width: '100%' }}
+            />
+          </label>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-            <button type="button" onClick={() => navigate('/')}>
-              Back
-            </button>
-            <button onClick={handleLogin}>
-              Continue
-            </button>
+            <button type="button" onClick={() => navigate('/')}>Back</button>
+            <button type="submit">Login</button>
           </div>
-        </div>
+          <div style={{ fontSize: 12, color: '#6b7280' }}>Use username "coordinator" and password "coordinator"</div>
+        </form>
       </div>
     </div>
   )
