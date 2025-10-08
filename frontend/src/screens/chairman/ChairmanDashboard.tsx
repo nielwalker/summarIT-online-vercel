@@ -1,4 +1,3 @@
-import ChairmanPOChart from './ChairmanPOChart'
 import ChairmanDashboardPOList from './ChairmanDashboardPOList'
 import DashboardShell from '../../components/DashboardShell'
 import { useState, useEffect } from 'react'
@@ -705,11 +704,7 @@ export default function ChairmanDashboard() {
                 <div style={{ width: '100%', maxWidth: '900px', marginBottom: '16px' }}>
                   <ChairmanDashboardPOList section={section} selectedWeek={selectedWeek} />
                 </div>
-                <ChairmanPOChart 
-                  section={section} 
-                  selectedWeek={selectedWeek}
-                  title={`Section ${section} - Week ${selectedWeek}`} 
-                />
+                {/* Removed bottom chart per request */}
               </div>
             </div>
           )}
