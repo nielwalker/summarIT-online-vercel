@@ -9,28 +9,24 @@ interface ChairmanSideNavProps {
 export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu }: ChairmanSideNavProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  // Auto-collapse after 3 seconds of no hover
+  // Immediate hover response
   useEffect(() => {
-    let timeoutId: number
-    const handleMouseLeave = () => {
-      timeoutId = setTimeout(() => setIsCollapsed(true), 3000)
-    }
-    const handleMouseEnter = () => {
-      clearTimeout(timeoutId)
-    }
-
     const navElement = document.getElementById('chairman-side-nav')
     if (navElement) {
-      navElement.addEventListener('mouseleave', handleMouseLeave)
-      navElement.addEventListener('mouseenter', handleMouseEnter)
-    }
-
-    return () => {
-      if (navElement) {
-        navElement.removeEventListener('mouseleave', handleMouseLeave)
-        navElement.removeEventListener('mouseenter', handleMouseEnter)
+      const handleMouseEnter = () => {
+        setIsCollapsed(false)
       }
-      clearTimeout(timeoutId)
+      const handleMouseLeave = () => {
+        setIsCollapsed(true)
+      }
+
+      navElement.addEventListener('mouseenter', handleMouseEnter)
+      navElement.addEventListener('mouseleave', handleMouseLeave)
+
+      return () => {
+        navElement.removeEventListener('mouseenter', handleMouseEnter)
+        navElement.removeEventListener('mouseleave', handleMouseLeave)
+      }
     }
   }, [])
 
@@ -48,58 +44,135 @@ export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu }:
   return (
     <div
       id="chairman-side-nav"
-      className={`fixed left-0 top-0 h-full bg-gradient-to-b from-purple-600 to-purple-800 text-white transition-all duration-300 z-50 ${
-        isCollapsed ? 'w-16' : 'w-64'
-      }`}
-      onMouseEnter={() => setIsCollapsed(false)}
+      style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        height: '100vh',
+        width: isCollapsed ? '64px' : '256px',
+        backgroundColor: '#1e3a8a', // Dark blue
+        color: 'white',
+        transition: 'width 0.2s ease-in-out',
+        zIndex: 50,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-purple-500">
-        {!isCollapsed ? (
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-purple-600 font-bold text-sm">C</span>
-            </div>
-            <div>
-              <h2 className="text-lg font-bold">Chairman Portal</h2>
-              <p className="text-purple-200 text-sm">Management Center</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-purple-600 font-bold text-sm">C</span>
-            </div>
+      <div style={{
+        padding: '16px',
+        borderBottom: '1px solid #3b82f6',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: isCollapsed ? 'center' : 'flex-start'
+      }}>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '14px' }}>C</span>
+        </div>
+        {!isCollapsed && (
+          <div style={{ marginLeft: '12px' }}>
+            <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 'bold' }}>Chairman Portal</h2>
+            <p style={{ margin: '0', fontSize: '14px', color: '#93c5fd' }}>Management Center</p>
           </div>
         )}
       </div>
 
       {/* Navigation Items */}
-      <nav className="mt-4">
+      <nav style={{ 
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '16px 0'
+      }}>
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => handleNavClick(item.id as 'overview' | 'student' | 'coordinator' | 'company')}
-            className={`w-full flex items-center px-4 py-3 text-left transition-colors duration-200 ${
-              activeMenu === item.id
-                ? 'bg-purple-500 border-r-4 border-white'
-                : 'hover:bg-purple-500/50'
-            }`}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '12px 16px',
+              margin: '4px 0',
+              backgroundColor: activeMenu === item.id ? '#3b82f6' : 'transparent',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              textAlign: 'left',
+              transition: 'background-color 0.2s ease',
+              justifyContent: isCollapsed ? 'center' : 'flex-start'
+            }}
+            onMouseEnter={(e) => {
+              if (activeMenu !== item.id) {
+                e.currentTarget.style.backgroundColor = '#3b82f6'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeMenu !== item.id) {
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }
+            }}
           >
-            <span className="text-xl mr-3">{item.icon}</span>
-            {!isCollapsed && <span className="font-medium">{item.label}</span>}
+            <span style={{ 
+              fontSize: '20px', 
+              marginRight: isCollapsed ? '0' : '12px',
+              filter: 'grayscale(100%) brightness(0) invert(1)' // Black and white icon
+            }}>
+              {item.icon}
+            </span>
+            {!isCollapsed && <span style={{ fontWeight: '500' }}>{item.label}</span>}
           </button>
         ))}
       </nav>
 
       {/* Logout Button */}
-      <div className="absolute bottom-4 left-4 right-4">
+      <div style={{ 
+        padding: '16px',
+        marginTop: 'auto'
+      }}>
         <button
           onClick={onLogout}
-          className="w-full flex items-center px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200"
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 16px',
+            backgroundColor: '#3b82f6', // Blue color
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            transition: 'background-color 0.2s ease',
+            justifyContent: isCollapsed ? 'center' : 'flex-start'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#2563eb'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#3b82f6'
+          }}
         >
-          <span className="text-xl mr-3">🚪</span>
-          {!isCollapsed && <span className="font-medium">Logout</span>}
+          <span style={{ 
+            fontSize: '20px', 
+            marginRight: isCollapsed ? '0' : '12px',
+            filter: 'grayscale(100%) brightness(0) invert(1)' // Black and white icon
+          }}>
+            🚪
+          </span>
+          {!isCollapsed && <span style={{ fontWeight: '500' }}>Logout</span>}
         </button>
       </div>
     </div>
