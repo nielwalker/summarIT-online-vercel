@@ -66,7 +66,7 @@ export function WeeklyReportTable() {
       const base = getApiUrl('')
       console.log('Deleting report with ID:', entry.id)
       
-      const res = await fetch(`${base}/api/reports?id=${entry.id}`, {
+      const res = await fetch(getApiUrl(`/api/reports?id=${entry.id}`), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -115,7 +115,7 @@ export function WeeklyReportTable() {
       queryParams.append('studentId', studentId)
       queryParams.append('section', section)
       
-      const res = await fetch(`${base}/api/reports?${queryParams.toString()}`)
+      const res = await fetch(getApiUrl(`/api/reports?${queryParams.toString()}`))
       if (!res.ok) {
         console.error('Failed to load reports:', res.status)
         setWeeks(createInitialWeeks())
@@ -167,7 +167,7 @@ export function WeeklyReportTable() {
         (localStorage.getItem('userName') || localStorage.getItem('studentId') || 'Unknown Student') : 
         'Unknown Student'
       
-      const res = await fetch(`${base}/api/reports`, {
+      const res = await fetch(getApiUrl('/api/reports'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

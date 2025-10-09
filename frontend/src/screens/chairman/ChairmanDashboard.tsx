@@ -76,7 +76,7 @@ export default function ChairmanDashboard() {
       const base = getApiUrl('')
       
       // Load all students
-      const studentsRes = await fetch(`${base}/api/admin?action=listAllStudents`)
+      const studentsRes = await fetch(getApiUrl('/api/admin?action=listAllStudents'))
       if (studentsRes.ok) {
         const students = await studentsRes.json()
         setAllStudents(students || [])
@@ -86,7 +86,7 @@ export default function ChairmanDashboard() {
       }
       
       // Load all coordinators
-      const coordinatorsRes = await fetch(`${base}/api/admin?action=listAllCoordinators`)
+      const coordinatorsRes = await fetch(getApiUrl('/api/admin?action=listAllCoordinators'))
       if (coordinatorsRes.ok) {
         const coordinators = await coordinatorsRes.json()
         setAllCoordinators(coordinators || [])
@@ -96,7 +96,7 @@ export default function ChairmanDashboard() {
       }
       
       // Load all companies
-      const companiesRes = await fetch(`${base}/api/admin?action=getCompanies`)
+      const companiesRes = await fetch(getApiUrl('/api/admin?action=getCompanies'))
       if (companiesRes.ok) {
         const companies = await companiesRes.json()
         setAllCompanies(companies || [])
@@ -113,7 +113,7 @@ export default function ChairmanDashboard() {
   async function loadCompanies() {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin?action=getCompanies`)
+      const res = await fetch(getApiUrl('/api/admin?action=getCompanies'))
       if (res.ok) {
         const data = await res.json()
         setCompanies(data)
@@ -126,7 +126,7 @@ export default function ChairmanDashboard() {
   async function loadCoordinatorSections() {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin?action=getCoordinatorSections`)
+      const res = await fetch(getApiUrl('/api/admin?action=getCoordinatorSections'))
       if (res.ok) {
         const data = await res.json()
         setCoordinatorSections(data)
@@ -147,7 +147,7 @@ export default function ChairmanDashboard() {
     }
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -181,7 +181,7 @@ export default function ChairmanDashboard() {
     }
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -214,7 +214,7 @@ export default function ChairmanDashboard() {
     if (!coordName || !coordSection || !coordId) { setMsg('Coordinator ID, name, and section are required'); return }
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'registerCoordinator', userName: coordName, coordinatorId: Number(coordId), sections: [coordSection.trim()] })
@@ -239,7 +239,7 @@ export default function ChairmanDashboard() {
   async function deleteStudent(studentId: string) {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deleteStudent', studentId })
@@ -260,7 +260,7 @@ export default function ChairmanDashboard() {
   async function deleteCoordinator(coordinatorId: number) {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deleteCoordinator', coordinatorId })
@@ -281,7 +281,7 @@ export default function ChairmanDashboard() {
   async function deleteCompany(companyId: number) {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deleteCompany', companyId })
@@ -351,7 +351,7 @@ export default function ChairmanDashboard() {
         const c = companies.find(co => String(co.id) === String(editSelectedCompanyId))
         if (c) companyNameToSave = c.name
       }
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -380,7 +380,7 @@ export default function ChairmanDashboard() {
   async function updateCoordinator() {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -409,7 +409,7 @@ export default function ChairmanDashboard() {
   async function updateCompany() {
     try {
       const base = getApiUrl('')
-      const res = await fetch(`${base}/api/admin`, {
+      const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

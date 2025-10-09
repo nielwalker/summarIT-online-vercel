@@ -10,7 +10,6 @@ export function getApiBaseUrl(): string {
   // Remove any trailing slashes to ensure clean URL construction
   base = base.replace(/\/+$/, '')
   
-  console.log('Base URL:', base)
   return base
 }
 
@@ -24,7 +23,5 @@ export function getApiUrl(endpoint: string): string {
   }
   
   // Construct the final URL with exactly one slash
-  const fullUrl = `${base}/${cleanEndpoint}`
-  console.log('API URL Debug:', { base, endpoint, cleanEndpoint, fullUrl })
-  return fullUrl
+  return `${base}/${cleanEndpoint}`
 }

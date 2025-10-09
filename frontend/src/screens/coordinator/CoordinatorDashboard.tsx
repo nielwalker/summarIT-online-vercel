@@ -47,7 +47,7 @@ export default function CoordinatorDashboard() {
       setError(null)
       try {
         const base = getApiUrl('')
-        const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
+        const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
         
         if (!response.ok) {
           throw new Error(`Failed to fetch students: ${response.status}`)
@@ -90,7 +90,7 @@ export default function CoordinatorDashboard() {
       // Fetch detailed student information including company details
       try {
         const base = getApiUrl('')
-        const response = await fetch(`${base}/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`)
+        const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`))
         
         if (response.ok) {
           const data = await response.json()
@@ -112,7 +112,7 @@ export default function CoordinatorDashboard() {
       setError(null)
       try {
         const base = getApiUrl('')
-        const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
+        const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
         
         if (!response.ok) {
           throw new Error(`Failed to fetch students: ${response.status}`)

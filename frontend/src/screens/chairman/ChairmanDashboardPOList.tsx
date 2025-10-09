@@ -93,7 +93,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       setError(null)
       const base = getApiUrl('')
       // Fetch reports for the section (no student filter)
-      const repUrl = `${base}/api/reports?section=${encodeURIComponent(section)}`
+      const repUrl = getApiUrl(`/api/reports?section=${encodeURIComponent(section)}`)
       const repResp = await fetch(repUrl)
       if (!repResp.ok) throw new Error(`Failed to fetch reports: ${repResp.status}`)
       const reports = await repResp.json()
@@ -104,7 +104,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       const { scores: localScores, hitsPerPO } = extractHighlights(text)
       
       // Fetch contextual summary (hybrid, database-backed, week-scoped)
-      const sumResp = await fetch(`${base}/api/summary`, {
+      const sumResp = await fetch(getApiUrl('/api/summary'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section, week: selectedWeek })

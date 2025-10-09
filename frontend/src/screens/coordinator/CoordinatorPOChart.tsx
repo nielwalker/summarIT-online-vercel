@@ -236,7 +236,7 @@ export function CoordinatorPOChart({ section, studentId, title, selectedWeek }: 
     try {
       const base = getApiUrl('')
       console.log('Fetching reports for section:', section, 'studentId:', studentId)
-      const response = await fetch(`${base}/api/reports?section=${encodeURIComponent(section || '')}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`)
+      const response = await fetch(getApiUrl(`/api/reports?section=${encodeURIComponent(section || '')}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`))
       
       if (!response.ok) {
         throw new Error(`Failed to fetch reports: ${response.status}`)

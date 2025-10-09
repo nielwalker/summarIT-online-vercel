@@ -41,7 +41,7 @@ export default function StudentDashboard() {
         }
 
         const base = getApiUrl('')
-        const response = await fetch(`${base}/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(studentId)}`)
+        const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(studentId)}`))
         
         if (!response.ok) {
           throw new Error(`Failed to fetch student details: ${response.status}`)

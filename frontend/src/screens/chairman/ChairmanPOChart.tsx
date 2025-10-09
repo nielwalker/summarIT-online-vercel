@@ -70,7 +70,7 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
     try {
       setError(null)
       const base = getApiUrl('')
-      const resp = await fetch(`${base}/api/reports?section=${encodeURIComponent(section)}`)
+      const resp = await fetch(getApiUrl(`/api/reports?section=${encodeURIComponent(section)}`))
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
       const filtered = selectedWeek ? reports.filter(r => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
