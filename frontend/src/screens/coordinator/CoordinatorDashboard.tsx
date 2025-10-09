@@ -184,18 +184,8 @@ export default function CoordinatorDashboard() {
               } catch {}
               navigate('/')
             }}
-            style={{
-              position: 'absolute',
-              right: '20px',
-              top: '16px',
-              padding: '8px 16px',
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
+            className="btn btn-danger"
+            style={{ position: 'absolute', right: '20px', top: '16px' }}
           >
             Logout
           </button>
@@ -219,12 +209,9 @@ export default function CoordinatorDashboard() {
             <select 
               value={section} 
               onChange={(e) => { setSection(e.target.value); setStudentId(''); setSelectedStudent(null); setCompanyDetails(null); }}
+              className="form-select"
               style={{
-                padding: '6px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                backgroundColor: 'white',
-                color: '#000000',
+                minHeight: '38px',
                 minWidth: '140px'
               }}
             >
@@ -240,10 +227,8 @@ export default function CoordinatorDashboard() {
               value={studentId} 
               onChange={(e) => handleStudentChange(e.target.value)}
               disabled={loading}
+              className="form-select"
               style={{
-                padding: '6px 12px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
                 backgroundColor: loading ? '#f3f4f6' : 'white',
                 color: loading ? '#6b7280' : '#000000',
                 minWidth: '200px',
@@ -258,25 +243,7 @@ export default function CoordinatorDashboard() {
               ))}
             </select>
           </label>
-          <button
-            onClick={refreshStudents}
-            disabled={loading}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: loading ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            🔄 {loading ? 'Loading...' : 'Refresh'}
-          </button>
+          <button onClick={refreshStudents} disabled={loading} className={`btn btn-primary btn-sm ${loading ? 'disabled' : ''}`}>🔄 {loading ? 'Loading...' : 'Refresh'}</button>
         </div>
         
         {error && (

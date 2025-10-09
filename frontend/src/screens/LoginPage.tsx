@@ -77,32 +77,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ width: '100vw', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'white', padding: 16 }}>
-      <div style={{ width: '100%', maxWidth: 480, background: 'white', borderRadius: 8, padding: 24, boxShadow: '0 10px 25px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb' }}>
-        <h2 style={{ margin: '0 0 16px 0', color: '#111827' }}>Welcome</h2>
-        <form onSubmit={handleLogin} style={{ display: 'grid', gap: 12 }}>
-          {error && (
-            <div style={{ padding: 10, borderRadius: 6, background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>{error}</div>
-          )}
-          <input
-            placeholder="User ID"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            disabled={loading}
-            style={{ padding: 12, borderRadius: 6, border: '1px solid #d1d5db', outline: 'none' }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            style={{ padding: 12, borderRadius: 6, border: '1px solid #d1d5db', outline: 'none' }}
-          />
-          <button type="submit" disabled={loading} style={{ marginTop: 8, padding: '12px 16px', borderRadius: 6, background: '#3b82f6', color: 'white', border: 'none', cursor: 'pointer' }}>
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
-        </form>
+    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-white py-4">
+      <div className="card shadow-sm" style={{ width: '100%', maxWidth: 480 }}>
+        <div className="card-body">
+          <h2 className="card-title mb-3" style={{ color: '#111827' }}>Welcome</h2>
+          <form onSubmit={handleLogin} className="d-grid gap-2">
+            {error && (
+              <div className="alert alert-danger py-2 mb-2" role="alert">{error}</div>
+            )}
+            <input
+              className="form-control"
+              placeholder="User ID"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              disabled={loading}
+            />
+            <input
+              className="form-control"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
+            <button type="submit" disabled={loading} className="btn btn-primary mt-1 w-100">
+              {loading ? 'Logging in...' : 'Log in'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

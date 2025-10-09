@@ -570,15 +570,7 @@ export default function ChairmanDashboard() {
               } catch {}
               navigate('/')
             }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
+            className="btn btn-danger"
           >
             Logout
           </button>
