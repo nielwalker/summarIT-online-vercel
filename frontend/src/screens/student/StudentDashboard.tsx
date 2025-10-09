@@ -40,7 +40,6 @@ export default function StudentDashboard() {
           return
         }
 
-        const base = getApiUrl('')
         const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(studentId)}`))
         
         if (!response.ok) {

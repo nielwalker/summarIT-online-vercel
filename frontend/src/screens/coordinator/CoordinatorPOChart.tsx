@@ -234,7 +234,6 @@ export function CoordinatorPOChart({ section, studentId, title, selectedWeek }: 
   // Enhanced week-by-week analysis function
   async function calculateWeekByWeekScores(): Promise<{ scores: number[]; sentence: string }> {
     try {
-      const base = getApiUrl('')
       console.log('Fetching reports for section:', section, 'studentId:', studentId)
       const response = await fetch(getApiUrl(`/api/reports?section=${encodeURIComponent(section || '')}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`))
       

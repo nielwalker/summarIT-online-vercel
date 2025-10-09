@@ -24,8 +24,7 @@ export default function CoordinatorDashboard() {
       try {
         const coordIdStr = localStorage.getItem('coordinatorId')
         const coordId = coordIdStr ? Number(coordIdStr) : null
-        const base = getApiUrl('')
-        const url = coordId ? `${base}/api/admin?action=getCoordinatorSections&coordinatorId=${coordId}` : `${base}/api/admin?action=getCoordinatorSections`
+        const url = coordId ? getApiUrl(`/api/admin?action=getCoordinatorSections&coordinatorId=${coordId}`) : getApiUrl('/api/admin?action=getCoordinatorSections')
         const res = await fetch(url)
         if (res.ok) {
           const data: string[] = await res.json()
@@ -46,7 +45,6 @@ export default function CoordinatorDashboard() {
       setLoading(true)
       setError(null)
       try {
-        const base = getApiUrl('')
         const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
         
         if (!response.ok) {
@@ -89,7 +87,6 @@ export default function CoordinatorDashboard() {
       
       // Fetch detailed student information including company details
       try {
-        const base = getApiUrl('')
         const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`))
         
         if (response.ok) {
@@ -111,7 +108,6 @@ export default function CoordinatorDashboard() {
       setLoading(true)
       setError(null)
       try {
-        const base = getApiUrl('')
         const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
         
         if (!response.ok) {

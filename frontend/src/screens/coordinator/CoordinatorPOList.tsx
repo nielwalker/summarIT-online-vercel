@@ -70,7 +70,6 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
     try {
       setLoading(true)
       setError(null)
-      const base = getApiUrl('')
       const url = getApiUrl(`/api/reports?section=${encodeURIComponent(section)}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`)
       const resp = await fetch(url)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)

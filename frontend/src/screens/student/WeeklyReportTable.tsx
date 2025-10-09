@@ -63,7 +63,6 @@ export function WeeklyReportTable() {
     }
 
     try {
-      const base = getApiUrl('')
       console.log('Deleting report with ID:', entry.id)
       
       const res = await fetch(getApiUrl(`/api/reports?id=${entry.id}`), {
@@ -100,7 +99,6 @@ export function WeeklyReportTable() {
   async function loadReports() {
     try {
       setLoading(true)
-      const base = getApiUrl('')
       const studentId = localStorage.getItem('studentId')
       const section = localStorage.getItem('section')
       
@@ -160,8 +158,6 @@ export function WeeklyReportTable() {
     const entry = weeks[currentWeek - 1][rowIdx]
     console.log('Submit week', currentWeek, 'row', rowIdx + 1, entry)
     try {
-      const base = getApiUrl('')
-      
       // Get the actual student name from localStorage or use studentId as fallback
       const actualStudentName = typeof window !== 'undefined' ? 
         (localStorage.getItem('userName') || localStorage.getItem('studentId') || 'Unknown Student') : 

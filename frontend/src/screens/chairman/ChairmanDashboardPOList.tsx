@@ -91,7 +91,6 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
     try {
       setLoading(true)
       setError(null)
-      const base = getApiUrl('')
       // Fetch reports for the section (no student filter)
       const repUrl = getApiUrl(`/api/reports?section=${encodeURIComponent(section)}`)
       const repResp = await fetch(repUrl)

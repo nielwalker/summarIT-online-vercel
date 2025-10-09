@@ -69,7 +69,6 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
   async function analyze() {
     try {
       setError(null)
-      const base = getApiUrl('')
       const resp = await fetch(getApiUrl(`/api/reports?section=${encodeURIComponent(section)}`))
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
