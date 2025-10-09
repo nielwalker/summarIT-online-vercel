@@ -38,7 +38,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       ['best practice', 'standard', 'policy', 'method', 'procedure', 'protocol'],
       ['analyze', 'analysis', 'problem', 'root cause', 'diagnose', 'troubleshoot'],
       ['user need', 'requirement', 'stakeholder', 'ux', 'usability'],
-      ['design', 'implement', 'evaluate', 'build', 'develop', 'test'],
+      ['design', 'implement', 'evaluate', 'build', 'develop', 'test', 'setup', 'configure', 'configuration', 'install'],
       ['safety', 'health', 'environment', 'security', 'ethical'],
       ['tool', 'framework', 'library', 'technology', 'platform'],
       ['team', 'collaborat', 'leader', 'group'],
@@ -51,13 +51,35 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       ['filipino', 'heritage', 'culture', 'tradition'],
     ]
 
+    // Flexible matcher adapted from coordinator logic
+    function findMatches(t: string, keywords: string[]): { count: number; found: string[] } {
+      let count = 0
+      const found: string[] = []
+      for (const keyword of keywords) {
+        if (t.includes(keyword)) {
+          count++; found.push(keyword); continue
+        }
+        const words = keyword.split(' ')
+        if (words.length > 1 && words.some(w => t.includes(w))) {
+          count++; found.push(keyword); continue
+        }
+        const stem = keyword.replace(/(ing|ed|es|s)$/,'')
+        if (stem.length > 3 && t.includes(stem)) {
+          count++; found.push(keyword); continue
+        }
+        const variations = [keyword + 's', keyword + 'ing', keyword + 'ed', keyword.replace(/s$/,'')]
+        for (const v of variations) {
+          if (t.includes(v)) { count++; found.push(keyword); break }
+        }
+      }
+      return { count, found }
+    }
+
     const hitsPerPO: string[][] = keywordSets.map(() => [])
     const counts = keywordSets.map((set, idx) => {
-      let count = 0
-      const found = new Set<string>()
-      set.forEach(kw => { if (lower.includes(kw)) { count++; found.add(kw) } })
-      hitsPerPO[idx] = Array.from(found)
-      return count
+      const res = findMatches(lower, set)
+      hitsPerPO[idx] = Array.from(new Set(res.found))
+      return res.count
     })
     const total = counts.reduce((a, b) => a + b, 0)
     const perc = counts.map(c => total > 0 ? Math.round((c / total) * 100) : 0)
