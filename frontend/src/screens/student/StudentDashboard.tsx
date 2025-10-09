@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { WeeklyReportTable } from './WeeklyReportTable'
 import StudentSideNav from '../../components/StudentSideNav'
+import StudentProfile from './StudentProfile'
 import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '../../utils/api'
 
@@ -25,6 +26,7 @@ export default function StudentDashboard() {
   const [studentDetails, setStudentDetails] = useState<StudentDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   useEffect(() => {
     const fetchStudentDetails = async () => {
@@ -100,7 +102,11 @@ export default function StudentDashboard() {
       left: '0'
     }}>
       {/* Side Navigation */}
-      <StudentSideNav studentDetails={studentDetails} onLogout={handleLogout} />
+      <StudentSideNav 
+        onLogout={handleLogout} 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
       
       {/* Main Content */}
       <div style={{ 
@@ -110,53 +116,57 @@ export default function StudentDashboard() {
         overflowY: 'auto',
         backgroundColor: '#f8fafc'
       }}>
-        <div style={{ padding: '20px' }}>
-          <div style={{ marginBottom: '24px' }}>
-            <h1 style={{ 
-              margin: '0 0 8px 0', 
-              color: '#1f2937', 
-              fontSize: '28px',
-              fontWeight: 'bold'
-            }}>
-              Student Dashboard
-            </h1>
-            <p style={{ 
-              margin: '0', 
-              color: '#6b7280', 
-              fontSize: '16px'
-            }}>
-              Welcome back, {studentDetails?.student.userName || 'Student'}!
-            </p>
+        {activeTab === 'dashboard' ? (
+          <div style={{ padding: '20px' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <h1 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#1f2937', 
+                fontSize: '28px',
+                fontWeight: 'bold'
+              }}>
+                Student Dashboard
+              </h1>
+              <p style={{ 
+                margin: '0', 
+                color: '#6b7280', 
+                fontSize: '16px'
+              }}>
+                Welcome back, {studentDetails?.student.userName || 'Student'}!
+              </p>
+            </div>
+
+            {loading && (
+              <div style={{ 
+                marginBottom: '16px', 
+                color: '#6b7280',
+                padding: '12px',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb'
+              }}>
+                Loading student information...
+              </div>
+            )}
+            
+            {error && (
+              <div style={{ 
+                marginBottom: '16px', 
+                color: '#dc2626',
+                padding: '12px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '8px',
+                border: '1px solid #fecaca'
+              }}>
+                Error: {error}
+              </div>
+            )}
+
+            <WeeklyReportTable />
           </div>
-
-          {loading && (
-            <div style={{ 
-              marginBottom: '16px', 
-              color: '#6b7280',
-              padding: '12px',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '8px',
-              border: '1px solid #e5e7eb'
-            }}>
-              Loading student information...
-            </div>
-          )}
-          
-          {error && (
-            <div style={{ 
-              marginBottom: '16px', 
-              color: '#dc2626',
-              padding: '12px',
-              backgroundColor: '#fef2f2',
-              borderRadius: '8px',
-              border: '1px solid #fecaca'
-            }}>
-              Error: {error}
-            </div>
-          )}
-
-          <WeeklyReportTable />
-        </div>
+        ) : (
+          <StudentProfile studentDetails={studentDetails} />
+        )}
       </div>
     </div>
   )

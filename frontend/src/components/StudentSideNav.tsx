@@ -1,29 +1,13 @@
 import { useState, useEffect } from 'react'
 
-interface StudentDetails {
-  student: {
-    studentId: string
-    userName: string
-    section: string
-    companyName: string
-    companyAddress: string
-    companySupervisor: string
-    companyContact: string
-  }
-  coordinator: {
-    userName: string
-    coordinatorId: number
-  }
-}
-
 interface StudentSideNavProps {
-  studentDetails: StudentDetails | null
   onLogout: () => void
+  activeTab: string
+  setActiveTab: (tab: string) => void
 }
 
-export default function StudentSideNav({ studentDetails, onLogout }: StudentSideNavProps) {
+export default function StudentSideNav({ onLogout, activeTab, setActiveTab }: StudentSideNavProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
 
   // Immediate hover response
   useEffect(() => {
@@ -47,13 +31,30 @@ export default function StudentSideNav({ studentDetails, onLogout }: StudentSide
   }, [])
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'profile', label: 'Profile', icon: '👤' },
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+      )
+    },
+    { 
+      id: 'profile', 
+      label: 'Profile', 
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      )
+    },
   ]
 
-  const handleNavClick = (itemId: string) => {
-    setActiveTab(itemId)
-  }
 
   return (
     <div
@@ -109,7 +110,7 @@ export default function StudentSideNav({ studentDetails, onLogout }: StudentSide
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => handleNavClick(item.id)}
+            onClick={() => setActiveTab(item.id)}
             style={{
               width: '100%',
               display: 'flex',
@@ -141,7 +142,10 @@ export default function StudentSideNav({ studentDetails, onLogout }: StudentSide
             <span style={{ 
               fontSize: '20px', 
               marginRight: isCollapsed ? '0' : '12px',
-              filter: 'grayscale(100%) brightness(0) invert(1)' // Black and white icon
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
             }}>
               {item.icon}
             </span>
@@ -150,66 +154,6 @@ export default function StudentSideNav({ studentDetails, onLogout }: StudentSide
         ))}
       </nav>
 
-      {/* Profile Content */}
-      {activeTab === 'profile' && !isCollapsed && (
-        <div style={{ 
-          margin: '16px',
-          padding: '16px',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          borderRadius: '8px'
-        }}>
-          {/* Student Information */}
-          <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ 
-              fontSize: '14px', 
-              fontWeight: '600', 
-              color: '#93c5fd', 
-              margin: '0 0 8px 0' 
-            }}>
-              Student Information
-            </h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-              <div><span style={{ color: '#93c5fd' }}>ID:</span> {studentDetails?.student.studentId || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>Name:</span> {studentDetails?.student.userName || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>Section:</span> {studentDetails?.student.section || 'N/A'}</div>
-            </div>
-          </div>
-
-          {/* Company Information */}
-          <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ 
-              fontSize: '14px', 
-              fontWeight: '600', 
-              color: '#93c5fd', 
-              margin: '0 0 8px 0' 
-            }}>
-              Company Information
-            </h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-              <div><span style={{ color: '#93c5fd' }}>Company:</span> {studentDetails?.student.companyName || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>Address:</span> {studentDetails?.student.companyAddress || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>Supervisor:</span> {studentDetails?.student.companySupervisor || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>Contact:</span> {studentDetails?.student.companyContact || 'N/A'}</div>
-            </div>
-          </div>
-
-          {/* Coordinator Information */}
-          <div>
-            <h3 style={{ 
-              fontSize: '14px', 
-              fontWeight: '600', 
-              color: '#93c5fd', 
-              margin: '0 0 8px 0' 
-            }}>
-              Coordinator Information
-            </h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
-              <div><span style={{ color: '#93c5fd' }}>Name:</span> {studentDetails?.coordinator.userName || 'N/A'}</div>
-              <div><span style={{ color: '#93c5fd' }}>ID:</span> {studentDetails?.coordinator.coordinatorId || 'N/A'}</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Logout Button */}
       <div style={{ 
@@ -243,9 +187,15 @@ export default function StudentSideNav({ studentDetails, onLogout }: StudentSide
           <span style={{ 
             fontSize: '20px', 
             marginRight: isCollapsed ? '0' : '12px',
-            filter: 'grayscale(100%) brightness(0) invert(1)' // Black and white icon
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            🚪
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16,17 21,12 16,7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
           </span>
           {!isCollapsed && <span style={{ fontWeight: '500' }}>Logout</span>}
         </button>
