@@ -98,27 +98,41 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       const reports = await repResp.json()
       const weekFiltered = Array.isArray(reports) && selectedWeek ? reports.filter((r: any) => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
       const text = (Array.isArray(weekFiltered) ? weekFiltered : []).map((r: any) => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
+      
+      // Calculate local scores first
       const { scores: localScores, hitsPerPO } = extractHighlights(text)
-      setScores(localScores)
-      const items = localScores.map((s, idx) => ({ idx, score: s, hits: hitsPerPO[idx] || [] }))
-        .filter(i => i.score > 0)
-        .sort((a, b) => b.score - a.score)
-      setBullets(items)
-
+      
       // Fetch contextual summary (hybrid, database-backed, week-scoped)
       const sumResp = await fetch(`${base}/api/summary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section, week: selectedWeek })
       })
+      
+      let finalScores = localScores
+      let finalSummary = text ? text.slice(0, 240) : 'No data available'
+      
       if (sumResp.ok) {
         const s = await sumResp.json()
-        if (s?.summary) setSummary(s.summary)
-        if (Array.isArray(s?.keywordScores) && s.keywordScores.length === 15) setScores(s.keywordScores)
+        if (s?.summary) finalSummary = s.summary
+        if (Array.isArray(s?.keywordScores) && s.keywordScores.length === 15) {
+          finalScores = s.keywordScores
+        }
       }
+      
+      // Set scores and summary
+      setScores(finalScores)
+      setSummary(finalSummary)
+      
+      // Calculate bullets from FINAL scores
+      const items = finalScores.map((s, idx) => ({ idx, score: s, hits: hitsPerPO[idx] || [] }))
+        .filter(i => i.score > 0)
+        .sort((a, b) => b.score - a.score)
+      setBullets(items)
     } catch (e: any) {
       setError(e.message || 'Failed to analyze')
       setBullets([])
+      setScores(Array.from({ length: 15 }, () => 0))
     } finally {
       setLoading(false)
     }
@@ -147,14 +161,33 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         ))}
         {bullets.length === 0 && <li>No PO matched.</li>}
       </ul>
-      {chartData.some(d => d.value > 0) && (
-        <div style={{ width: '100%', height: 400, marginTop: 24, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', padding: '16px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
-              <XAxis dataKey="po" interval={0} angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11, fill: '#000000' }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#000000' }} width={50} />
-              <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                <LabelList dataKey="value" position="top" formatter={(v: any) => v > 0 ? `${v}%` : ''} fill="#000000" style={{ fontSize: 12, fontWeight: 600 }} />
+      {!loading && chartData.some(d => d.value > 0) && (
+        <div style={{ width: '100%', height: 450, marginTop: 24, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', padding: '20px' }}>
+          <h4 style={{ margin: '0 0 16px 0', color: '#000000', fontSize: '16px' }}>Program Outcome Analysis</h4>
+          <ResponsiveContainer width="100%" height="90%">
+            <BarChart data={chartData} margin={{ top: 30, right: 30, left: 20, bottom: 100 }}>
+              <XAxis 
+                dataKey="po" 
+                interval={0} 
+                angle={-45} 
+                textAnchor="end" 
+                height={120} 
+                tick={{ fontSize: 10, fill: '#000000' }} 
+              />
+              <YAxis 
+                domain={[0, 100]} 
+                tick={{ fontSize: 12, fill: '#000000' }} 
+                width={50}
+                label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#000000' } }}
+              />
+              <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} maxBarSize={50}>
+                <LabelList 
+                  dataKey="value" 
+                  position="top" 
+                  formatter={(v: any) => v > 0 ? `${v}%` : ''} 
+                  fill="#000000" 
+                  style={{ fontSize: 11, fontWeight: 700 }} 
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>

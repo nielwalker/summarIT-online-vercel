@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       ['best practice', 'standard', 'policy', 'method', 'procedure', 'protocol'],
       ['analyze', 'analysis', 'problem', 'root cause', 'diagnose', 'troubleshoot'],
       ['user need', 'requirement', 'stakeholder', 'ux', 'usability'],
-      ['design', 'implement', 'evaluate', 'build', 'develop', 'test'],
+      ['design', 'implement', 'evaluate', 'build', 'develop', 'test', 'setup', 'configure', 'configuration', 'install'],
       ['safety', 'health', 'environment', 'security', 'ethical'],
       ['tool', 'framework', 'library', 'technology', 'platform'],
       ['team', 'collaborat', 'leader', 'group'],
@@ -41,8 +41,21 @@ export async function POST(req: NextRequest) {
       ['research', 'experiment', 'study', 'investigation'],
       ['filipino', 'heritage', 'culture', 'tradition']
     ]
+    
     const lower = text.toLowerCase()
-    const counts = KEYWORD_SETS.map(set => set.reduce((acc, kw) => acc + (lower.includes(kw) ? 1 : 0), 0))
+    const counts = KEYWORD_SETS.map(set => {
+      let count = 0
+      for (const keyword of set) {
+        if (lower.includes(keyword)) { count++; continue }
+        const words = keyword.split(' ')
+        if (words.length > 1 && words.some(w => lower.includes(w))) { count++; continue }
+        const stem = keyword.replace(/(ing|ed|es|s)$/,'')
+        if (stem.length > 3 && lower.includes(stem)) { count++; continue }
+        const variations = [keyword + 's', keyword + 'ing', keyword + 'ed', keyword.replace(/s$/,'')]
+        if (variations.some(v => lower.includes(v))) { count++; continue }
+      }
+      return count
+    })
     const total = counts.reduce((a, b) => a + b, 0)
     const keywordScores = counts.map(c => total > 0 ? Math.round((c / total) * 100) : 0)
 
