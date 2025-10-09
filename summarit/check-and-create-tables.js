@@ -75,7 +75,6 @@ async function checkAndCreateTables() {
           "date" TEXT NOT NULL,
           "hours" INTEGER NOT NULL,
           "activities" TEXT NOT NULL,
-          "score" INTEGER NOT NULL,
           "learnings" TEXT NOT NULL
         )
       `;

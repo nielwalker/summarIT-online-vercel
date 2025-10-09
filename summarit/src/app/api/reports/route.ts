@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
       date: data.date || new Date().toISOString().split('T')[0],
       hours: data.hours || 0,
       activities: data.activities || '',
-      score: data.score || 0,
       learnings: data.learnings || ''
     })
     
