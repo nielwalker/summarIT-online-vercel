@@ -12,6 +12,9 @@ export function getApiBaseUrl(): string {
 
 export function getApiUrl(endpoint: string): string {
   const base = getApiBaseUrl()
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  return `${base}${cleanEndpoint}`
+  // Remove leading slash from endpoint to avoid double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+  const fullUrl = `${base}/${cleanEndpoint}`
+  console.log('API URL Debug:', { base, endpoint, cleanEndpoint, fullUrl })
+  return fullUrl
 }
