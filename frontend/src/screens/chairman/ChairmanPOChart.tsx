@@ -60,7 +60,7 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
       const resp = await fetch(`${base}/api/reports?section=${encodeURIComponent(section)}`)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
-      const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      const filtered = selectedWeek ? reports.filter(r => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
       const text = (filtered || []).map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       const localScores = extractHighlights(text)
       setScores(localScores)

@@ -10,7 +10,7 @@ const corsHeaders = {
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders as Record<string, string> })
 }
-
+ 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null) as any

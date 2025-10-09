@@ -74,7 +74,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       const repResp = await fetch(repUrl)
       if (!repResp.ok) throw new Error(`Failed to fetch reports: ${repResp.status}`)
       const reports = await repResp.json()
-      const weekFiltered = Array.isArray(reports) && selectedWeek ? reports.filter((r: any) => (r.weekNumber || 1) === selectedWeek) : reports
+      const weekFiltered = Array.isArray(reports) && selectedWeek ? reports.filter((r: any) => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
       const text = (Array.isArray(weekFiltered) ? weekFiltered : []).map((r: any) => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       const { scores: localScores, hitsPerPO } = extractHighlights(text)
       setScores(localScores)
