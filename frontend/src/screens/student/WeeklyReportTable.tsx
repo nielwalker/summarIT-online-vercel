@@ -216,82 +216,64 @@ export function WeeklyReportTable() {
   return (
     <div style={{ marginTop: 16 }}>
       {/* Section dropdown removed; section is fixed from login */}
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 8 }}>
-        {Array.from({ length: 13 }, (_, i) => i + 1).map((w) => (
-          <button 
-            key={w} 
-            onClick={() => setCurrentWeek(w)} 
-            style={{ 
-              fontWeight: currentWeek === w ? 700 : 400,
-              padding: '6px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '4px',
-              backgroundColor: currentWeek === w ? '#3b82f6' : 'white',
-              color: currentWeek === w ? 'white' : '#000000',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              minWidth: '60px'
-            }}
-          >
-            Week {w}
-          </button>
-        ))}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingBottom: 8 }}>
+        <label style={{ color: '#000000', fontWeight: 500 }}>Week:</label>
+        <select 
+          value={currentWeek}
+          onChange={(e) => setCurrentWeek(Number(e.target.value))}
+          style={{ padding: '6px 12px', border: '1px solid #d1d5db', borderRadius: 4, backgroundColor: 'white', color: '#000000' }}
+        >
+          {Array.from({ length: 13 }, (_, i) => i + 1).map((w) => (
+            <option key={w} value={w}>Week {w}</option>
+          ))}
+        </select>
       </div>
-      <div style={{ marginTop: 12 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minHeight: '400px' }}>
-          <thead>
-            <tr style={{ height: '50px' }}>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>Date</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>No. of Hours</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>Activities/Task</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>Score</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>New Learnings</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>Status</th>
-              <th style={{ textAlign: 'left', borderBottom: '1px solid #ddd', padding: '12px 8px', backgroundColor: '#f8f9fa', color: '#000000' }}>Action</th>
+      <div className="table-responsive" style={{ marginTop: 12 }}>
+        <table className="table table-striped table-bordered align-middle" style={{ minHeight: '400px' }}>
+          <thead className="table-light">
+            <tr>
+              <th>Date</th>
+              <th>No. of Hours</th>
+              <th>Activities/Task</th>
+              <th>New Learnings</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {weeks[currentWeek - 1].map((row, rowIdx) => (
-              <tr key={rowIdx} style={{ height: '60px' }}>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>
+              <tr key={rowIdx}>
+                <td>
                   <input 
                     type="date" 
                     value={row.date} 
                     onChange={(e) => updateField(rowIdx, 'date', e.target.value)}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                    className="form-control"
                   />
                 </td>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>
+                <td>
                   <input 
                     type="number" 
                     value={row.hours} 
                     onChange={(e) => updateField(rowIdx, 'hours', e.target.value === '' ? '' : Number(e.target.value))}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
+                    className="form-control"
                   />
                 </td>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>
+                <td>
                   <input 
-                    style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }} 
+                    className="form-control" 
                     value={row.activities} 
                     onChange={(e) => updateField(rowIdx, 'activities', e.target.value)} 
                   />
                 </td>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>
+                <td>
                   <input 
-                    type="number" 
-                    value={row.score} 
-                    onChange={(e) => updateField(rowIdx, 'score', e.target.value === '' ? '' : Number(e.target.value))}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
-                  />
-                </td>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb' }}>
-                  <input 
-                    style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }} 
+                    className="form-control" 
                     value={row.learnings} 
                     onChange={(e) => updateField(rowIdx, 'learnings', e.target.value)} 
                   />
                 </td>
-                    <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                    <td className="text-center">
                       <span style={{ 
                         color: row.submitted ? '#059669' : '#dc2626',
                         fontWeight: '600'
@@ -299,35 +281,19 @@ export function WeeklyReportTable() {
                         {row.submitted ? 'Submitted' : 'Missing'}
                       </span>
                     </td>
-                <td style={{ padding: '12px 8px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <td className="text-center">
+                  <div className="d-flex gap-2 justify-content-center">
                     {row.submitted ? (
                       <>
                         <button 
                           onClick={() => enableEdit(rowIdx)}
-                          style={{
-                            padding: '6px 12px',
-                            backgroundColor: '#f59e0b',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '12px'
-                          }}
+                          className="btn btn-warning btn-sm"
                         >
                           Edit
                         </button>
                         <button 
                           onClick={() => deleteReport(rowIdx)}
-                          style={{
-                            padding: '6px 12px',
-                            backgroundColor: '#dc2626',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '12px'
-                          }}
+                          className="btn btn-danger btn-sm"
                         >
                           Delete
                         </button>
@@ -335,15 +301,7 @@ export function WeeklyReportTable() {
                     ) : (
                       <button 
                         onClick={() => submitWeek(rowIdx)} 
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
+                        className="btn btn-primary btn-sm"
                       >
                         Submit
                       </button>
