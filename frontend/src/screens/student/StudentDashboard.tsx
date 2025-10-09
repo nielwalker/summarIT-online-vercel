@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { WeeklyReportTable } from './WeeklyReportTable'
 import DashboardShell from '../../components/DashboardShell'
+import StudentSideNav from '../../components/StudentSideNav'
 import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '../../utils/api'
 
@@ -59,113 +60,92 @@ export default function StudentDashboard() {
     fetchStudentDetails()
   }, [])
   
-  return (
-    <DashboardShell>
-      <div style={{ 
-        width: '100vw', 
-        height: '100vh',
-        padding: '0',
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: 'white',
-        borderRadius: '0',
-        boxShadow: 'none',
-        overflow: 'hidden',
-        position: 'fixed',
-        top: '0',
-        left: '0'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, padding: '20px 20px 0 20px' }}>
-          <h2 style={{ margin: 0, color: '#000000' }}>Student Dashboard</h2>
-          <button 
-            onClick={() => {
-              try {
-                localStorage.removeItem('token')
-                localStorage.removeItem('role')
-                localStorage.removeItem('userName')
-                localStorage.removeItem('studentId')
-                localStorage.removeItem('section')
-              } catch {}
-              navigate('/')
-            }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#dc2626',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Logout
-          </button>
-        </div>
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('token')
+      localStorage.removeItem('role')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('studentId')
+      localStorage.removeItem('section')
+    } catch {}
+    navigate('/')
+  }
 
-        <div style={{ padding: '0 20px 20px 20px', height: '100%', overflowY: 'auto' }}>
-          {loading && <div style={{ marginBottom: 16, color: '#666' }}>Loading student information...</div>}
-          
-          {error && <div style={{ marginBottom: 16, color: 'crimson' }}>Error: {error}</div>}
-          
-          {studentDetails && studentDetails.student && (
-          <div style={{ 
-            marginBottom: 24, 
-            padding: 16, 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: 8, 
-            border: '1px solid #e5e7eb' 
-          }}>
-            <h3 style={{ margin: '0 0 12px 0', color: '#000000' }}>Student Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, color: '#000000', marginBottom: '16px' }}>
-              <div>
-                <strong>Name:</strong> {studentDetails.student.userName || 'Unknown'}
-              </div>
-              <div>
-                <strong>Student ID:</strong> {studentDetails.student.studentId || 'Unknown'}
-              </div>
-              <div>
-                <strong>Section:</strong> {studentDetails.student.section || 'Unknown'}
-              </div>
-              <div>
-                <strong>Company:</strong> {studentDetails.student.companyName || 'Not assigned'}
-              </div>
-              <div>
-                <strong>Coordinator:</strong> {studentDetails.coordinator?.userName || 'Not assigned'}
-              </div>
-            </div>
-            
-            {/* Company Details Section */}
-            {studentDetails.company && (
-              <div style={{ 
-                marginTop: '16px', 
-                padding: '12px', 
-                backgroundColor: '#fef3c7', 
-                borderRadius: '6px', 
-                border: '1px solid #f59e0b',
-                textAlign: 'left'
-              }}>
-                <h4 style={{ margin: '0 0 8px 0', color: '#000000', fontSize: '14px' }}>Company Details</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, fontSize: '13px', color: '#000000' }}>
-                  <div>
-                    <strong>Address:</strong> {studentDetails.company.address || 'N/A'}
-                  </div>
-                  <div>
-                    <strong>Supervisor:</strong> {studentDetails.company.supervisor || 'N/A'}
-                  </div>
-                  <div>
-                    <strong>Contact:</strong> {studentDetails.company.contactNumber || 'N/A'}
-                  </div>
-                </div>
-              </div>
-            )}
+  return (
+    <div style={{ 
+      width: '100vw', 
+      height: '100vh',
+      padding: '0',
+      boxSizing: 'border-box',
+      display: 'flex',
+      backgroundColor: 'white',
+      borderRadius: '0',
+      boxShadow: 'none',
+      overflow: 'hidden',
+      position: 'fixed',
+      top: '0',
+      left: '0'
+    }}>
+      {/* Side Navigation */}
+      <StudentSideNav studentDetails={studentDetails} onLogout={handleLogout} />
+      
+      {/* Main Content */}
+      <div style={{ 
+        flex: 1, 
+        marginLeft: '64px', // Default collapsed width
+        height: '100vh',
+        overflowY: 'auto',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{ padding: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <h1 style={{ 
+              margin: '0 0 8px 0', 
+              color: '#1f2937', 
+              fontSize: '28px',
+              fontWeight: 'bold'
+            }}>
+              Student Dashboard
+            </h1>
+            <p style={{ 
+              margin: '0', 
+              color: '#6b7280', 
+              fontSize: '16px'
+            }}>
+              Welcome back, {studentDetails?.student.userName || 'Student'}!
+            </p>
           </div>
+
+          {loading && (
+            <div style={{ 
+              marginBottom: '16px', 
+              color: '#6b7280',
+              padding: '12px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb'
+            }}>
+              Loading student information...
+            </div>
+          )}
+          
+          {error && (
+            <div style={{ 
+              marginBottom: '16px', 
+              color: '#dc2626',
+              padding: '12px',
+              backgroundColor: '#fef2f2',
+              borderRadius: '8px',
+              border: '1px solid #fecaca'
+            }}>
+              Error: {error}
+            </div>
           )}
 
           <WeeklyReportTable />
         </div>
       </div>
-    </DashboardShell>
+    </div>
   )
 }
 

@@ -1,5 +1,6 @@
 import ChairmanDashboardPOList from './ChairmanDashboardPOList'
 import DashboardShell from '../../components/DashboardShell'
+import ChairmanSideNav from '../../components/ChairmanSideNav'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '../../utils/api'
@@ -439,130 +440,56 @@ export default function ChairmanDashboard() {
         top: '0',
         left: '0'
       }}>
-        {/* Side Menu */}
-        <div style={{
-          width: '250px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '0',
-          padding: '20px',
-          marginRight: '0',
-          border: 'none',
-          borderRight: '1px solid #e5e7eb',
-          height: '100vh',
-          overflowY: 'auto'
-        }}>
-          <h3 style={{ margin: '0 0 20px 0', color: '#000000', fontSize: '18px' }}>Navigation</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button
-              onClick={() => setActiveMenu('overview')}
-              style={{
-                padding: '12px 16px',
-                backgroundColor: activeMenu === 'overview' ? '#3b82f6' : 'transparent',
-                color: activeMenu === 'overview' ? 'white' : '#000000',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                textAlign: 'left',
-                transition: 'all 0.2s'
-              }}
-            >
-              📊 Overview & Analysis
-            </button>
-            <button
-              onClick={() => setActiveMenu('student')}
-              style={{
-                padding: '12px 16px',
-                backgroundColor: activeMenu === 'student' ? '#3b82f6' : 'transparent',
-                color: activeMenu === 'student' ? 'white' : '#000000',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                textAlign: 'left',
-                transition: 'all 0.2s'
-              }}
-            >
-              👨‍🎓 Student Registration
-            </button>
-            <button
-              onClick={() => setActiveMenu('coordinator')}
-              style={{
-                padding: '12px 16px',
-                backgroundColor: activeMenu === 'coordinator' ? '#3b82f6' : 'transparent',
-                color: activeMenu === 'coordinator' ? 'white' : '#000000',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                textAlign: 'left',
-                transition: 'all 0.2s'
-              }}
-            >
-              👨‍🏫 Coordinator Registration
-            </button>
-            <button
-              onClick={() => setActiveMenu('company')}
-              style={{
-                padding: '12px 16px',
-                backgroundColor: activeMenu === 'company' ? '#3b82f6' : 'transparent',
-                color: activeMenu === 'company' ? 'white' : '#000000',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                textAlign: 'left',
-                transition: 'all 0.2s'
-              }}
-            >
-              🏢 Company Registration
-            </button>
-          </div>
-        </div>
+        {/* Side Navigation */}
+        <ChairmanSideNav 
+          onLogout={() => {
+            try {
+              localStorage.removeItem('token')
+              localStorage.removeItem('role')
+              localStorage.removeItem('userName')
+              localStorage.removeItem('studentId')
+              localStorage.removeItem('section')
+            } catch {}
+            navigate('/')
+          }}
+          activeMenu={activeMenu}
+          setActiveMenu={setActiveMenu}
+        />
 
         {/* Main Content Area */}
         <div style={{
           flex: 1,
+          marginLeft: '64px', // Default collapsed width
           display: 'flex',
           flexDirection: 'column',
           height: '100vh',
           overflowY: 'auto',
-          padding: '20px'
+          padding: '20px',
+          backgroundColor: '#f8fafc'
         }}>
           {/* Header */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '20px',
-          padding: '0 10px'
-        }}>
-            <h2 style={{ margin: 0, color: '#000000' }}>
+          <div style={{ 
+            marginBottom: '20px'
+          }}>
+            <h1 style={{ 
+              margin: '0 0 8px 0', 
+              color: '#1f2937', 
+              fontSize: '28px',
+              fontWeight: 'bold'
+            }}>
               {activeMenu === 'overview' && 'Chairman Dashboard - Section Analysis'}
               {activeMenu === 'student' && 'Student Registration'}
               {activeMenu === 'coordinator' && 'Coordinator Registration'}
               {activeMenu === 'company' && 'Company Registration'}
-            </h2>
-          <button 
-            onClick={() => {
-              try {
-                localStorage.removeItem('token')
-                localStorage.removeItem('role')
-                localStorage.removeItem('userName')
-                localStorage.removeItem('studentId')
-                localStorage.removeItem('section')
-              } catch {}
-              navigate('/')
-            }}
-            className="btn btn-danger"
-          >
-            Logout
-          </button>
-        </div>
+            </h1>
+            <p style={{ 
+              margin: '0', 
+              color: '#6b7280', 
+              fontSize: '16px'
+            }}>
+              Manage students, coordinators, and companies
+            </p>
+          </div>
         
         {msg && (
           <div style={{ 
