@@ -9,6 +9,7 @@ export default function ChairmanDashboard() {
   const navigate = useNavigate()
   const [section, setSection] = useState('IT4R8')
   const [selectedWeek, setSelectedWeek] = useState<number>(1)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [studentId, setStudentId] = useState('')
   const [studentName, setStudentName] = useState('')
   const [selectedCompanyId, setSelectedCompanyId] = useState('')
@@ -454,18 +455,21 @@ export default function ChairmanDashboard() {
           }}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
+          isCollapsed={sidebarCollapsed}
+          setIsCollapsed={setSidebarCollapsed}
         />
 
         {/* Main Content Area */}
         <div style={{
           flex: 1,
-          marginLeft: '64px', // Default collapsed width
+          marginLeft: sidebarCollapsed ? '64px' : '256px', // Dynamic width based on sidebar state
           display: 'flex',
           flexDirection: 'column',
           height: '100vh',
           overflowY: 'auto',
           padding: '20px',
-          backgroundColor: '#f8fafc'
+          backgroundColor: '#f8fafc',
+          transition: 'margin-left 0.2s ease-in-out'
         }}>
           {/* Header */}
           <div style={{ 

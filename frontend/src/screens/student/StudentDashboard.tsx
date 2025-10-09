@@ -27,6 +27,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   useEffect(() => {
     const fetchStudentDetails = async () => {
@@ -106,15 +107,18 @@ export default function StudentDashboard() {
         onLogout={handleLogout} 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
       
       {/* Main Content */}
       <div style={{ 
         flex: 1, 
-        marginLeft: '64px', // Default collapsed width
+        marginLeft: sidebarCollapsed ? '64px' : '256px', // Dynamic width based on sidebar state
         height: '100vh',
         overflowY: 'auto',
-        backgroundColor: '#f8fafc'
+        backgroundColor: '#f8fafc',
+        transition: 'margin-left 0.2s ease-in-out'
       }}>
         {activeTab === 'dashboard' ? (
           <div style={{ padding: '20px' }}>

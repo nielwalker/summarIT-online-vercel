@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 interface StudentSideNavProps {
   onLogout: () => void
   activeTab: string
   setActiveTab: (tab: string) => void
+  isCollapsed: boolean
+  setIsCollapsed: (collapsed: boolean) => void
 }
 
-export default function StudentSideNav({ onLogout, activeTab, setActiveTab }: StudentSideNavProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+export default function StudentSideNav({ onLogout, activeTab, setActiveTab, isCollapsed, setIsCollapsed }: StudentSideNavProps) {
 
   // Immediate hover response
   useEffect(() => {

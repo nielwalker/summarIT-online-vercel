@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 
 interface ChairmanSideNavProps {
   onLogout: () => void
   activeMenu: 'overview' | 'student' | 'coordinator' | 'company'
   setActiveMenu: (menu: 'overview' | 'student' | 'coordinator' | 'company') => void
+  isCollapsed: boolean
+  setIsCollapsed: (collapsed: boolean) => void
 }
 
-export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu }: ChairmanSideNavProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu, isCollapsed, setIsCollapsed }: ChairmanSideNavProps) {
 
   // Immediate hover response
   useEffect(() => {
