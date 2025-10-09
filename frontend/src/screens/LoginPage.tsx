@@ -93,8 +93,8 @@ export default function LoginPage() {
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         padding: '48px 40px'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '180px', height: 'auto' }} />
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '240px', height: 'auto' }} />
         </div>
         
         <form onSubmit={handleLogin}>
@@ -112,8 +112,11 @@ export default function LoginPage() {
           
           <div style={{ marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', background: 'white' }}>
-              <div style={{ width: '44px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                <span className="bi bi-person" aria-hidden="true">👤</span>
+              <div style={{ width: '44px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
               </div>
               <input
                 style={{
@@ -134,8 +137,12 @@ export default function LoginPage() {
 
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', background: 'white' }}>
-              <div style={{ width: '44px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                <span aria-hidden="true">🔒</span>
+              <div style={{ width: '44px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <circle cx="12" cy="16" r="1"></circle>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
               </div>
               <input
                 style={{
