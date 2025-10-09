@@ -36,7 +36,7 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
       ['best practice', 'standard', 'policy', 'method', 'procedure', 'protocol'],
       ['analyze', 'analysis', 'problem', 'root cause', 'diagnose', 'troubleshoot'],
       ['user need', 'requirement', 'stakeholder', 'ux', 'usability'],
-      ['design', 'implement', 'evaluate', 'build', 'develop', 'test'],
+      ['design', 'implement', 'evaluate', 'build', 'develop', 'test', 'setup', 'configure', 'configuration', 'install'],
       ['safety', 'health', 'environment', 'security', 'ethical'],
       ['tool', 'framework', 'library', 'technology', 'platform'],
       ['team', 'collaborat', 'leader', 'group'],
@@ -48,7 +48,19 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
       ['research', 'experiment', 'study', 'investigation'],
       ['filipino', 'heritage', 'culture', 'tradition'],
     ]
-    const counts = keywordSets.map(set => set.reduce((acc, kw) => acc + (lower.includes(kw) ? 1 : 0), 0))
+    const counts = keywordSets.map((set) => {
+      let count = 0
+      for (const kw of set) {
+        if (lower.includes(kw)) { count++; continue }
+        const words = kw.split(' ')
+        if (words.length > 1 && words.some(w => lower.includes(w))) { count++; continue }
+        const stem = kw.replace(/(ing|ed|es|s)$/,'')
+        if (stem.length > 3 && lower.includes(stem)) { count++; continue }
+        const variations = [kw + 's', kw + 'ing', kw + 'ed', kw.replace(/s$/,'')]
+        if (variations.some(v => lower.includes(v))) { count++; continue }
+      }
+      return count
+    })
     const total = counts.reduce((a, b) => a + b, 0)
     return counts.map(c => total > 0 ? Math.round((c / total) * 100) : 0)
   }

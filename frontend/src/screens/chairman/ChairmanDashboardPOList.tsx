@@ -147,17 +147,19 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         ))}
         {bullets.length === 0 && <li>No PO matched.</li>}
       </ul>
-      <div style={{ width: '100%', height: 360, marginTop: 16, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-            <XAxis dataKey="po" interval={0} angle={-90} tickMargin={12} height={80} tick={{ fontSize: 10, fill: '#000000' }} />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#000000' }} width={40} />
-            <Bar dataKey="value" fill="#3b82f6" radius={[2, 2, 0, 0]} maxBarSize={50}>
-              <LabelList dataKey="value" position="insideTop" formatter={(v: any) => `${v}%`} fill="#ffffff" style={{ fontSize: 12 }} />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {chartData.some(d => d.value > 0) && (
+        <div style={{ width: '100%', height: 400, marginTop: 24, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', padding: '16px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+              <XAxis dataKey="po" interval={0} angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11, fill: '#000000' }} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#000000' }} width={50} />
+              <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                <LabelList dataKey="value" position="top" formatter={(v: any) => v > 0 ? `${v}%` : ''} fill="#000000" style={{ fontSize: 12, fontWeight: 600 }} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   )
 }
