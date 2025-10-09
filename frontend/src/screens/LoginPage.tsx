@@ -77,34 +77,125 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-white py-4">
-      <div className="card shadow-sm" style={{ width: '100%', maxWidth: 480 }}>
-        <div className="card-body">
-          <h2 className="card-title mb-3" style={{ color: '#111827' }}>Welcome</h2>
-          <form onSubmit={handleLogin} className="d-grid gap-2">
-            {error && (
-              <div className="alert alert-danger py-2 mb-2" role="alert">{error}</div>
-            )}
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%)',
+      padding: '20px'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '500px',
+        background: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        padding: '48px 40px'
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{ 
+            fontSize: '32px', 
+            fontWeight: '700', 
+            color: '#1e3a5f',
+            marginBottom: '8px',
+            letterSpacing: '-0.5px'
+          }}>Welcome back</h1>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Please enter log in details below.</p>
+        </div>
+        
+        <form onSubmit={handleLogin}>
+          {error && (
+            <div style={{
+              padding: '12px 16px',
+              background: '#fee2e2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              fontSize: '14px',
+              marginBottom: '20px'
+            }}>{error}</div>
+          )}
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '8px', 
+              color: '#1e293b',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}>User ID</label>
             <input
-              className="form-control"
-              placeholder="User ID"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'all 0.2s',
+                boxSizing: 'border-box'
+              }}
+              placeholder="Enter your ID"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               disabled={loading}
+              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
             />
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '8px', 
+              color: '#1e293b',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}>Password</label>
             <input
-              className="form-control"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'all 0.2s',
+                boxSizing: 'border-box'
+              }}
               type="password"
-              placeholder="Password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
             />
-            <button type="submit" disabled={loading} className="btn btn-primary mt-1 w-100">
-              {loading ? 'Logging in...' : 'Log in'}
-            </button>
-          </form>
-        </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: loading ? '#94a3b8' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+            }}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#2563eb')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#3b82f6')}
+          >
+            {loading ? 'Logging in...' : 'Log In'}
+          </button>
+        </form>
       </div>
     </div>
   )

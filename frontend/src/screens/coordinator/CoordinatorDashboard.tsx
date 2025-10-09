@@ -204,14 +204,25 @@ export default function CoordinatorDashboard() {
           width: '100%',
           maxWidth: '900px'
         }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: '500', color: '#000000' }}>Section:</span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Section:</span>
             <select 
               value={section} 
               onChange={(e) => { setSection(e.target.value); setStudentId(''); setSelectedStudent(null); setCompanyDetails(null); }}
-              className="form-select"
               style={{
-                minHeight: '38px',
+                padding: '8px 32px 8px 12px',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                color: '#1e293b',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                outline: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
                 minWidth: '140px'
               }}
             >
@@ -221,18 +232,27 @@ export default function CoordinatorDashboard() {
               ))}
             </select>
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontWeight: '500', color: '#000000' }}>Student:</span>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Student:</span>
             <select 
               value={studentId} 
               onChange={(e) => handleStudentChange(e.target.value)}
               disabled={loading}
-              className="form-select"
               style={{
+                padding: '8px 32px 8px 12px',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
                 backgroundColor: loading ? '#f3f4f6' : 'white',
-                color: loading ? '#6b7280' : '#000000',
-                minWidth: '200px',
-                cursor: loading ? 'not-allowed' : 'pointer'
+                color: loading ? '#6b7280' : '#1e293b',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                outline: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 12px center',
+                minWidth: '200px'
               }}
             >
               <option value="">
@@ -243,7 +263,28 @@ export default function CoordinatorDashboard() {
               ))}
             </select>
           </label>
-          <button onClick={refreshStudents} disabled={loading} className={`btn btn-primary btn-sm ${loading ? 'disabled' : ''}`}>🔄 {loading ? 'Loading...' : 'Refresh'}</button>
+          <button 
+            onClick={refreshStudents} 
+            disabled={loading}
+            style={{
+              padding: '8px 16px',
+              background: loading ? '#94a3b8' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#2563eb')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#3b82f6')}
+          >
+            🔄 {loading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
         
         {error && (

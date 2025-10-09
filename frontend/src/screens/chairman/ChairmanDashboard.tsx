@@ -610,17 +610,25 @@ export default function ChairmanDashboard() {
                 maxWidth: '600px',
                 justifyContent: 'center'
               }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontWeight: '500', color: '#000000' }}>Section:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Section:</span>
                   <select 
                     value={section} 
                     onChange={(e) => setSection(e.target.value)}
                     style={{
-                      padding: '6px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px',
+                      padding: '8px 32px 8px 12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
                       backgroundColor: 'white',
-                      color: '#000000'
+                      color: '#1e293b',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      appearance: 'none',
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center'
                     }}
                   >
                     {coordinatorSections.map(s => (
@@ -630,17 +638,25 @@ export default function ChairmanDashboard() {
                     ))}
                   </select>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Week:</span>
                   <select 
                     value={selectedWeek} 
                     onChange={(e) => setSelectedWeek(Number(e.target.value))}
                     style={{
-                      padding: '6px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px',
+                      padding: '8px 32px 8px 12px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
                       backgroundColor: 'white',
-                      color: '#000000'
+                      color: '#1e293b',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      appearance: 'none',
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center'
                     }}
                   >
                     {ALL_WEEKS.map(week => (

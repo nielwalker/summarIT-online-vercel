@@ -216,84 +216,217 @@ export function WeeklyReportTable() {
   return (
     <div style={{ marginTop: 16 }}>
       {/* Section dropdown removed; section is fixed from login */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', paddingBottom: 8 }}>
-        <label style={{ color: '#000000', fontWeight: 500 }}>Week:</label>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', paddingBottom: 16, marginBottom: 16 }}>
+        <label style={{ color: '#1e293b', fontWeight: 600, fontSize: '14px' }}>Week:</label>
         <select 
           value={currentWeek}
           onChange={(e) => setCurrentWeek(Number(e.target.value))}
-          style={{ padding: '6px 12px', border: '1px solid #d1d5db', borderRadius: 4, backgroundColor: 'white', color: '#000000' }}
+          style={{ 
+            padding: '8px 32px 8px 12px', 
+            border: '1px solid #cbd5e1', 
+            borderRadius: '8px', 
+            backgroundColor: 'white', 
+            color: '#1e293b',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            outline: 'none',
+            appearance: 'none',
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center'
+          }}
         >
           {Array.from({ length: 13 }, (_, i) => i + 1).map((w) => (
             <option key={w} value={w}>Week {w}</option>
           ))}
         </select>
       </div>
-      <div className="table-responsive" style={{ marginTop: 12 }}>
-        <table className="table table-striped table-bordered align-middle" style={{ minHeight: '400px' }}>
-          <thead className="table-light">
-            <tr>
-              <th>Date</th>
-              <th>No. of Hours</th>
-              <th>Activities/Task</th>
-              <th>New Learnings</th>
-              <th>Status</th>
-              <th>Action</th>
+      <div style={{ 
+        border: '1px solid #e2e8f0', 
+        borderRadius: '12px', 
+        overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <table style={{ 
+          width: '100%', 
+          borderCollapse: 'collapse',
+          fontSize: '14px'
+        }}>
+          <thead>
+            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'left', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>Date</th>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'left', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>No. of Hours</th>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'left', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>Activities/Task</th>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'left', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>New Learnings</th>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'center', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>Status</th>
+              <th style={{ 
+                padding: '16px 12px', 
+                textAlign: 'center', 
+                fontWeight: '600', 
+                color: '#475569',
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {weeks[currentWeek - 1].map((row, rowIdx) => (
-              <tr key={rowIdx}>
-                <td>
+              <tr key={rowIdx} style={{ 
+                borderBottom: '1px solid #e2e8f0',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                <td style={{ padding: '12px' }}>
                   <input 
                     type="date" 
                     value={row.date} 
                     onChange={(e) => updateField(rowIdx, 'date', e.target.value)}
-                    className="form-control"
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
                   />
                 </td>
-                <td>
+                <td style={{ padding: '12px' }}>
                   <input 
                     type="number" 
                     value={row.hours} 
                     onChange={(e) => updateField(rowIdx, 'hours', e.target.value === '' ? '' : Number(e.target.value))}
-                    className="form-control"
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
                   />
                 </td>
-                <td>
+                <td style={{ padding: '12px' }}>
                   <input 
-                    className="form-control" 
                     value={row.activities} 
                     onChange={(e) => updateField(rowIdx, 'activities', e.target.value)} 
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
                   />
                 </td>
-                <td>
+                <td style={{ padding: '12px' }}>
                   <input 
-                    className="form-control" 
                     value={row.learnings} 
                     onChange={(e) => updateField(rowIdx, 'learnings', e.target.value)} 
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
                   />
                 </td>
-                    <td className="text-center">
-                      <span style={{ 
-                        color: row.submitted ? '#059669' : '#dc2626',
-                        fontWeight: '600'
-                      }}>
-                        {row.submitted ? 'Submitted' : 'Missing'}
-                      </span>
-                    </td>
-                <td className="text-center">
-                  <div className="d-flex gap-2 justify-content-center">
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                  <span style={{ 
+                    display: 'inline-block',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    background: row.submitted ? '#dcfce7' : '#fee2e2',
+                    color: row.submitted ? '#166534' : '#991b1b'
+                  }}>
+                    {row.submitted ? 'Submitted' : 'Missing'}
+                  </span>
+                </td>
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                     {row.submitted ? (
                       <>
                         <button 
                           onClick={() => enableEdit(rowIdx)}
-                          className="btn btn-warning btn-sm"
+                          style={{
+                            padding: '6px 14px',
+                            background: '#f59e0b',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#d97706'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = '#f59e0b'}
                         >
                           Edit
                         </button>
                         <button 
                           onClick={() => deleteReport(rowIdx)}
-                          className="btn btn-danger btn-sm"
+                          style={{
+                            padding: '6px 14px',
+                            background: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
                         >
                           Delete
                         </button>
@@ -301,7 +434,19 @@ export function WeeklyReportTable() {
                     ) : (
                       <button 
                         onClick={() => submitWeek(rowIdx)} 
-                        className="btn btn-primary btn-sm"
+                        style={{
+                          padding: '6px 14px',
+                          background: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#2563eb'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#3b82f6'}
                       >
                         Submit
                       </button>
