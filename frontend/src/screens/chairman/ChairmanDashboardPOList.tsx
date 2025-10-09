@@ -52,11 +52,11 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
     ]
 
     const hitsPerPO: string[][] = keywordSets.map(() => [])
-    const counts = keywordSets.map(set => {
+    const counts = keywordSets.map((set, idx) => {
       let count = 0
       const found = new Set<string>()
       set.forEach(kw => { if (lower.includes(kw)) { count++; found.add(kw) } })
-      hitsPerPO[hitsPerPO.length - (keywordSets.length - keywordSets.indexOf(set))] = Array.from(found)
+      hitsPerPO[idx] = Array.from(found)
       return count
     })
     const total = counts.reduce((a, b) => a + b, 0)
@@ -83,7 +83,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         .sort((a, b) => b.score - a.score)
       setBullets(items)
 
-      // Fetch contextual summary (hybrid)
+      // Fetch contextual summary (hybrid, database-backed, week-scoped)
       const sumResp = await fetch(`${base}/api/summary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
