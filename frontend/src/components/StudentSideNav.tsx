@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 
 interface StudentDetails {
   student: {
@@ -23,13 +22,12 @@ interface StudentSideNavProps {
 }
 
 export default function StudentSideNav({ studentDetails, onLogout }: StudentSideNavProps) {
-  const navigate = useNavigate()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
 
   // Auto-collapse after 3 seconds of no hover
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: number
     const handleMouseLeave = () => {
       timeoutId = setTimeout(() => setIsCollapsed(true), 3000)
     }

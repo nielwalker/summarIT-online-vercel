@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { WeeklyReportTable } from './WeeklyReportTable'
-import DashboardShell from '../../components/DashboardShell'
 import StudentSideNav from '../../components/StudentSideNav'
 import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '../../utils/api'
@@ -10,19 +9,15 @@ interface StudentDetails {
     studentId: string
     userName: string
     section: string
-    companyName: string | null
+    companyName: string
+    companyAddress: string
+    companySupervisor: string
+    companyContact: string
   }
   coordinator: {
     userName: string
-    sections: string[]
-  } | null
-  company: {
-    id: number
-    name: string
-    address: string
-    supervisor: string
-    contactNumber: string
-  } | null
+    coordinatorId: number
+  }
 }
 
 export default function StudentDashboard() {
@@ -48,7 +43,25 @@ export default function StudentDashboard() {
         }
 
         const data = await response.json()
-        setStudentDetails(data)
+        
+        // Transform the data to match the StudentSideNav interface
+        const transformedData: StudentDetails = {
+          student: {
+            studentId: data.student?.studentId || '',
+            userName: data.student?.userName || '',
+            section: data.student?.section || '',
+            companyName: data.student?.companyName || data.company?.name || '',
+            companyAddress: data.company?.address || '',
+            companySupervisor: data.company?.supervisor || '',
+            companyContact: data.company?.contactNumber || ''
+          },
+          coordinator: {
+            userName: data.coordinator?.userName || '',
+            coordinatorId: data.coordinator?.coordinatorId || 0
+          }
+        }
+        
+        setStudentDetails(transformedData)
       } catch (err) {
         console.error('Error fetching student details:', err)
         setError(err instanceof Error ? err.message : 'Failed to load student details')

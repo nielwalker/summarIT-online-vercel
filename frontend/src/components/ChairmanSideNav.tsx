@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 
 interface ChairmanSideNavProps {
   onLogout: () => void
@@ -8,12 +7,11 @@ interface ChairmanSideNavProps {
 }
 
 export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu }: ChairmanSideNavProps) {
-  const navigate = useNavigate()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Auto-collapse after 3 seconds of no hover
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: number
     const handleMouseLeave = () => {
       timeoutId = setTimeout(() => setIsCollapsed(true), 3000)
     }
