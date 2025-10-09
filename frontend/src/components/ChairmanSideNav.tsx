@@ -110,13 +110,11 @@ export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu, i
         <div style={{
           width: '32px',
           height: '32px',
-          backgroundColor: 'white',
-          borderRadius: '8px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <span style={{ color: '#1e3a8a', fontWeight: 'bold', fontSize: '14px' }}>C</span>
+          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
         </div>
         {!isCollapsed && (
           <div style={{ marginLeft: '12px' }}>
