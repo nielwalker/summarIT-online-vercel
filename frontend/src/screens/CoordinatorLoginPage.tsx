@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { getApiUrl } from '../utils/api'
 
 export default function CoordinatorLoginPage() {
   const navigate = useNavigate()
@@ -15,10 +16,7 @@ export default function CoordinatorLoginPage() {
     // Call backend to validate coordinatorId and fetch sections
     const run = async () => {
       try {
-        const envBase = (import.meta as any).env?.VITE_API_URL
-        const isVercel = typeof window !== 'undefined' && /vercel\.app$/i.test(window.location.hostname)
-        const base = envBase || (isVercel ? 'https://summar-it.vercel.app' : 'http://localhost:3000')
-        const apiUrl = `${base}/api/login`
+        const apiUrl = getApiUrl('/api/login')
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

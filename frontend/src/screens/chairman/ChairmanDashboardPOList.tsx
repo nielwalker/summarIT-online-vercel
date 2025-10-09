@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
+import { getApiUrl } from '../../utils/api'
 
 type Props = {
   section: string
@@ -90,7 +91,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
     try {
       setLoading(true)
       setError(null)
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       // Fetch reports for the section (no student filter)
       const repUrl = `${base}/api/reports?section=${encodeURIComponent(section)}`
       const repResp = await fetch(repUrl)

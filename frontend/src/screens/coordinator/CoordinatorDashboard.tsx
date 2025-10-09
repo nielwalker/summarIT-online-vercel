@@ -2,6 +2,7 @@ import CoordinatorPOList from './CoordinatorPOList'
 import DashboardShell from '../../components/DashboardShell'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getApiUrl } from '../../utils/api'
 
 export default function CoordinatorDashboard() {
   const navigate = useNavigate()
@@ -23,7 +24,7 @@ export default function CoordinatorDashboard() {
       try {
         const coordIdStr = localStorage.getItem('coordinatorId')
         const coordId = coordIdStr ? Number(coordIdStr) : null
-        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const base = getApiUrl('')
         const url = coordId ? `${base}/api/admin?action=getCoordinatorSections&coordinatorId=${coordId}` : `${base}/api/admin?action=getCoordinatorSections`
         const res = await fetch(url)
         if (res.ok) {
@@ -45,7 +46,7 @@ export default function CoordinatorDashboard() {
       setLoading(true)
       setError(null)
       try {
-        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const base = getApiUrl('')
         const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
         
         if (!response.ok) {
@@ -88,7 +89,7 @@ export default function CoordinatorDashboard() {
       
       // Fetch detailed student information including company details
       try {
-        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const base = getApiUrl('')
         const response = await fetch(`${base}/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`)
         
         if (response.ok) {
@@ -110,7 +111,7 @@ export default function CoordinatorDashboard() {
       setLoading(true)
       setError(null)
       try {
-        const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+        const base = getApiUrl('')
         const response = await fetch(`${base}/api/admin?action=listStudents&section=${encodeURIComponent(section)}`)
         
         if (!response.ok) {

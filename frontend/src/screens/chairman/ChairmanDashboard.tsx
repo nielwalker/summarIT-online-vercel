@@ -2,6 +2,7 @@ import ChairmanDashboardPOList from './ChairmanDashboardPOList'
 import DashboardShell from '../../components/DashboardShell'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getApiUrl } from '../../utils/api'
 
 export default function ChairmanDashboard() {
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ export default function ChairmanDashboard() {
   // Load all data for tables
   async function loadAllData() {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       
       // Load all students
       const studentsRes = await fetch(`${base}/api/admin?action=listAllStudents`)
@@ -111,7 +112,7 @@ export default function ChairmanDashboard() {
 
   async function loadCompanies() {
     try {
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin?action=getCompanies`)
       if (res.ok) {
         const data = await res.json()
@@ -124,7 +125,7 @@ export default function ChairmanDashboard() {
 
   async function loadCoordinatorSections() {
     try {
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin?action=getCoordinatorSections`)
       if (res.ok) {
         const data = await res.json()
@@ -145,7 +146,7 @@ export default function ChairmanDashboard() {
       return 
     }
     try {
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,7 +180,7 @@ export default function ChairmanDashboard() {
       return 
     }
     try {
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,7 +213,7 @@ export default function ChairmanDashboard() {
     setMsg('')
     if (!coordName || !coordSection || !coordId) { setMsg('Coordinator ID, name, and section are required'); return }
     try {
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -237,7 +238,7 @@ export default function ChairmanDashboard() {
   // Delete functions
   async function deleteStudent(studentId: string) {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -258,7 +259,7 @@ export default function ChairmanDashboard() {
 
   async function deleteCoordinator(coordinatorId: number) {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -279,7 +280,7 @@ export default function ChairmanDashboard() {
 
   async function deleteCompany(companyId: number) {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -343,7 +344,7 @@ export default function ChairmanDashboard() {
 
   async function updateStudent() {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       // Map selected company id to company name for API (kept compatible with existing endpoint)
       let companyNameToSave: string | undefined = editStudentCompany
       if (editSelectedCompanyId) {
@@ -378,7 +379,7 @@ export default function ChairmanDashboard() {
 
   async function updateCoordinator() {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -407,7 +408,7 @@ export default function ChairmanDashboard() {
 
   async function updateCompany() {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const res = await fetch(`${base}/api/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

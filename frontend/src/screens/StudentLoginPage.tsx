@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getApiUrl } from '../utils/api'
 
 export default function StudentLoginPage() {
   const navigate = useNavigate()
@@ -21,11 +22,8 @@ export default function StudentLoginPage() {
 
     setLoading(true)
     try {
-      const envBase = (import.meta as any).env?.VITE_API_URL
-      const isVercel = typeof window !== 'undefined' && /vercel\.app$/i.test(window.location.hostname)
-      const base = envBase || (isVercel ? 'https://summar-it.vercel.app' : 'http://localhost:3000')
-      console.log('Student login API base:', base)
-      const apiUrl = `${base}/api/login`
+      const apiUrl = getApiUrl('/api/login')
+      console.log('Student login API URL:', apiUrl)
       const body = { studentId, role: 'student', password }
 
       const resp = await fetch(apiUrl, {

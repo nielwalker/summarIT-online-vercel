@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
+import { getApiUrl } from '../../utils/api'
 
 type Props = {
   section: string
@@ -68,7 +69,7 @@ export default function ChairmanPOChart({ section, selectedWeek, title }: Props)
   async function analyze() {
     try {
       setError(null)
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const resp = await fetch(`${base}/api/reports?section=${encodeURIComponent(section)}`)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()

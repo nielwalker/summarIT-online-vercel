@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { getApiUrl } from '../../utils/api'
 
 type Props = {
   section: string
@@ -69,7 +70,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
     try {
       setLoading(true)
       setError(null)
-      const base = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const url = `${base}/api/reports?section=${encodeURIComponent(section)}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`
       const resp = await fetch(url)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)

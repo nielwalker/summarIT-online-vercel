@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { WeeklyReportTable } from './WeeklyReportTable'
 import DashboardShell from '../../components/DashboardShell'
 import { useNavigate } from 'react-router-dom'
+import { getApiUrl } from '../../utils/api'
 
 interface StudentDetails {
   student: {
@@ -39,7 +40,7 @@ export default function StudentDashboard() {
           return
         }
 
-        const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+        const base = getApiUrl('')
         const response = await fetch(`${base}/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(studentId)}`)
         
         if (!response.ok) {

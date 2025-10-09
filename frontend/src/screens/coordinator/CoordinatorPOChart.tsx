@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
+import { getApiUrl } from '../../utils/api';
 
 const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
   { code: "A", label: "PO1", desc: "Apply knowledge of computing, science, and mathematics in solving computing/IT-related problems." },
@@ -233,7 +234,7 @@ export function CoordinatorPOChart({ section, studentId, title, selectedWeek }: 
   // Enhanced week-by-week analysis function
   async function calculateWeekByWeekScores(): Promise<{ scores: number[]; sentence: string }> {
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       console.log('Fetching reports for section:', section, 'studentId:', studentId)
       const response = await fetch(`${base}/api/reports?section=${encodeURIComponent(section || '')}${studentId ? `&studentId=${encodeURIComponent(studentId)}` : ''}`)
       

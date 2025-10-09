@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../store/auth'
+import { getApiUrl } from '../../utils/api'
 
 type WeekEntry = {
   date: string
@@ -62,7 +63,7 @@ export function WeeklyReportTable() {
     }
 
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       console.log('Deleting report with ID:', entry.id)
       
       const res = await fetch(`${base}/api/reports?id=${entry.id}`, {
@@ -99,7 +100,7 @@ export function WeeklyReportTable() {
   async function loadReports() {
     try {
       setLoading(true)
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       const studentId = localStorage.getItem('studentId')
       const section = localStorage.getItem('section')
       
@@ -159,7 +160,7 @@ export function WeeklyReportTable() {
     const entry = weeks[currentWeek - 1][rowIdx]
     console.log('Submit week', currentWeek, 'row', rowIdx + 1, entry)
     try {
-      const base = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+      const base = getApiUrl('')
       
       // Get the actual student name from localStorage or use studentId as fallback
       const actualStudentName = typeof window !== 'undefined' ? 
