@@ -93,15 +93,8 @@ export default function LoginPage() {
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         padding: '48px 40px'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{ 
-            fontSize: '32px', 
-            fontWeight: '700', 
-            color: '#1e3a5f',
-            marginBottom: '8px',
-            letterSpacing: '-0.5px'
-          }}>Welcome back</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Please enter log in details below.</p>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '180px', height: 'auto' }} />
         </div>
         
         <form onSubmit={handleLogin}>
@@ -117,61 +110,49 @@ export default function LoginPage() {
             }}>{error}</div>
           )}
           
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              color: '#1e293b',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>User ID</label>
-            <input
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                fontSize: '15px',
-                outline: 'none',
-                transition: 'all 0.2s',
-                boxSizing: 'border-box'
-              }}
-              placeholder="Enter your ID"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              disabled={loading}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
-            />
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', background: 'white' }}>
+              <div style={{ width: '44px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                <span className="bi bi-person" aria-hidden="true">👤</span>
+              </div>
+              <input
+                style={{
+                  flex: 1,
+                  padding: '12px 14px',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '15px',
+                  background: 'transparent'
+                }}
+                placeholder="ID Number"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              color: '#1e293b',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}>Password</label>
-            <input
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                fontSize: '15px',
-                outline: 'none',
-                transition: 'all 0.2s',
-                boxSizing: 'border-box'
-              }}
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
-            />
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', background: 'white' }}>
+              <div style={{ width: '44px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                <span aria-hidden="true">🔒</span>
+              </div>
+              <input
+                style={{
+                  flex: 1,
+                  padding: '12px 14px',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '15px',
+                  background: 'transparent'
+                }}
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <button 
