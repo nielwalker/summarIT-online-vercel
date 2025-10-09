@@ -13,7 +13,7 @@ export default function LoginPage() {
     setError(null)
     if (!userId) { setError('User ID is required'); return }
     if (!password) { setError('Password is required'); return }
-
+ 
     // Role detection and attempt order
     const looksChairman = /^chairman$/i.test(userId)
     // For any non-chairman input, always try student first then coordinator
