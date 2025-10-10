@@ -168,6 +168,29 @@ export default function StudentDashboard() {
 
             <WeeklyReportTable />
           </div>
+        ) : activeTab === 'company' ? (
+          <div style={{ padding: '20px' }}>
+            <h2 style={{ margin: '0 0 12px 0', color: '#1f2937' }}>Company Information</h2>
+            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, color: '#111827' }}>
+                <div><strong>Name:</strong> {studentDetails?.student.companyName || '—'}</div>
+                <div><strong>Address:</strong> {studentDetails?.student.companyAddress || '—'}</div>
+                <div><strong>Supervisor:</strong> {studentDetails?.student.companySupervisor || '—'}</div>
+                <div><strong>Contact:</strong> {studentDetails?.student.companyContact || '—'}</div>
+              </div>
+            </div>
+          </div>
+        ) : activeTab === 'coordinator' ? (
+          <div style={{ padding: '20px' }}>
+            <h2 style={{ margin: '0 0 12px 0', color: '#1f2937' }}>Coordinator Information</h2>
+            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, color: '#111827' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                <div><strong>Name:</strong> {studentDetails?.coordinator.userName || '—'}</div>
+                <div><strong>Coordinator ID:</strong> {studentDetails?.coordinator.coordinatorId || '—'}</div>
+                <div><strong>Section:</strong> {studentDetails?.student.section || '—'}</div>
+              </div>
+            </div>
+          </div>
         ) : (
           <StudentProfile studentDetails={studentDetails} />
         )}

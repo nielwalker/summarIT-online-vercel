@@ -1,30 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getApiUrl } from '../../utils/api'
 
 type Props = {
   section: string
   studentId?: string
-  selectedWeek?: number | 'overall'
+  selectedWeek?: number
   showMonitoring?: boolean
 }
 
-const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
-  { code: 'A', label: 'PO1', desc: 'Apply knowledge of computing, science, and mathematics.' },
-  { code: 'B', label: 'PO2', desc: 'Use current best practices and standards.' },
-  { code: 'C', label: 'PO3', desc: 'Analyze complex computing/IT-related problems.' },
-  { code: 'D', label: 'PO4', desc: 'Identify and analyze user needs.' },
-  { code: 'E', label: 'PO5', desc: 'Design, implement, and evaluate systems.' },
-  { code: 'F', label: 'PO6', desc: 'Integrate solutions considering public health/safety, etc.' },
-  { code: 'G', label: 'PO7', desc: 'Apply appropriate techniques and tools.' },
-  { code: 'H', label: 'PO8', desc: 'Work effectively in teams and lead when needed.' },
-  { code: 'I', label: 'PO9', desc: 'Assist in creation of effective project plans.' },
-  { code: 'J', label: 'PO10', desc: 'Communicate effectively.' },
-  { code: 'K', label: 'PO11', desc: 'Assess local/global impact of IT.' },
-  { code: 'L', label: 'PO12', desc: 'Act ethically and responsibly.' },
-  { code: 'M', label: 'PO13', desc: 'Pursue independent learning.' },
-  { code: 'N', label: 'PO14', desc: 'Participate in research and development.' },
-  { code: 'O', label: 'PO15', desc: 'Preserve and promote Filipino historical and cultural heritage.' },
-]
+// PO list removed from coordinator view (handled on chairman side only)
 
 export default function CoordinatorPOList({ section, studentId, selectedWeek, showMonitoring = true }: Props) {
   const [loading, setLoading] = useState(false)
@@ -76,9 +60,8 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const reports: any[] = await resp.json()
       console.log('All reports:', reports.length, 'Selected week:', selectedWeek)
       console.log('All week numbers:', reports.map(r => r.weekNumber))
-      const filtered = selectedWeek && selectedWeek !== 'overall' ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
       console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
-      console.log('Is overall?', selectedWeek === 'overall')
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
@@ -92,17 +75,16 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       let finalSummary = 'No submissions found.'
       if (text.trim()) {
         try {
-          console.log('Sending summary request:', { section, studentId, selectedWeek, isOverall: selectedWeek === 'overall' })
+          console.log('Sending summary request:', { section, studentId, selectedWeek })
           const summaryResp = await fetch(getApiUrl('/api/summary'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               section, 
               studentId,
-              week: selectedWeek === 'overall' ? undefined : selectedWeek,
+              week: selectedWeek,
               useGPT: true,
-              analysisType: 'coordinator',
-              isOverall: selectedWeek === 'overall'
+              analysisType: 'coordinator'
             })
           })
           
@@ -115,22 +97,14 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             // Fallback to basic summary
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
             const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
-            finalSummary = rawSummary ? 
-              (selectedWeek === 'overall' ? 
-                `Overall Summary: ${rawSummary}` : 
-                `Week ${selectedWeek || ''} Summary: ${rawSummary}`) : 
-              (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
+            finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
           }
         } catch (e) {
           console.error('Summary API error:', e)
           // Fallback to basic summary
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
           const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
-          finalSummary = rawSummary ? 
-            (selectedWeek === 'overall' ? 
-              `Overall Summary: ${rawSummary}` : 
-              `Week ${selectedWeek || ''} Summary: ${rawSummary}`) : 
-            (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
+          finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
         }
       }
       
@@ -154,18 +128,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
 
   useEffect(() => { analyze() }, [section, studentId, selectedWeek])
 
-  const bulletContent = useMemo(() => {
-    if (!analysis) return null
-    return analysis.bullets.map((b) => {
-      const def = PO_DEFS[b.idx]
-      const hitWords = b.hits.length ? ` — hits: ${b.hits.join(', ')}` : ''
-      return (
-        <li key={def.label} style={{ color: '#000000' }}>
-          <strong>{def.label}</strong> ({b.score}%) — {def.desc}{hitWords}
-        </li>
-      )
-    })
-  }, [analysis])
+  // PO bullet display removed for coordinator view
 
   return (
     <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
@@ -174,7 +137,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       )}
       {loading && (
         <div style={{ marginBottom: 12, padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, color: '#0369a1' }}>
-          {selectedWeek === 'overall' ? 'Analyzing overall progress…' : `Analyzing week ${selectedWeek}…`}
+          {`Analyzing week ${selectedWeek}…`}
         </div>
       )}
       {analysis && (
@@ -182,10 +145,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'center', margin: '0 auto', width: '100%', maxWidth: 900 }}>
            {analysis.summary}
           </div>
-          <ul style={{ margin: 0, paddingLeft: 20 }}>
-            {bulletContent}
-          </ul>
-          {showMonitoring && selectedWeek !== 'overall' && (
+          {showMonitoring && (
             <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
               <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>

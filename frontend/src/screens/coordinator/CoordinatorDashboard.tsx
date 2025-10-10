@@ -7,7 +7,7 @@ import { getApiUrl } from '../../utils/api'
 export default function CoordinatorDashboard() {
   const navigate = useNavigate()
   const [section, setSection] = useState('')
-  const [selectedWeek, setSelectedWeek] = useState<number | 'overall'>(1)
+  const [selectedWeek, setSelectedWeek] = useState<number>(1)
   const [studentId, setStudentId] = useState('')
   const [students, setStudents] = useState<Array<{ studentId: string; userName: string; companyName?: string }>>([])
   const [selectedStudent, setSelectedStudent] = useState<{ studentId: string; userName: string; companyName?: string } | null>(null)
@@ -400,10 +400,7 @@ export default function CoordinatorDashboard() {
                   <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
                   <select 
                     value={selectedWeek} 
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setSelectedWeek(value === 'overall' ? 'overall' : Number(value))
-                    }}
+                    onChange={(e) => setSelectedWeek(Number(e.target.value))}
                     style={{
                       padding: '6px 12px',
                       border: '1px solid #d1d5db',
@@ -412,7 +409,6 @@ export default function CoordinatorDashboard() {
                       color: '#000000'
                     }}
                   >
-                    <option value="overall">Overall</option>
                     {ALL_WEEKS.map(week => (
                       <option key={week} value={week}>
                         Week {week}

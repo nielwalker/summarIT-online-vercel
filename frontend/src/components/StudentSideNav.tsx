@@ -45,12 +45,22 @@ export default function StudentSideNav({ onLogout, activeTab, setActiveTab, isCo
       )
     },
     { 
-      id: 'profile', 
-      label: 'Profile', 
+      id: 'company', 
+      label: 'Company Information', 
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <rect x="3" y="3" width="18" height="14" rx="2" ry="2"></rect>
+          <path d="M8 21h8"></path>
+        </svg>
+      )
+    },
+    { 
+      id: 'coordinator', 
+      label: 'Coordinator Information', 
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="7" r="4"></circle>
+          <path d="M6 21v-2a6 6 0 0 1 12 0v2"></path>
         </svg>
       )
     },
