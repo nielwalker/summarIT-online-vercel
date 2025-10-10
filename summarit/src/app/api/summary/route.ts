@@ -204,7 +204,7 @@ ${text}`
       } catch {}
     }
 
-    const fallback = text ? text.slice(0, 240) : 'No journal entries found.'
+    const fallback = text ? text : 'No journal entries found.'
     const summary = gptSummary || fallback
 
     return NextResponse.json({ summary, keywordScores, usedGPT: Boolean(gptSummary) }, { headers: corsHeaders as Record<string, string> })

@@ -74,9 +74,12 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const resp = await fetch(url)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
+      console.log('All reports:', reports.length, 'Selected week:', selectedWeek)
       const filtered = selectedWeek && selectedWeek !== 'overall' ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
+      console.log('Text length:', text.length, 'Text preview:', text.substring(0, 100) + '...')
       const { scores, hitsPerPO } = extractHighlights(text)
       const items = scores
         .map((score, idx) => ({ idx, score, hits: hitsPerPO[idx] }))
@@ -108,7 +111,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             console.error('GPT summary failed, using fallback')
             // Fallback to basic summary
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.slice(0, 5).join(' ').replace(/\s+/g, ' ').trim() // Increased from 3 to 5
+            const rawSummary = sentences.join(' ').replace(/\s+/g, ' ').trim() // Removed sentence limit
             finalSummary = rawSummary ? 
               (selectedWeek === 'overall' ? 
                 `Overall Summary: ${rawSummary}` : 
@@ -119,7 +122,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           console.error('Summary API error:', e)
           // Fallback to basic summary
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.slice(0, 5).join(' ').replace(/\s+/g, ' ').trim() // Increased from 3 to 5
+          const rawSummary = sentences.join(' ').replace(/\s+/g, ' ').trim() // Removed sentence limit
           finalSummary = rawSummary ? 
             (selectedWeek === 'overall' ? 
               `Overall Summary: ${rawSummary}` : 
