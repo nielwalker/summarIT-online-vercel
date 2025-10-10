@@ -75,8 +75,10 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
       console.log('All reports:', reports.length, 'Selected week:', selectedWeek)
+      console.log('All week numbers:', reports.map(r => r.weekNumber))
       const filtered = selectedWeek && selectedWeek !== 'overall' ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
       console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
+      console.log('Is overall?', selectedWeek === 'overall')
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       console.log('Text length:', text.length, 'Text preview:', text.substring(0, 100) + '...')
@@ -182,7 +184,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {bulletContent}
           </ul>
-          {showMonitoring && (
+          {showMonitoring && selectedWeek !== 'overall' && (
             <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
               <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
