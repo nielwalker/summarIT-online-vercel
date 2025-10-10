@@ -111,7 +111,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             console.error('GPT summary failed, using fallback')
             // Fallback to basic summary
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.join(' ').replace(/\s+/g, ' ').trim() // Removed sentence limit
+            const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
             finalSummary = rawSummary ? 
               (selectedWeek === 'overall' ? 
                 `Overall Summary: ${rawSummary}` : 
@@ -122,7 +122,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           console.error('Summary API error:', e)
           // Fallback to basic summary
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.join(' ').replace(/\s+/g, ' ').trim() // Removed sentence limit
+          const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
           finalSummary = rawSummary ? 
             (selectedWeek === 'overall' ? 
               `Overall Summary: ${rawSummary}` : 

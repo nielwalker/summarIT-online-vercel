@@ -70,32 +70,31 @@ export async function POST(req: NextRequest) {
       // Enhanced Coordinator-specific GPT analysis
       const sys = `You are an evaluator summarizing BSIT internship journals for coordinators.
 
-Your goal is to create clear, concise, and context-based summaries that combine both Activities (what the student did) and Learnings (what the student understood or realized).
+Your goal is to create BRIEF, concise summaries that highlight the most important activities and learnings.
 
 The summary should:
-- Highlight the main tasks or technical work performed.
-- Include the key learnings or reflections gained from those tasks.
+- Be SHORT and to the point (1-3 sentences maximum).
+- Highlight only the main tasks or technical work performed.
+- Include only the key learnings or reflections gained.
 - Avoid vague or repetitive phrases like "I learned a lot" or "It was a great experience."
-- Focus on measurable actions and meaningful insights.
-- If over all weeks is selected in drop down menu, also produce an overall summary of the entire OJT period.
-- ALWAYS provide complete, well-formed sentences that make sense on their own.
-- Ensure the summary is comprehensive and covers all relevant activities and learnings.
+- Focus on the most important activities and insights.
+- Keep it brief and avoid unnecessary details.
 
 Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress and learning context.`
 
       const usr = `Evaluate and summarize the following student journal entry:
 
 **If data is for one week:**
-- Write a weekly summary (2–3 complete sentences) combining the student's activities and learnings.
+- Write a brief weekly summary (1-2 sentences) highlighting the main activities and key learnings.
 
 **If over all selected in drop down menu weeks:**
-- Write an overall summary (1 complete paragraph with 3-4 sentences) describing the student's general tasks, skills, and learnings throughout the OJT.
+- Write a concise overall summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
 
 Requirements:
-- Use complete, well-formed sentences that make sense on their own.
-- Ensure the summary is comprehensive and covers all relevant information.
+- Keep it SHORT and BRIEF - maximum 2-3 sentences.
+- Focus only on the most important activities and learnings.
 - Make it natural, factual, and clear.
-- Do not truncate or cut off sentences.
+- Avoid unnecessary details.
 
 Entry:
 ${text}`
@@ -204,7 +203,7 @@ ${text}`
       } catch {}
     }
 
-    const fallback = text ? text : 'No journal entries found.'
+    const fallback = text ? text.split('.').slice(0, 2).join('.') + (text.split('.').length > 2 ? '.' : '') : 'No journal entries found.'
     const summary = gptSummary || fallback
 
     return NextResponse.json({ summary, keywordScores, usedGPT: Boolean(gptSummary) }, { headers: corsHeaders as Record<string, string> })
