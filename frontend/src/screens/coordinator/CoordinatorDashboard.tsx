@@ -1,5 +1,5 @@
 import CoordinatorPOList from './CoordinatorPOList'
-import DashboardShell from '../../components/DashboardShell'
+import CoordinatorSideNav from '../../components/CoordinatorSideNav'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '../../utils/api'
@@ -148,8 +148,10 @@ export default function CoordinatorDashboard() {
     fetchStudents()
   }
 
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'reports' | 'students'>('dashboard')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+
   return (
-    <DashboardShell>
       <div style={{ 
         width: '100vw', 
         height: '100vh', 
@@ -166,6 +168,13 @@ export default function CoordinatorDashboard() {
         top: '0',
         left: '0'
       }}>
+        <CoordinatorSideNav 
+          onLogout={() => { try { localStorage.clear() } catch {}; navigate('/') }}
+          activeTab={activeTab}
+          setActiveTab={(t) => setActiveTab(t as any)}
+          isCollapsed={sidebarCollapsed}
+          setIsCollapsed={setSidebarCollapsed}
+        />
         <div style={{ 
           position: 'relative',
           display: 'flex', 
@@ -174,7 +183,7 @@ export default function CoordinatorDashboard() {
           width: '100%',
           marginBottom: '20px',
           padding: '20px'
-        }}>
+        , marginLeft: sidebarCollapsed ? '64px' : '256px' }}>
           <h2 style={{ margin: 0, color: '#000000', textAlign: 'center' }}>Coordinator Dashboard - Student Analysis</h2>
           <button 
             onClick={() => {
@@ -327,9 +336,47 @@ export default function CoordinatorDashboard() {
           width: '100%',
           boxSizing: 'border-box',
           overflow: 'auto',
-          position: 'relative'
+          position: 'relative',
+          marginLeft: sidebarCollapsed ? '64px' : '256px'
         }}>
-          {section && studentId && selectedStudent ? (
+          {activeTab === 'dashboard' && (
+            <div style={{ width: '100%', maxWidth: 1200 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, textAlign: 'center' }}>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>Total Students</div>
+                  <div style={{ fontSize: 28, fontWeight: 700 }}>{students.length}</div>
+                </div>
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                  <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
+                  {section && studentId && selectedStudent ? (
+                    <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} />
+                  ) : (
+                    <div style={{ color: '#6b7280' }}>Select a student and week to see the summary.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div style={{ width: '100%', maxWidth: 1200 }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                <div style={{ color: '#6b7280' }}>Coming soon: list of weekly submissions with date/status.</div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'students' && (
+            <div style={{ width: '100%', maxWidth: 1200 }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Information</h3>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                <div style={{ color: '#6b7280' }}>Coming soon: student roster with course, section, OJT hours, status, and company info.</div>
+              </div>
+            </div>
+          )}
+
+          {section && studentId && selectedStudent && activeTab === 'dashboard' ? (
             <>
               <div style={{ 
                 marginBottom: '20px', 
@@ -426,7 +473,7 @@ export default function CoordinatorDashboard() {
                 />
               </div>
             </>
-          ) : (
+          ) : activeTab === 'dashboard' ? (
             <div style={{
               marginTop: '20px',
               padding: '16px',
@@ -443,7 +490,6 @@ export default function CoordinatorDashboard() {
           )}
         </div>
       </div>
-    </DashboardShell>
   )
 }
 

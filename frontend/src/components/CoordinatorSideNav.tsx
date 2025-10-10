@@ -1,0 +1,102 @@
+import { useEffect } from 'react'
+
+interface CoordinatorSideNavProps {
+  onLogout: () => void
+  activeTab: string
+  setActiveTab: (tab: string) => void
+  isCollapsed: boolean
+  setIsCollapsed: (collapsed: boolean) => void
+}
+
+export default function CoordinatorSideNav({ onLogout, activeTab, setActiveTab, isCollapsed, setIsCollapsed }: CoordinatorSideNavProps) {
+  useEffect(() => {
+    const navElement = document.getElementById('coordinator-side-nav')
+    if (navElement) {
+      const handleMouseEnter = () => setIsCollapsed(false)
+      const handleMouseLeave = () => setIsCollapsed(true)
+      navElement.addEventListener('mouseenter', handleMouseEnter)
+      navElement.addEventListener('mouseleave', handleMouseLeave)
+      return () => {
+        navElement.removeEventListener('mouseenter', handleMouseEnter)
+        navElement.removeEventListener('mouseleave', handleMouseLeave)
+      }
+    }
+  }, [])
+
+  const navItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+      )
+    },
+    {
+      id: 'reports',
+      label: 'Student Reports',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M19 10V4H9a2 2 0 0 0-2 2v12"></path>
+        </svg>
+      )
+    },
+    {
+      id: 'students',
+      label: 'Student Information',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="7" r="4"></circle>
+          <path d="M6 21v-2a6 6 0 0 1 12 0v2"></path>
+        </svg>
+      )
+    }
+  ]
+
+  return (
+    <div id="coordinator-side-nav" style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: isCollapsed ? '64px' : '256px', backgroundColor: '#1e3a8a', color: 'white', transition: 'width 0.2s ease-in-out', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #3b82f6', display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+        <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/summarit-logo.svg" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
+        </div>
+        {!isCollapsed && (
+          <div style={{ marginLeft: '12px' }}>
+            <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 'bold' }}>Coordinator</h2>
+            <p style={{ margin: 0, fontSize: '14px', color: '#93c5fd' }}>Navigation</p>
+          </div>
+        )}
+      </div>
+
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 0' }}>
+        {navItems.map(item => (
+          <button key={item.id} onClick={() => setActiveTab(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '12px 16px', margin: '4px 0', backgroundColor: activeTab === item.id ? '#3b82f6' : 'transparent', color: 'white', border: 'none', borderRadius: 0, cursor: 'pointer', fontSize: 14, fontWeight: 500, textAlign: 'left', transition: 'background-color 0.2s ease', justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+            onMouseEnter={e => { if (activeTab !== item.id) e.currentTarget.style.backgroundColor = '#3b82f6' }}
+            onMouseLeave={e => { if (activeTab !== item.id) e.currentTarget.style.backgroundColor = 'transparent' }}
+          >
+            <span style={{ fontSize: 20, marginRight: isCollapsed ? 0 : 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>{item.icon}</span>
+            {!isCollapsed && <span style={{ fontWeight: 500 }}>{item.label}</span>}
+          </button>
+        ))}
+      </nav>
+
+      <div style={{ padding: 16, marginTop: 'auto' }}>
+        <button onClick={onLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '12px 16px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500, transition: 'background-color 0.2s ease', justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#2563eb' }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3b82f6' }}
+        >
+          <span style={{ fontSize: 20, marginRight: isCollapsed ? 0 : 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16,17 21,12 16,7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </span>
+          {!isCollapsed && <span style={{ fontWeight: 500 }}>Logout</span>}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+
