@@ -28,7 +28,13 @@ export async function POST(req: NextRequest) {
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
-    const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ').trim()
+    // Build a robust combined text. Ensure each entry becomes a complete sentence
+    const combinedEntries = filtered
+      .map(r => `${r.activities || ''} ${r.learnings || ''}`.trim())
+      .filter(Boolean)
+      .map(s => s.replace(/\s+/g, ' ').trim())
+      .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
+    const text = combinedEntries.join(' ').trim()
     console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
     console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
 
