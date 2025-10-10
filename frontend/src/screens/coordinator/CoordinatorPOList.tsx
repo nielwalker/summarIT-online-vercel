@@ -86,6 +86,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       let finalSummary = 'No submissions found.'
       if (text.trim()) {
         try {
+          console.log('Sending summary request:', { section, studentId, selectedWeek, isOverall: selectedWeek === 'overall' })
           const summaryResp = await fetch(getApiUrl('/api/summary'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -103,23 +104,25 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             const summaryData = await summaryResp.json()
             finalSummary = summaryData.summary || finalSummary
           } else {
+            console.error('GPT summary failed, using fallback')
             // Fallback to basic summary
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
+            const rawSummary = sentences.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim()
             finalSummary = rawSummary ? 
               (selectedWeek === 'overall' ? 
-                `Overall Summary: ${rawSummary.slice(0, 280)}` : 
-                `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}`) : 
+                `Overall Summary: ${rawSummary}` : 
+                `Week ${selectedWeek || ''} Summary: ${rawSummary}`) : 
               (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
           }
         } catch (e) {
+          console.error('Summary API error:', e)
           // Fallback to basic summary
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
+          const rawSummary = sentences.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim()
           finalSummary = rawSummary ? 
             (selectedWeek === 'overall' ? 
-              `Overall Summary: ${rawSummary.slice(0, 280)}` : 
-              `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}`) : 
+              `Overall Summary: ${rawSummary}` : 
+              `Week ${selectedWeek || ''} Summary: ${rawSummary}`) : 
             (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
         }
       }

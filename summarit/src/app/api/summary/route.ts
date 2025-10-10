@@ -10,7 +10,7 @@ const corsHeaders = {
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders as Record<string, string> })
 }
- 
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null) as any
@@ -21,11 +21,13 @@ export async function POST(req: NextRequest) {
     const analysisType = body?.analysisType as string | undefined
     const isOverall = body?.isOverall as boolean | undefined
 
+    console.log('Summary request:', { section, studentId, week, isOverall, analysisType })
     const reports = await getReports(section, studentId)
     const filtered = Array.isArray(reports)
-      ? reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week))
+      ? reports.filter(r => !week || isOverall || Number(r.weekNumber || 1) === Number(week))
       : []
     const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ').trim()
+    console.log('Filtered reports:', filtered.length, 'Text length:', text.length)
 
     const KEYWORD_SETS: string[][] = [
       ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],

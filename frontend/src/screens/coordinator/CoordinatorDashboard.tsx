@@ -42,9 +42,15 @@ export default function CoordinatorDashboard() {
 
   useEffect(() => {
     const fetchStudents = async () => {
+      if (!section) {
+        console.log('No section selected, skipping student fetch')
+        return
+      }
+      
       setLoading(true)
       setError(null)
       try {
+        console.log('Fetching students for section:', section)
         const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
         
         if (!response.ok) {
