@@ -356,11 +356,43 @@ export default function CoordinatorDashboard() {
                     </label>
                   </div>
                   {section && studentId && selectedStudent ? (
-                    <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} />
+                    <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={false} />
                   ) : (
                     <div style={{ color: '#6b7280' }}>Select a student and week to see the summary.</div>
                   )}
                 </div>
+              </div>
+              
+              {/* Monitoring Results Section */}
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 16 }}>
+                <div style={{ fontWeight: 600, marginBottom: 12 }}>Monitoring Results</div>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
+                    <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
+                    <select 
+                      value={selectedWeek} 
+                      onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                      style={{
+                        padding: '6px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        backgroundColor: 'white',
+                        color: '#000000'
+                      }}
+                    >
+                      {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (
+                        <option key={week} value={week}>
+                          Week {week}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {section && studentId && selectedStudent ? (
+                  <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={true} />
+                ) : (
+                  <div style={{ color: '#6b7280' }}>Select a student and week to see the monitoring results.</div>
+                )}
               </div>
             </div>
           )}
