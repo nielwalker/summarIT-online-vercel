@@ -11,12 +11,10 @@ export default function CoordinatorDashboard() {
   const [studentId, setStudentId] = useState('')
   const [students, setStudents] = useState<Array<{ studentId: string; userName: string; companyName?: string }>>([])
   const [selectedStudent, setSelectedStudent] = useState<{ studentId: string; userName: string; companyName?: string } | null>(null)
-  const [companyDetails, setCompanyDetails] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sections, setSections] = useState<string[]>([])
 
-  const ALL_WEEKS = Array.from({ length: 13 }, (_, i) => i + 1) // Weeks 1-13
 
   // Load sections assigned to the logged-in coordinator
   useEffect(() => {
@@ -91,21 +89,8 @@ export default function CoordinatorDashboard() {
       const student = students.find(s => s.studentId === selectedStudentId)
       setSelectedStudent(student || null)
       
-      // Fetch detailed student information including company details
-      try {
-        const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(selectedStudentId)}`))
-        
-        if (response.ok) {
-          const data = await response.json()
-          setCompanyDetails(data.company)
-        }
-      } catch (error) {
-        console.error('Error fetching student details:', error)
-        setCompanyDetails(null)
-      }
     } else {
       setSelectedStudent(null)
-      setCompanyDetails(null)
     }
   }
 
@@ -220,7 +205,7 @@ export default function CoordinatorDashboard() {
             <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Section:</span>
             <select 
               value={section} 
-              onChange={(e) => { setSection(e.target.value); setStudentId(''); setSelectedStudent(null); setCompanyDetails(null); }}
+              onChange={(e) => { setSection(e.target.value); setStudentId(''); setSelectedStudent(null); }}
               style={{
                 padding: '8px 32px 8px 12px',
                 border: '1px solid #cbd5e1',
@@ -348,6 +333,28 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
                   <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
+                      <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
+                      <select 
+                        value={selectedWeek} 
+                        onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                        style={{
+                          padding: '6px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          backgroundColor: 'white',
+                          color: '#000000'
+                        }}
+                      >
+                        {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (
+                          <option key={week} value={week}>
+                            Week {week}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                   {section && studentId && selectedStudent ? (
                     <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} />
                   ) : (
