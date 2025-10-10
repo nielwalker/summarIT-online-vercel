@@ -4,7 +4,7 @@ import { getApiUrl } from '../../utils/api'
 type Props = {
   section: string
   studentId?: string
-  selectedWeek?: number
+  selectedWeek?: number | 'overall'
   showMonitoring?: boolean
 }
 
@@ -74,7 +74,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const resp = await fetch(url)
       if (!resp.ok) throw new Error(`Failed to fetch reports: ${resp.status}`)
       const reports: any[] = await resp.json()
-      const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      const filtered = selectedWeek && selectedWeek !== 'overall' ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       const { scores, hitsPerPO } = extractHighlights(text)
@@ -82,9 +82,49 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         .map((score, idx) => ({ idx, score, hits: hitsPerPO[idx] }))
         .filter(i => i.score > 0)
         .sort((a, b) => b.score - a.score)
-      const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-      const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
-      const summary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}` : 'No submissions for this week.'
+      // Get coordinator-specific GPT summary
+      let finalSummary = 'No submissions found.'
+      if (text.trim()) {
+        try {
+          const summaryResp = await fetch(getApiUrl('/api/summary'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              section, 
+              studentId,
+              week: selectedWeek === 'overall' ? undefined : selectedWeek,
+              useGPT: true,
+              analysisType: 'coordinator',
+              isOverall: selectedWeek === 'overall'
+            })
+          })
+          
+          if (summaryResp.ok) {
+            const summaryData = await summaryResp.json()
+            finalSummary = summaryData.summary || finalSummary
+          } else {
+            // Fallback to basic summary
+            const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
+            const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
+            finalSummary = rawSummary ? 
+              (selectedWeek === 'overall' ? 
+                `Overall Summary: ${rawSummary.slice(0, 280)}` : 
+                `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}`) : 
+              (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
+          }
+        } catch (e) {
+          // Fallback to basic summary
+          const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
+          const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim()
+          finalSummary = rawSummary ? 
+            (selectedWeek === 'overall' ? 
+              `Overall Summary: ${rawSummary.slice(0, 280)}` : 
+              `Week ${selectedWeek || ''} Summary: ${rawSummary.slice(0, 280)}`) : 
+            (selectedWeek === 'overall' ? 'No submissions found.' : 'No submissions for this week.')
+        }
+      }
+      
+      const summary = finalSummary
       const uniqByDate = new Map<string, { date: string; hours: number }>()
       filtered.forEach(r => {
         const key = String(r.date || '')

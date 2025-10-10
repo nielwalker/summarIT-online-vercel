@@ -64,7 +64,53 @@ export async function POST(req: NextRequest) {
 
     let gptSummary: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
-    if (apiKey && text && useGPT && analysisType === 'chairman') {
+    if (apiKey && text && useGPT && analysisType === 'coordinator') {
+      // Enhanced Coordinator-specific GPT analysis
+      const sys = `You are an evaluator summarizing BSIT internship journals for coordinators.
+
+Your goal is to create clear, concise, and context-based summaries that combine both Activities (what the student did) and Learnings (what the student understood or realized).
+
+The summary should:
+- Highlight the main tasks or technical work performed.
+- Include the key learnings or reflections gained from those tasks.
+- Avoid vague or repetitive phrases like "I learned a lot" or "It was a great experience."
+- Focus on measurable actions and meaningful insights.
+- If over all weeks is selected in drop down menu, also produce an overall summary of the entire OJT period.
+
+Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress and learning context.`
+
+      const usr = `Evaluate and summarize the following student journal entry:
+
+**If data is for one week:**
+- Write a weekly summary (2–3 sentences) combining the student's activities and learnings.
+
+**If over all selected in drop down menu weeks:**
+- Write an overall summary (1 short paragraph) describing the student's general tasks, skills, and learnings throughout the OJT.
+
+Make it natural, factual, and clear.
+
+Entry:
+${text}`
+
+      try {
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({ 
+            model: 'gpt-4o-mini', 
+            messages: [ 
+              { role: 'system', content: sys }, 
+              { role: 'user', content: usr } 
+            ], 
+            temperature: 0.2 
+          })
+        })
+        if (resp.ok) {
+          const data = await resp.json()
+          gptSummary = data?.choices?.[0]?.message?.content || null
+        }
+      } catch {}
+    } else if (apiKey && text && useGPT && analysisType === 'chairman') {
       // Enhanced Chairman-specific GPT analysis
       const sys = `You are an expert evaluator for BSIT internship journals.
 
