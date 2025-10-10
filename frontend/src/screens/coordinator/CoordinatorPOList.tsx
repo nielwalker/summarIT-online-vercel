@@ -102,12 +102,13 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           
           if (summaryResp.ok) {
             const summaryData = await summaryResp.json()
+            console.log('GPT summary received:', summaryData.summary)
             finalSummary = summaryData.summary || finalSummary
           } else {
             console.error('GPT summary failed, using fallback')
             // Fallback to basic summary
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim()
+            const rawSummary = sentences.slice(0, 5).join(' ').replace(/\s+/g, ' ').trim() // Increased from 3 to 5
             finalSummary = rawSummary ? 
               (selectedWeek === 'overall' ? 
                 `Overall Summary: ${rawSummary}` : 
@@ -118,7 +119,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
           console.error('Summary API error:', e)
           // Fallback to basic summary
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim()
+          const rawSummary = sentences.slice(0, 5).join(' ').replace(/\s+/g, ' ').trim() // Increased from 3 to 5
           finalSummary = rawSummary ? 
             (selectedWeek === 'overall' ? 
               `Overall Summary: ${rawSummary}` : 
@@ -166,7 +167,9 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626' }}>{error}</div>
       )}
       {loading && (
-        <div style={{ marginBottom: 12, padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, color: '#0369a1' }}>Analyzing week {selectedWeek}…</div>
+        <div style={{ marginBottom: 12, padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, color: '#0369a1' }}>
+          {selectedWeek === 'overall' ? 'Analyzing overall progress…' : `Analyzing week ${selectedWeek}…`}
+        </div>
       )}
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>

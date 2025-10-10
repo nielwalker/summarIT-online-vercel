@@ -78,18 +78,24 @@ The summary should:
 - Avoid vague or repetitive phrases like "I learned a lot" or "It was a great experience."
 - Focus on measurable actions and meaningful insights.
 - If over all weeks is selected in drop down menu, also produce an overall summary of the entire OJT period.
+- ALWAYS provide complete, well-formed sentences that make sense on their own.
+- Ensure the summary is comprehensive and covers all relevant activities and learnings.
 
 Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress and learning context.`
 
       const usr = `Evaluate and summarize the following student journal entry:
 
 **If data is for one week:**
-- Write a weekly summary (2–3 sentences) combining the student's activities and learnings.
+- Write a weekly summary (2–3 complete sentences) combining the student's activities and learnings.
 
 **If over all selected in drop down menu weeks:**
-- Write an overall summary (1 short paragraph) describing the student's general tasks, skills, and learnings throughout the OJT.
+- Write an overall summary (1 complete paragraph with 3-4 sentences) describing the student's general tasks, skills, and learnings throughout the OJT.
 
-Make it natural, factual, and clear.
+Requirements:
+- Use complete, well-formed sentences that make sense on their own.
+- Ensure the summary is comprehensive and covers all relevant information.
+- Make it natural, factual, and clear.
+- Do not truncate or cut off sentences.
 
 Entry:
 ${text}`
