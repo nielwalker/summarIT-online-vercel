@@ -8,7 +8,7 @@ import { getApiUrl } from '../../utils/api'
 export default function ChairmanDashboard() {
   const navigate = useNavigate()
   const [section, setSection] = useState('IT4R8')
-  const [selectedWeek, setSelectedWeek] = useState<number>(1)
+  const [selectedWeek, setSelectedWeek] = useState<number | 'overall'>(1)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [studentId, setStudentId] = useState('')
   const [studentName, setStudentName] = useState('')
@@ -561,7 +561,10 @@ export default function ChairmanDashboard() {
                   <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Week:</span>
                   <select 
                     value={selectedWeek} 
-                    onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setSelectedWeek(value === 'overall' ? 'overall' : Number(value))
+                    }}
                     style={{
                       padding: '8px 32px 8px 12px',
                       border: '1px solid #cbd5e1',
@@ -578,6 +581,7 @@ export default function ChairmanDashboard() {
                       backgroundPosition: 'right 12px center'
                     }}
                   >
+                    <option value="overall">Overall</option>
                     {ALL_WEEKS.map(week => (
                       <option key={week} value={week}>
                         Week {week}
