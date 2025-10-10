@@ -81,7 +81,8 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       console.log('Is overall?', selectedWeek === 'overall')
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
-      console.log('Text length:', text.length, 'Text preview:', text.substring(0, 100) + '...')
+      console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
+      console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
       const { scores, hitsPerPO } = extractHighlights(text)
       const items = scores
         .map((score, idx) => ({ idx, score, hits: hitsPerPO[idx] }))

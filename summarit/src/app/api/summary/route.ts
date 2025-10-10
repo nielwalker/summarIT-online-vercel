@@ -25,11 +25,12 @@ export async function POST(req: NextRequest) {
     const reports = await getReports(section, studentId)
     console.log('All reports from DB:', reports.length, 'Week numbers:', reports.map(r => r.weekNumber))
     const filtered = Array.isArray(reports)
-      ? reports.filter(r => !week || isOverall || Number(r.weekNumber || 1) === Number(week))
+      ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
     const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ').trim()
-    console.log('Text length:', text.length, 'Text preview:', text.substring(0, 100) + '...')
+    console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
+    console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
 
     const KEYWORD_SETS: string[][] = [
       ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],
