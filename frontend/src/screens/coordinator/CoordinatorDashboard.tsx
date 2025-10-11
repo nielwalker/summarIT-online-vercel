@@ -312,9 +312,9 @@ export default function CoordinatorDashboard() {
           {activeTab === 'dashboard' && (
             <div style={{ width: '100%', maxWidth: 1200 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
-                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 12, color: '#6b7280' }}>Total Students</div>
-                  <div style={{ fontSize: 28, fontWeight: 700 }}>{students.length}</div>
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>Total Students</div>
+                  <div style={{ fontSize: 36, fontWeight: 700, color: '#000000' }}>{students.length}</div>
                 </div>
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
                   <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
@@ -355,7 +355,7 @@ export default function CoordinatorDashboard() {
                   <>
                     <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
                       <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Total Accumulated Hours</div>
-                      <div style={{ fontSize: 24, fontWeight: 700, color: '#0c4a6e' }}>486 hours</div>
+                      <div style={{ fontSize: 24, fontWeight: 700, color: '#0c4a6e' }}>49 / 486 hours</div>
                     </div>
                     <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={true} />
                   </>

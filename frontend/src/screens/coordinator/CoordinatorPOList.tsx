@@ -170,9 +170,6 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
               </table>
             </div>
           )}
-          <div style={{ padding: 12, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 8, color: '#7c2d12' }}>
-            <strong>Note on PO hits:</strong> We count explicit action words linked to each PO. Generic or vague words are ignored to avoid false positives.
-          </div>
         </div>
       )}
     </div>
