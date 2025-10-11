@@ -26,18 +26,20 @@ export async function POST(req: NextRequest) {
     console.log('All reports from DB:', reports.length, 'Week numbers:', reports.map(r => r.weekNumber))
     const filtered = Array.isArray(reports)
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
-          .filter(r => !r.excuse) // Exclude reports with excuses from summarization
       : []
-    console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
+    
+    // For summarization, only use reports with actual content (no excuses)
+    const reportsForSummary = filtered.filter(r => !r.excuse)
+    console.log('All reports for week:', filtered.length, 'Reports with content:', reportsForSummary.length, 'Week numbers:', filtered.map(r => r.weekNumber))
     // Build a robust combined text. Ensure each entry becomes a complete sentence
-    const combinedEntries = filtered
+    const combinedEntries = reportsForSummary
       .map(r => `${r.activities || ''} ${r.learnings || ''}`.trim())
       .filter(Boolean)
       .map(s => s.replace(/\s+/g, ' ').trim())
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
     const text = combinedEntries.join(' ').trim()
     console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
-    console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
+    console.log('Individual report texts:', reportsForSummary.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
 
     const KEYWORD_SETS: string[][] = [
       ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],

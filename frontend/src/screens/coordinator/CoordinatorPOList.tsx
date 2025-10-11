@@ -60,12 +60,13 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const reports: any[] = await resp.json()
       console.log('All reports:', reports.length, 'Selected week:', selectedWeek)
       console.log('All week numbers:', reports.map(r => r.weekNumber))
-      // For coordinator summary, always use all reports regardless of selected week
-      // The selectedWeek is only used for monitoring results, not for summary
-      const filtered = reports
+      // For coordinator summary, filter by selected week to show all days of that week
+      const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
       console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
-      const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
+      // For summary text, only use reports with actual content (no excuses)
+      const reportsForSummary = filtered.filter(r => !r.excuse)
+      const text = reportsForSummary.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
       console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
       const { scores, hitsPerPO } = extractHighlights(text)
@@ -84,7 +85,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             body: JSON.stringify({ 
               section, 
               studentId,
-              week: null, // Don't filter by week for coordinator summary - use all weeks
+              week: selectedWeek, // Use selected week for coordinator summary
               useGPT: true,
               analysisType: 'coordinator'
             })
@@ -116,9 +117,10 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         const key = String(r.date || '')
         if (!uniqByDate.has(key)) uniqByDate.set(key, { date: key || '—', hours: Number(r.hours || 0) })
       })
-      const submittedRows = Array.from(uniqByDate.values()).slice(0, 5).map(r => ({ date: r.date || '—', hours: r.hours || 0, status: 'Submitted' as const }))
+      const submittedRows = Array.from(uniqByDate.values()).map(r => ({ date: r.date || '—', hours: r.hours || 0, status: 'Submitted' as const }))
       const paddedRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> = [...submittedRows]
-      while (paddedRows.length < 5) paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
+      // Show all 6 days of the week, not just 5
+      while (paddedRows.length < 6) paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
       setAnalysis({ scores, bullets: items, summary, weekRows: paddedRows })
     } catch (e: any) {
       setError(e.message || 'Analysis failed')
