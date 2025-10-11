@@ -21,6 +21,8 @@ export default function CoordinatorDashboard() {
   const [customExcuseText, setCustomExcuseText] = useState<string>('')
   const [selectedWeekForReports, setSelectedWeekForReports] = useState<number>(1)
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
+  const [studentDetails, setStudentDetails] = useState<any>(null)
+  const [companyDetails, setCompanyDetails] = useState<any>(null)
 
 
   // Load sections assigned to the logged-in coordinator
@@ -145,6 +147,19 @@ export default function CoordinatorDashboard() {
     }
   }
 
+  const fetchStudentAndCompanyDetails = async (studentId: string) => {
+    try {
+      const response = await fetch(getApiUrl(`/api/admin?action=getStudentDetails&studentId=${encodeURIComponent(studentId)}`))
+      if (response.ok) {
+        const data = await response.json()
+        setStudentDetails(data.student || null)
+        setCompanyDetails(data.company || null)
+      }
+    } catch (error) {
+      console.error('Error fetching student details:', error)
+    }
+  }
+
   const handleStudentChange = async (selectedStudentId: string) => {
     setStudentId(selectedStudentId)
     if (selectedStudentId) {
@@ -152,10 +167,51 @@ export default function CoordinatorDashboard() {
       setSelectedStudent(student || null)
       fetchStudentTotalHours(selectedStudentId)
       fetchStudentReports(selectedStudentId)
+      fetchStudentAndCompanyDetails(selectedStudentId)
     } else {
       setSelectedStudent(null)
       setTotalHours(0)
       setStudentReports([])
+      setStudentDetails(null)
+      setCompanyDetails(null)
+    }
+  }
+
+  const handleSaveReport = async (report: any) => {
+    if (!studentId || !report) return
+    
+    try {
+      const reportData = {
+        userName: selectedStudent?.userName || 'Coordinator Entry',
+        role: 'coordinator',
+        section: section,
+        studentId: studentId,
+        weekNumber: report.weekNumber,
+        date: report.date,
+        hours: report.hours || 0,
+        activities: report.activities || '',
+        learnings: report.learnings || '',
+        excuse: report.excuse || ''
+      }
+      
+      const response = await fetch(getApiUrl('/api/reports'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reportData)
+      })
+      
+      if (response.ok) {
+        // Refresh the reports from server
+        await fetchStudentReports(studentId)
+        await fetchStudentTotalHours(studentId)
+        alert('Report saved successfully!')
+      } else {
+        console.error('Failed to save report')
+        alert('Failed to save report. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error saving report:', error)
+      alert('Error saving report. Please try again.')
     }
   }
 
@@ -537,7 +593,8 @@ export default function CoordinatorDashboard() {
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Day</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Date</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Hours</th>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Status</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Activities</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Learnings</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Excuse</th>
                             <th style={{ textAlign: 'center', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Action</th>
                           </tr>
@@ -546,13 +603,13 @@ export default function CoordinatorDashboard() {
                           {studentReports
                             .filter(report => report.weekNumber === selectedWeekForReports)
                             .map((report, index) => {
-                              const hasReport = !!report
                               const reportDate = report?.date || ''
+                              const dayName = reportDate ? new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' }) : `Day ${index + 1}`
                               
                               return (
                                 <tr key={report.id || index} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
                                   <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>
-                                    {new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' })}
+                                    {dayName}
                                   </td>
                                   <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
                                     <input
@@ -570,55 +627,115 @@ export default function CoordinatorDashboard() {
                                         border: '1px solid #d1d5db',
                                         borderRadius: '4px',
                                         fontSize: '14px',
-                                        backgroundColor: 'white'
+                                        backgroundColor: 'white',
+                                        width: '100%'
                                       }}
                                     />
                                   </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.hours || 0}</td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                    {hasReport ? (
-                                      <span style={{ padding: '4px 8px', borderRadius: 12, background: '#dcfce7', color: '#166534', fontSize: 12, fontWeight: 600 }}>
-                                        Submitted
-                                      </span>
-                                    ) : (
-                                      <span style={{ padding: '4px 8px', borderRadius: 12, background: '#fee2e2', color: '#991b1b', fontSize: 12, fontWeight: 600 }}>
-                                        Missing
-                                      </span>
-                                    )}
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max="8"
+                                      value={report?.hours || 0}
+                                      onChange={(e) => {
+                                        const updatedReports = studentReports.map(r => 
+                                          r.id === report.id ? { ...r, hours: parseInt(e.target.value) || 0 } : r
+                                        )
+                                        setStudentReports(updatedReports)
+                                      }}
+                                      style={{
+                                        padding: '4px 8px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white',
+                                        width: '60px'
+                                      }}
+                                    />
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                    <textarea
+                                      value={report?.activities || ''}
+                                      onChange={(e) => {
+                                        const updatedReports = studentReports.map(r => 
+                                          r.id === report.id ? { ...r, activities: e.target.value } : r
+                                        )
+                                        setStudentReports(updatedReports)
+                                      }}
+                                      placeholder="Enter activities..."
+                                      style={{
+                                        padding: '8px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white',
+                                        width: '100%',
+                                        minHeight: '60px',
+                                        resize: 'vertical'
+                                      }}
+                                    />
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                    <textarea
+                                      value={report?.learnings || ''}
+                                      onChange={(e) => {
+                                        const updatedReports = studentReports.map(r => 
+                                          r.id === report.id ? { ...r, learnings: e.target.value } : r
+                                        )
+                                        setStudentReports(updatedReports)
+                                      }}
+                                      placeholder="Enter learnings..."
+                                      style={{
+                                        padding: '8px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white',
+                                        width: '100%',
+                                        minHeight: '60px',
+                                        resize: 'vertical'
+                                      }}
+                                    />
                                   </td>
                                   <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                    {report?.excuse ? (
-                                      <div style={{ color: '#dc2626', fontSize: 14, fontWeight: 500 }}>{report.excuse}</div>
-                                    ) : (
-                                      <div style={{ color: '#6b7280', fontSize: 14 }}>No excuse</div>
-                                    )}
+                                    <textarea
+                                      value={report?.excuse || ''}
+                                      onChange={(e) => {
+                                        const updatedReports = studentReports.map(r => 
+                                          r.id === report.id ? { ...r, excuse: e.target.value } : r
+                                        )
+                                        setStudentReports(updatedReports)
+                                      }}
+                                      placeholder="Enter excuse if any..."
+                                      style={{
+                                        padding: '8px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white',
+                                        width: '100%',
+                                        minHeight: '60px',
+                                        resize: 'vertical'
+                                      }}
+                                    />
                                   </td>
                                   <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                                    {!hasReport ? (
-                                      <button
-                                        onClick={() => setEditingReport({ 
-                                          weekNumber: selectedWeekForReports, 
-                                          day: new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' }),
-                                          date: reportDate,
-                                          id: report?.id || null, 
-                                          excuse: report?.excuse || '' 
-                                        })}
-                                        style={{ 
-                                          padding: '6px 12px', 
-                                          borderRadius: 6, 
-                                          backgroundColor: '#3b82f6', 
-                                          color: 'white', 
-                                          border: 'none', 
-                                          fontSize: 12, 
-                                          cursor: 'pointer',
-                                          fontWeight: 500
-                                        }}
-                                      >
-                                        Add Excuse
-                                      </button>
-                                    ) : (
-                                      <span style={{ color: '#6b7280', fontSize: 12 }}>No action needed</span>
-                                    )}
+                                    <button
+                                      onClick={() => handleSaveReport(report)}
+                                      style={{ 
+                                        padding: '6px 12px', 
+                                        borderRadius: 6, 
+                                        backgroundColor: '#10b981', 
+                                        color: 'white', 
+                                        border: 'none', 
+                                        fontSize: 12, 
+                                        cursor: 'pointer',
+                                        fontWeight: 500
+                                      }}
+                                    >
+                                      Save
+                                    </button>
                                   </td>
                                 </tr>
                               )
@@ -627,7 +744,7 @@ export default function CoordinatorDashboard() {
                           {/* Show message if no reports for selected week */}
                           {studentReports.filter(report => report.weekNumber === selectedWeekForReports).length === 0 && (
                             <tr>
-                              <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                              <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
                                 No reports found for Week {selectedWeekForReports}
                               </td>
                             </tr>
@@ -648,9 +765,151 @@ export default function CoordinatorDashboard() {
           {activeTab === 'students' && (
             <div style={{ width: '100%', maxWidth: 1200 }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Information</h3>
-              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-                <div style={{ color: '#6b7280' }}>Coming soon: student roster with course, section, OJT hours, status, and company info.</div>
-              </div>
+              {selectedStudent ? (
+                <div style={{ display: 'grid', gap: 16 }}>
+                  {/* Student Information Card */}
+                  <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+                      <div style={{ 
+                        width: 48, 
+                        height: 48, 
+                        borderRadius: '50%', 
+                        backgroundColor: '#3b82f6', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        marginRight: 16
+                      }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px 0', color: '#111827', fontSize: '18px', fontWeight: '600' }}>
+                          {selectedStudent.userName}
+                        </h4>
+                        <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
+                          Student ID: {selectedStudent.studentId}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {studentDetails && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Course
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px' }}>
+                            {studentDetails.course || 'BSIT'}
+                          </p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Section
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px' }}>
+                            {studentDetails.section || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            OJT Hours
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px' }}>
+                            {totalHours} / 486 hours
+                          </p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Status
+                          </label>
+                          <span style={{ 
+                            padding: '4px 12px', 
+                            borderRadius: '20px', 
+                            background: totalHours >= 486 ? '#dcfce7' : '#fef3c7', 
+                            color: totalHours >= 486 ? '#166534' : '#92400e', 
+                            fontSize: '12px', 
+                            fontWeight: '600' 
+                          }}>
+                            {totalHours >= 486 ? 'Completed' : 'In Progress'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Company Information Card */}
+                  {companyDetails && (
+                    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+                        <div style={{ 
+                          width: 48, 
+                          height: 48, 
+                          borderRadius: '50%', 
+                          backgroundColor: '#10b981', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          marginRight: 16
+                        }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                          </svg>
+                        </div>
+                        <div>
+                          <h4 style={{ margin: '0 0 4px 0', color: '#111827', fontSize: '18px', fontWeight: '600' }}>
+                            {companyDetails.name || 'Company Name'}
+                          </h4>
+                          <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
+                            OJT Company
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Address
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px', lineHeight: '1.5' }}>
+                            {companyDetails.address || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Supervisor
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px' }}>
+                            {companyDetails.supervisor || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
+                            Contact Number
+                          </label>
+                          <p style={{ margin: 0, color: '#111827', fontSize: '14px' }}>
+                            {companyDetails.contactNumber || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                  <div style={{ color: '#6b7280', textAlign: 'center', padding: '40px 20px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 16px' }}>
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: '500' }}>Select a student to view their information</p>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>Choose a student from the dropdown above to see their details and company information.</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
