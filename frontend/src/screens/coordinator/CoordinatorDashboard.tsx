@@ -18,6 +18,7 @@ export default function CoordinatorDashboard() {
   const [studentReports, setStudentReports] = useState<any[]>([])
   const [editingReport, setEditingReport] = useState<any>(null)
   const [excuseText, setExcuseText] = useState<string>('')
+  const [customExcuseText, setCustomExcuseText] = useState<string>('')
   const [selectedWeekForReports, setSelectedWeekForReports] = useState<number>(1)
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
 
@@ -109,7 +110,32 @@ export default function CoordinatorDashboard() {
       const response = await fetch(getApiUrl(`/api/reports?studentId=${encodeURIComponent(studentId)}`))
       if (response.ok) {
         const data = await response.json()
-        setStudentReports(data || [])
+        const existingReports = data || []
+        
+        // Ensure we have reports for all weeks 1-13, even if they don't exist in the database
+        const allWeeks = Array.from({ length: 13 }, (_, i) => i + 1)
+        
+        // Create placeholder reports for missing weeks
+        const completeReports = allWeeks.map(week => {
+          const existingReport = existingReports.find((r: any) => r.weekNumber === week)
+          if (existingReport) {
+            return existingReport
+          } else {
+            // Create a placeholder report for missing weeks
+            return {
+              id: `placeholder-${week}`,
+              weekNumber: week,
+              date: '',
+              hours: 0,
+              activities: '',
+              learnings: '',
+              excuse: '',
+              studentId: studentId
+            }
+          }
+        })
+        
+        setStudentReports(completeReports)
       } else {
         setStudentReports([])
       }
@@ -134,7 +160,10 @@ export default function CoordinatorDashboard() {
   }
 
   const handleExcuseSubmit = async () => {
-    if (!excuseText.trim() || !editingReport) return
+    if (!editingReport) return
+    
+    const finalExcuseText = excuseText === 'Other' ? customExcuseText.trim() : excuseText.trim()
+    if (!finalExcuseText) return
     
     try {
       const response = await fetch(getApiUrl('/api/reports'), {
@@ -142,21 +171,31 @@ export default function CoordinatorDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reportId: editingReport.id,
-          excuse: excuseText.trim(),
+          excuse: finalExcuseText,
           weekNumber: editingReport.weekNumber,
           date: editingReport.date,
           studentId: studentId
         })
       })
-      
-      if (response.ok) {
-        // Refresh the reports
+        
+        if (response.ok) {
+        // Update the local state immediately
+        const updatedReports = studentReports.map(report => {
+          if (report.weekNumber === editingReport.weekNumber && report.date === editingReport.date) {
+            return { ...report, excuse: finalExcuseText }
+          }
+          return report
+        })
+        setStudentReports(updatedReports)
+        
+        // Refresh the reports from server
         if (studentId) {
           fetchStudentReports(studentId)
           fetchStudentTotalHours(studentId)
         }
         setEditingReport(null)
         setExcuseText('')
+        setCustomExcuseText('')
       } else {
         console.error('Failed to submit excuse')
       }
@@ -208,7 +247,7 @@ export default function CoordinatorDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   return (
-    <div style={{ 
+      <div style={{ 
         width: '100vw', 
         height: '100vh', 
         padding: '0',
@@ -342,8 +381,8 @@ export default function CoordinatorDashboard() {
               ))}
             </select>
           </label>
-          <button 
-            onClick={refreshStudents} 
+          <button
+            onClick={refreshStudents}
             disabled={loading}
             style={{
               padding: '8px 16px',
@@ -417,24 +456,24 @@ export default function CoordinatorDashboard() {
                   <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
-                      <select 
-                        value={selectedWeek} 
-                        onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                        style={{
-                          padding: '6px 12px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '4px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      >
+                  <select 
+                    value={selectedWeek} 
+                    onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                    style={{
+                      padding: '6px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: 'white',
+                      color: '#000000'
+                    }}
+                  >
                         {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (
-                          <option key={week} value={week}>
-                            Week {week}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                      <option key={week} value={week}>
+                        Week {week}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                   </div>
                   {section && studentId && selectedStudent ? (
                     <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={false} />
@@ -467,10 +506,6 @@ export default function CoordinatorDashboard() {
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
               {section && studentId && selectedStudent ? (
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-                  <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
-                    <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Student: {selectedStudent.userName}</div>
-                    <div style={{ fontSize: 14, color: '#0c4a6e' }}>ID: {selectedStudent.studentId}</div>
-                  </div>
                   
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -508,69 +543,95 @@ export default function CoordinatorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day, index) => {
-                            // Calculate the date for this day of the selected week
-                            const weekStart = new Date(2025, 0, 6 + (selectedWeekForReports - 1) * 7) // Start from first Monday of 2025
-                            const dayDate = new Date(weekStart)
-                            dayDate.setDate(weekStart.getDate() + index)
-                            const dateString = dayDate.toISOString().split('T')[0]
-                            
-                            const report = studentReports.find(r => r.date === dateString)
-                            const hasReport = !!report
-                            
-                            return (
-                              <tr key={day} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>{day}</td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{dateString}</td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.hours || 0}</td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                  {hasReport ? (
-                                    <span style={{ padding: '4px 8px', borderRadius: 12, background: '#dcfce7', color: '#166534', fontSize: 12, fontWeight: 600 }}>
-                                      Submitted
-                                    </span>
-                                  ) : (
-                                    <span style={{ padding: '4px 8px', borderRadius: 12, background: '#fee2e2', color: '#991b1b', fontSize: 12, fontWeight: 600 }}>
-                                      Missing
-                                    </span>
-                                  )}
-                                </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                  {report?.excuse ? (
-                                    <div style={{ color: '#dc2626', fontSize: 14, fontWeight: 500 }}>{report.excuse}</div>
-                                  ) : (
-                                    <div style={{ color: '#6b7280', fontSize: 14 }}>No excuse</div>
-                                  )}
-                                </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                                  {!hasReport ? (
-                                    <button
-                                      onClick={() => setEditingReport({ 
-                                        weekNumber: selectedWeekForReports, 
-                                        day: day,
-                                        date: dateString,
-                                        id: null, 
-                                        excuse: '' 
-                                      })}
-                                      style={{ 
-                                        padding: '6px 12px', 
-                                        borderRadius: 6, 
-                                        backgroundColor: '#3b82f6', 
-                                        color: 'white', 
-                                        border: 'none', 
-                                        fontSize: 12, 
-                                        cursor: 'pointer',
-                                        fontWeight: 500
+                          {studentReports
+                            .filter(report => report.weekNumber === selectedWeekForReports)
+                            .map((report, index) => {
+                              const hasReport = !!report
+                              const reportDate = report?.date || ''
+                              
+                              return (
+                                <tr key={report.id || index} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>
+                                    {new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' })}
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                    <input
+                                      type="date"
+                                      value={reportDate}
+                                      onChange={(e) => {
+                                        // Update the report date
+                                        const updatedReports = studentReports.map(r => 
+                                          r.id === report.id ? { ...r, date: e.target.value } : r
+                                        )
+                                        setStudentReports(updatedReports)
                                       }}
-                                    >
-                                      Add Excuse
-                                    </button>
-                                  ) : (
-                                    <span style={{ color: '#6b7280', fontSize: 12 }}>No action needed</span>
-                                  )}
-                                </td>
-                              </tr>
-                            )
-                          })}
+                                      style={{
+                                        padding: '4px 8px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white'
+                                      }}
+                                    />
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.hours || 0}</td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                                    {hasReport ? (
+                                      <span style={{ padding: '4px 8px', borderRadius: 12, background: '#dcfce7', color: '#166534', fontSize: 12, fontWeight: 600 }}>
+                                        Submitted
+                                      </span>
+                                    ) : (
+                                      <span style={{ padding: '4px 8px', borderRadius: 12, background: '#fee2e2', color: '#991b1b', fontSize: 12, fontWeight: 600 }}>
+                                        Missing
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                                    {report?.excuse ? (
+                                      <div style={{ color: '#dc2626', fontSize: 14, fontWeight: 500 }}>{report.excuse}</div>
+                                    ) : (
+                                      <div style={{ color: '#6b7280', fontSize: 14 }}>No excuse</div>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                                    {!hasReport ? (
+                                      <button
+                                        onClick={() => setEditingReport({ 
+                                          weekNumber: selectedWeekForReports, 
+                                          day: new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' }),
+                                          date: reportDate,
+                                          id: report?.id || null, 
+                                          excuse: report?.excuse || '' 
+                                        })}
+                                        style={{ 
+                                          padding: '6px 12px', 
+                                          borderRadius: 6, 
+                                          backgroundColor: '#3b82f6', 
+                                          color: 'white', 
+                                          border: 'none', 
+                                          fontSize: 12, 
+                                          cursor: 'pointer',
+                                          fontWeight: 500
+                                        }}
+                                      >
+                                        Add Excuse
+                                      </button>
+                                    ) : (
+                                      <span style={{ color: '#6b7280', fontSize: 12 }}>No action needed</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          
+                          {/* Show message if no reports for selected week */}
+                          {studentReports.filter(report => report.weekNumber === selectedWeekForReports).length === 0 && (
+                            <tr>
+                              <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                                No reports found for Week {selectedWeekForReports}
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -601,27 +662,54 @@ export default function CoordinatorDashboard() {
               {editingReport.excuse ? 'Edit Excuse' : 'Add Excuse'} for {editingReport.day || 'Day'} - Week {editingReport.weekNumber || 'N/A'}
             </h3>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Reason:</label>
-              <textarea
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Type:</label>
+              <select
                 value={excuseText}
                 onChange={(e) => setExcuseText(e.target.value)}
-                placeholder="Enter the excuse reason (e.g., medical emergency, family emergency, etc.)"
                 style={{
                   width: '100%',
-                  minHeight: 100,
                   padding: 12,
                   border: '1px solid #d1d5db',
                   borderRadius: 6,
                   fontSize: 14,
-                  resize: 'vertical'
+                  backgroundColor: 'white',
+                  marginBottom: 12
                 }}
-              />
+              >
+                <option value="">Select excuse type...</option>
+                <option value="Medical Emergency">Medical Emergency</option>
+                <option value="Family Emergency">Family Emergency</option>
+                <option value="Transportation Issues">Transportation Issues</option>
+                <option value="Weather Conditions">Weather Conditions</option>
+                <option value="Personal Matters">Personal Matters</option>
+                <option value="Company-related Issues">Company-related Issues</option>
+                <option value="Academic Requirements">Academic Requirements</option>
+                <option value="Other">Other</option>
+              </select>
+              
+              {excuseText === 'Other' && (
+                <textarea
+                  value={customExcuseText}
+                  onChange={(e) => setCustomExcuseText(e.target.value)}
+                  placeholder="Please specify the excuse reason..."
+                  style={{
+                    width: '100%',
+                    minHeight: 80,
+                    padding: 12,
+                    border: '1px solid #d1d5db',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    resize: 'vertical'
+                  }}
+                />
+              )}
             </div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => {
                   setEditingReport(null)
                   setExcuseText('')
+                  setCustomExcuseText('')
                 }}
                 style={{ padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 6, backgroundColor: 'white', color: '#6b7280', cursor: 'pointer' }}
               >
@@ -629,14 +717,14 @@ export default function CoordinatorDashboard() {
               </button>
               <button
                 onClick={handleExcuseSubmit}
-                disabled={!excuseText.trim()}
+                disabled={!excuseText.trim() || (excuseText === 'Other' && !customExcuseText.trim())}
                 style={{ 
                   padding: '8px 16px', 
                   border: 'none', 
                   borderRadius: 6, 
-                  backgroundColor: excuseText.trim() ? '#dc2626' : '#9ca3af', 
+                  backgroundColor: (excuseText.trim() && (excuseText !== 'Other' || customExcuseText.trim())) ? '#dc2626' : '#9ca3af', 
                   color: 'white', 
-                  cursor: excuseText.trim() ? 'pointer' : 'not-allowed' 
+                  cursor: (excuseText.trim() && (excuseText !== 'Other' || customExcuseText.trim())) ? 'pointer' : 'not-allowed' 
                 }}
               >
                 {editingReport.excuse ? 'Update Excuse' : 'Submit Excuse'}
