@@ -131,17 +131,18 @@ export default function CoordinatorDashboard() {
     }
   }
 
-  const handleExcuseSubmit = async (reportId: string) => {
-    if (!excuseText.trim()) return
+  const handleExcuseSubmit = async () => {
+    if (!excuseText.trim() || !editingReport) return
     
     try {
       const response = await fetch(getApiUrl('/api/reports'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          reportId,
+          reportId: editingReport.id,
           excuse: excuseText.trim(),
-          hours: 8 // Automatically set to 8 hours when excused
+          weekNumber: editingReport.weekNumber,
+          studentId: studentId
         })
       })
       
@@ -444,57 +445,68 @@ export default function CoordinatorDashboard() {
                   </div>
                   
                   <div style={{ marginBottom: 16 }}>
-                    <h4 style={{ margin: '0 0 12px 0', color: '#111827' }}>Weekly Reports</h4>
-                    {studentReports.length > 0 ? (
-                      <div style={{ display: 'grid', gap: 12 }}>
-                        {studentReports.map((report, index) => (
-                          <div key={index} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, backgroundColor: '#fafafa' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                              <div>
-                                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 4 }}>Week {report.weekNumber || index + 1}</div>
-                                <div style={{ fontSize: 14, color: '#6b7280' }}>Date: {report.date || 'N/A'}</div>
-                                <div style={{ fontSize: 14, color: '#6b7280' }}>Hours: {report.hours || 0}</div>
-                              </div>
-                              <div style={{ display: 'flex', gap: 8 }}>
-                                {report.excuse ? (
-                                  <span style={{ padding: '4px 8px', borderRadius: 4, backgroundColor: '#fef2f2', color: '#dc2626', fontSize: 12, fontWeight: 600 }}>
-                                    Excused
-                                  </span>
-                                ) : (
+                    <h4 style={{ margin: '0 0 12px 0', color: '#111827' }}>Weekly Reports - Excuse Management</h4>
+                    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ background: '#f8f9fa' }}>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Week</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Date</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Hours</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Status</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Excuse</th>
+                            <th style={{ textAlign: 'center', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Array.from({ length: 13 }, (_, i) => i + 1).map(week => {
+                            const report = studentReports.find(r => r.weekNumber === week)
+                            return (
+                              <tr key={week} style={{ background: week % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Week {week}</td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.date || '—'}</td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.hours || 0}</td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                                  {report ? (
+                                    <span style={{ padding: '4px 8px', borderRadius: 12, background: '#dcfce7', color: '#166534', fontSize: 12, fontWeight: 600 }}>
+                                      Submitted
+                                    </span>
+                                  ) : (
+                                    <span style={{ padding: '4px 8px', borderRadius: 12, background: '#fee2e2', color: '#991b1b', fontSize: 12, fontWeight: 600 }}>
+                                      Missing
+                                    </span>
+                                  )}
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                                  {report?.excuse ? (
+                                    <div style={{ color: '#dc2626', fontSize: 14, fontWeight: 500 }}>{report.excuse}</div>
+                                  ) : (
+                                    <div style={{ color: '#6b7280', fontSize: 14 }}>No excuse</div>
+                                  )}
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
                                   <button
-                                    onClick={() => setEditingReport(report)}
-                                    style={{ padding: '4px 8px', borderRadius: 4, backgroundColor: '#3b82f6', color: 'white', border: 'none', fontSize: 12, cursor: 'pointer' }}
+                                    onClick={() => setEditingReport({ weekNumber: week, id: report?.id, excuse: report?.excuse || '' })}
+                                    style={{ 
+                                      padding: '6px 12px', 
+                                      borderRadius: 6, 
+                                      backgroundColor: report?.excuse ? '#f59e0b' : '#3b82f6', 
+                                      color: 'white', 
+                                      border: 'none', 
+                                      fontSize: 12, 
+                                      cursor: 'pointer',
+                                      fontWeight: 500
+                                    }}
                                   >
-                                    Add Excuse
+                                    {report?.excuse ? 'Edit Excuse' : 'Add Excuse'}
                                   </button>
-                                )}
-                              </div>
-                            </div>
-                            
-                            {report.excuse && (
-                              <div style={{ marginBottom: 12, padding: 8, backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 4 }}>
-                                <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 600, marginBottom: 4 }}>Excuse:</div>
-                                <div style={{ fontSize: 14, color: '#dc2626' }}>{report.excuse}</div>
-                              </div>
-                            )}
-                            
-                            <div style={{ marginBottom: 8 }}>
-                              <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 4 }}>Activities:</div>
-                              <div style={{ fontSize: 14, color: '#111827' }}>{report.activities || 'No activities reported'}</div>
-                            </div>
-                            
-                            <div>
-                              <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 4 }}>Learnings:</div>
-                              <div style={{ fontSize: 14, color: '#111827' }}>{report.learnings || 'No learnings reported'}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{ color: '#6b7280', textAlign: 'center', padding: 20 }}>
-                        No reports found for this student.
-                      </div>
-                    )}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -518,7 +530,9 @@ export default function CoordinatorDashboard() {
       {editingReport && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'white', borderRadius: 8, padding: 24, width: '90%', maxWidth: 500 }}>
-            <h3 style={{ margin: '0 0 16px 0', color: '#111827' }}>Add Excuse for Week {editingReport.weekNumber || 'N/A'}</h3>
+            <h3 style={{ margin: '0 0 16px 0', color: '#111827' }}>
+              {editingReport.excuse ? 'Edit Excuse' : 'Add Excuse'} for Week {editingReport.weekNumber || 'N/A'}
+            </h3>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Reason:</label>
               <textarea
@@ -547,7 +561,7 @@ export default function CoordinatorDashboard() {
                 Cancel
               </button>
               <button
-                onClick={() => handleExcuseSubmit(editingReport.id)}
+                onClick={handleExcuseSubmit}
                 disabled={!excuseText.trim()}
                 style={{ 
                   padding: '8px 16px', 
@@ -558,7 +572,7 @@ export default function CoordinatorDashboard() {
                   cursor: excuseText.trim() ? 'pointer' : 'not-allowed' 
                 }}
               >
-                Submit Excuse
+                {editingReport.excuse ? 'Update Excuse' : 'Submit Excuse'}
               </button>
             </div>
           </div>

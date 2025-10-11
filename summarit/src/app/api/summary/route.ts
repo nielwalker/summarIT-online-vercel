@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     console.log('All reports from DB:', reports.length, 'Week numbers:', reports.map(r => r.weekNumber))
     const filtered = Array.isArray(reports)
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
+          .filter(r => !r.excuse) // Exclude reports with excuses from summarization
       : []
     console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
     // Build a robust combined text. Ensure each entry becomes a complete sentence
