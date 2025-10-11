@@ -189,8 +189,8 @@ export default function CoordinatorDashboard() {
         weekNumber: report.weekNumber,
         date: report.date,
         hours: report.hours || 0,
-        activities: report.activities || '',
-        learnings: report.learnings || '',
+        activities: report.excuse ? 'Excused' : '',
+        learnings: report.excuse ? 'Excused' : '',
         excuse: report.excuse || ''
       }
       
@@ -593,8 +593,6 @@ export default function CoordinatorDashboard() {
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Day</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Date</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Hours</th>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Activities</th>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Learnings</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Excuse</th>
                             <th style={{ textAlign: 'center', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Action</th>
                           </tr>
@@ -654,50 +652,6 @@ export default function CoordinatorDashboard() {
                                       }}
                                     />
                                   </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                    <textarea
-                                      value={report?.activities || ''}
-                                      onChange={(e) => {
-                                        const updatedReports = studentReports.map(r => 
-                                          r.id === report.id ? { ...r, activities: e.target.value } : r
-                                        )
-                                        setStudentReports(updatedReports)
-                                      }}
-                                      placeholder="Enter activities..."
-                                      style={{
-                                        padding: '8px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '4px',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        width: '100%',
-                                        minHeight: '60px',
-                                        resize: 'vertical'
-                                      }}
-                                    />
-                                  </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                    <textarea
-                                      value={report?.learnings || ''}
-                                      onChange={(e) => {
-                                        const updatedReports = studentReports.map(r => 
-                                          r.id === report.id ? { ...r, learnings: e.target.value } : r
-                                        )
-                                        setStudentReports(updatedReports)
-                                      }}
-                                      placeholder="Enter learnings..."
-                                      style={{
-                                        padding: '8px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '4px',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        width: '100%',
-                                        minHeight: '60px',
-                                        resize: 'vertical'
-                                      }}
-                                    />
-                                  </td>
                                   <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
                                     <textarea
                                       value={report?.excuse || ''}
@@ -744,7 +698,7 @@ export default function CoordinatorDashboard() {
                           {/* Show message if no reports for selected week */}
                           {studentReports.filter(report => report.weekNumber === selectedWeekForReports).length === 0 && (
                             <tr>
-                              <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
+                              <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
                                 No reports found for Week {selectedWeekForReports}
                               </td>
                             </tr>
@@ -844,7 +798,7 @@ export default function CoordinatorDashboard() {
                   {companyDetails && (
                     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20 }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-                        <div style={{ 
+            <div style={{
                           width: 48, 
                           height: 48, 
                           borderRadius: '50%', 

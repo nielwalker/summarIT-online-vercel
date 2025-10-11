@@ -45,6 +45,10 @@ export default function ChairmanDashboard() {
   const [editingCoordinator, setEditingCoordinator] = useState<number | null>(null)
   const [editingCompany, setEditingCompany] = useState<number | null>(null)
   
+  // Modal states
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [modalType, setModalType] = useState<'student' | 'coordinator' | 'company'>('student')
+  
   // Edit form states
   const [editStudentId, setEditStudentId] = useState('')
   const [editStudentName, setEditStudentName] = useState('')
@@ -302,6 +306,8 @@ export default function ChairmanDashboard() {
     // Pre-select company id if company list has a matching name
     const matched = companies.find(c => c.name === (student.companyName || ''))
     setEditSelectedCompanyId(matched ? String(matched.id) : '')
+    setModalType('student')
+    setShowEditModal(true)
   }
 
   function startEditCoordinator(coordinator: any) {
@@ -309,6 +315,8 @@ export default function ChairmanDashboard() {
     setEditCoordName(coordinator.userName)
     setEditCoordSections(coordinator.sections.join(', '))
     setEditCoordIdValue(String(coordinator.coordinatorId || ''))
+    setModalType('coordinator')
+    setShowEditModal(true)
   }
 
   function startEditCompany(company: any) {
@@ -317,6 +325,8 @@ export default function ChairmanDashboard() {
     setEditCompanyAddress(company.address)
     setEditCompanySupervisor(company.supervisor)
     setEditCompanyContact(company.contactNumber)
+    setModalType('company')
+    setShowEditModal(true)
   }
 
   function cancelEdit() {
@@ -333,6 +343,7 @@ export default function ChairmanDashboard() {
     setEditCompanyAddress('')
     setEditCompanySupervisor('')
     setEditCompanyContact('')
+    setShowEditModal(false)
   }
 
   async function updateStudent() {
@@ -883,96 +894,6 @@ export default function ChairmanDashboard() {
                   )}
                 </div>
                 
-                {/* Edit Student Form */}
-                {editingStudent && (
-                  <div style={{ 
-                    marginTop: '20px', 
-                    padding: '20px', 
-                    backgroundColor: '#f0f9ff', 
-                    borderRadius: '8px', 
-                    border: '1px solid #3b82f6' 
-                  }}>
-                    <h5 style={{ margin: '0 0 16px 0', color: '#000000' }}>Edit Student</h5>
-                    <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student ID</div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <input 
-                            value={editStudentId} 
-                            onChange={(e) => setEditStudentId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                            style={{ 
-                              flex: 1,
-                              padding: 8, 
-                              border: '1px solid #d1d5db', 
-                              borderRadius: 4,
-                              backgroundColor: 'white',
-                              color: '#000000'
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setEditStudentId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
-                            style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                          >
-                            Generate
-                          </button>
-                        </div>
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student Name</div>
-                        <input 
-                          value={editStudentName} 
-                          onChange={(e) => setEditStudentName(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Section</div>
-                        <select 
-                          value={editStudentSection} 
-                          onChange={(e) => setEditStudentSection(e.target.value)}
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        >
-                          {coordinatorSections.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company</div>
-                        <select 
-                          value={editSelectedCompanyId}
-                          onChange={(e) => setEditSelectedCompanyId(e.target.value)}
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        >
-                          <option value="">Select Company</option>
-                          {companies.map(company => (
-                            <option key={company.id} value={company.id}>{company.name}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1190,76 +1111,6 @@ export default function ChairmanDashboard() {
                   )}
         </div>
         
-                {/* Edit Coordinator Form */}
-                {editingCoordinator && (
-        <div style={{ 
-                    marginTop: '20px', 
-                    padding: '20px', 
-                    backgroundColor: '#f0f9ff', 
-          borderRadius: '8px',
-                    border: '1px solid #3b82f6' 
-                  }}>
-                    <h5 style={{ margin: '0 0 16px 0', color: '#000000' }}>Edit Coordinator</h5>
-                <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator Name</div>
-                        <input 
-                          value={editCoordName} 
-                          onChange={(e) => setEditCoordName(e.target.value)} 
-              style={{
-                            width: '100%', 
-                            padding: 8, 
-                border: '1px solid #d1d5db',
-                            borderRadius: 4,
-                backgroundColor: 'white',
-                color: '#000000'
-              }}
-                        />
-          </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Assigned Sections</div>
-                        <input 
-                          value={editCoordSections} 
-                          onChange={(e) => setEditCoordSections(e.target.value)} 
-                          placeholder="e.g. IT4R8, IT4R9, IT4R10, IT4R11"
-              style={{
-                            width: '100%', 
-                            padding: 8, 
-                border: '1px solid #d1d5db',
-                            borderRadius: 4,
-                backgroundColor: 'white',
-                color: '#000000'
-              }}
-                        />
-          </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <input 
-                            value={editCoordIdValue} 
-                            onChange={(e) => setEditCoordIdValue(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                            placeholder="e.g. 20251234"
-                            style={{
-                              flex: 1,
-                              padding: 8,
-                              border: '1px solid #d1d5db',
-                              borderRadius: 4,
-                              backgroundColor: 'white',
-                              color: '#000000'
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setEditCoordIdValue(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
-                            style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                          >
-                            Generate
-                          </button>
-                        </div>
-                      </label>
-        </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1472,85 +1323,442 @@ export default function ChairmanDashboard() {
                   )}
         </div>
         
-                {/* Edit Company Form */}
-                {editingCompany && (
-        <div style={{ 
-                    marginTop: '20px', 
-                    padding: '20px', 
-                    backgroundColor: '#f0f9ff', 
-                    borderRadius: '8px', 
-                    border: '1px solid #3b82f6' 
-                  }}>
-                    <h5 style={{ margin: '0 0 16px 0', color: '#000000' }}>Edit Company</h5>
-                    <div style={{ display: 'grid', gap: '12px', maxWidth: '500px' }}>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company Name</div>
-                        <input 
-                          value={editCompanyName} 
-                          onChange={(e) => setEditCompanyName(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company Address</div>
-                        <input 
-                          value={editCompanyAddress} 
-                          onChange={(e) => setEditCompanyAddress(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Supervisor Name</div>
-                        <input 
-                          value={editCompanySupervisor} 
-                          onChange={(e) => setEditCompanySupervisor(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
-                      </label>
-                      <label>
-                        <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Contact Number</div>
-                        <input 
-                          value={editCompanyContact} 
-                          onChange={(e) => setEditCompanyContact(e.target.value)} 
-                          style={{ 
-                            width: '100%', 
-                            padding: 8, 
-                            border: '1px solid #d1d5db', 
-                            borderRadius: 4,
-                            backgroundColor: 'white',
-                            color: '#000000'
-                          }}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            width: '90%',
+            maxWidth: '600px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, color: '#111827', fontSize: '20px', fontWeight: '600' }}>
+                {modalType === 'student' && 'Edit Student'}
+                {modalType === 'coordinator' && 'Edit Coordinator'}
+                {modalType === 'company' && 'Edit Company'}
+              </h3>
+              <button
+                onClick={cancelEdit}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                  padding: '4px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Student Edit Form */}
+            {modalType === 'student' && (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Student ID
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      value={editStudentId}
+                      onChange={(e) => setEditStudentId(e.target.value)}
+                      style={{
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        backgroundColor: 'white',
+                        color: '#000000',
+                        flex: 1
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newId = '2025' + Math.random().toString().slice(2, 8)
+                        setEditStudentId(newId)
+                      }}
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Student Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editStudentName}
+                    onChange={(e) => setEditStudentName(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Section
+                  </label>
+                  <select
+                    value={editStudentSection}
+                    onChange={(e) => setEditStudentSection(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  >
+                    {coordinatorSections.map(section => (
+                      <option key={section} value={section}>{section}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Company
+                  </label>
+                  <select
+                    value={editSelectedCompanyId}
+                    onChange={(e) => setEditSelectedCompanyId(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  >
+                    <option value="">Select Company</option>
+                    {companies.map(company => (
+                      <option key={company.id} value={String(company.id)}>{company.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                  <button
+                    onClick={cancelEdit}
+                    style={{
+                      padding: '12px 24px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      backgroundColor: 'white',
+                      color: '#6b7280',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={updateStudent}
+                    style={{
+                      padding: '12px 24px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Update Student
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Coordinator Edit Form */}
+            {modalType === 'coordinator' && (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Coordinator ID
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="number"
+                      value={editCoordIdValue}
+                      onChange={(e) => setEditCoordIdValue(e.target.value)}
+                      style={{
+                        padding: '12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        backgroundColor: 'white',
+                        color: '#000000',
+                        flex: 1
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        const newId = '2025' + Math.random().toString().slice(2, 8)
+                        setEditCoordIdValue(newId)
+                      }}
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Coordinator Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editCoordName}
+                    onChange={(e) => setEditCoordName(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Sections (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={editCoordSections}
+                    onChange={(e) => setEditCoordSections(e.target.value)}
+                    placeholder="e.g., IT4R8, IT4R9"
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                  <button
+                    onClick={cancelEdit}
+                    style={{
+                      padding: '12px 24px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      backgroundColor: 'white',
+                      color: '#6b7280',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={updateCoordinator}
+                    style={{
+                      padding: '12px 24px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Update Coordinator
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Company Edit Form */}
+            {modalType === 'company' && (
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editCompanyName}
+                    onChange={(e) => setEditCompanyName(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Address
+                  </label>
+                  <textarea
+                    value={editCompanyAddress}
+                    onChange={(e) => setEditCompanyAddress(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%',
+                      minHeight: '80px',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Supervisor
+                  </label>
+                  <input
+                    type="text"
+                    value={editCompanySupervisor}
+                    onChange={(e) => setEditCompanySupervisor(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#111827' }}>
+                    Contact Number
+                  </label>
+                  <input
+                    type="text"
+                    value={editCompanyContact}
+                    onChange={(e) => setEditCompanyContact(e.target.value)}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'white',
+                      color: '#000000',
+                      width: '100%'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                  <button
+                    onClick={cancelEdit}
+                    style={{
+                      padding: '12px 24px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      backgroundColor: 'white',
+                      color: '#6b7280',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={updateCompany}
+                    style={{
+                      padding: '12px 24px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Update Company
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </DashboardShell>
   )
 }
