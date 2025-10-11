@@ -167,25 +167,10 @@ export default function CoordinatorDashboard() {
           alignItems: 'center',
           width: '100%',
           marginBottom: '20px',
-          padding: '20px'
-        , marginLeft: sidebarCollapsed ? '64px' : '256px' }}>
+          padding: '20px',
+          marginLeft: sidebarCollapsed ? '64px' : '256px'
+        }}>
           <h2 style={{ margin: 0, color: '#000000', textAlign: 'center' }}>Coordinator Dashboard - Student Analysis</h2>
-          <button 
-            onClick={() => {
-              try {
-                localStorage.removeItem('token')
-                localStorage.removeItem('role')
-                localStorage.removeItem('userName')
-                localStorage.removeItem('studentId')
-                localStorage.removeItem('section')
-              } catch {}
-              navigate('/')
-            }}
-            className="btn btn-danger"
-            style={{ position: 'absolute', right: '20px', top: '16px' }}
-          >
-            Logout
-          </button>
         </div>
         
         <div style={{ 
