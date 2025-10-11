@@ -14,6 +14,7 @@ export default function CoordinatorDashboard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sections, setSections] = useState<string[]>([])
+  const [totalHours, setTotalHours] = useState<number>(0)
 
 
   // Load sections assigned to the logged-in coordinator
@@ -83,14 +84,30 @@ export default function CoordinatorDashboard() {
     fetchStudents()
   }, [section])
 
+  const fetchStudentTotalHours = async (studentId: string) => {
+    try {
+      const response = await fetch(getApiUrl(`/api/reports?action=getStudentTotalHours&studentId=${encodeURIComponent(studentId)}`))
+      if (response.ok) {
+        const data = await response.json()
+        setTotalHours(data.totalHours || 0)
+      } else {
+        setTotalHours(0)
+      }
+    } catch (error) {
+      console.error('Error fetching student total hours:', error)
+      setTotalHours(0)
+    }
+  }
+
   const handleStudentChange = async (selectedStudentId: string) => {
     setStudentId(selectedStudentId)
     if (selectedStudentId) {
       const student = students.find(s => s.studentId === selectedStudentId)
       setSelectedStudent(student || null)
-      
+      fetchStudentTotalHours(selectedStudentId)
     } else {
       setSelectedStudent(null)
+      setTotalHours(0)
     }
   }
 
@@ -355,7 +372,7 @@ export default function CoordinatorDashboard() {
                   <>
                     <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
                       <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Total Accumulated Hours</div>
-                      <div style={{ fontSize: 24, fontWeight: 700, color: '#0c4a6e' }}>49 / 486 hours</div>
+                      <div style={{ fontSize: 24, fontWeight: 700, color: '#0c4a6e' }}>{totalHours} / 486 hours</div>
                     </div>
                     <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={true} />
                   </>

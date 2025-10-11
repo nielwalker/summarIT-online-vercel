@@ -17,8 +17,16 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url)
+    const action = url.searchParams.get('action')
     const section = url.searchParams.get('section')
     const studentId = url.searchParams.get('studentId')
+    
+    if (action === 'getStudentTotalHours' && studentId) {
+      // Get total hours for a specific student
+      const reports = await getReports(undefined, studentId)
+      const totalHours = reports.reduce((sum, report) => sum + (report.hours || 0), 0)
+      return NextResponse.json({ totalHours }, { headers: corsHeaders as Record<string, string> })
+    }
     
     // Use Supabase database only - no mock data fallbacks
     const reports = await getReports(section || undefined, studentId || undefined)
