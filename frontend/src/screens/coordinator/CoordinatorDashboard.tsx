@@ -15,6 +15,9 @@ export default function CoordinatorDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [sections, setSections] = useState<string[]>([])
   const [totalHours, setTotalHours] = useState<number>(0)
+  const [studentReports, setStudentReports] = useState<any[]>([])
+  const [editingReport, setEditingReport] = useState<any>(null)
+  const [excuseText, setExcuseText] = useState<string>('')
 
 
   // Load sections assigned to the logged-in coordinator
@@ -99,15 +102,62 @@ export default function CoordinatorDashboard() {
     }
   }
 
+  const fetchStudentReports = async (studentId: string) => {
+    try {
+      const response = await fetch(getApiUrl(`/api/reports?studentId=${encodeURIComponent(studentId)}`))
+      if (response.ok) {
+        const data = await response.json()
+        setStudentReports(data || [])
+      } else {
+        setStudentReports([])
+      }
+    } catch (error) {
+      console.error('Error fetching student reports:', error)
+      setStudentReports([])
+    }
+  }
+
   const handleStudentChange = async (selectedStudentId: string) => {
     setStudentId(selectedStudentId)
     if (selectedStudentId) {
       const student = students.find(s => s.studentId === selectedStudentId)
       setSelectedStudent(student || null)
       fetchStudentTotalHours(selectedStudentId)
+      fetchStudentReports(selectedStudentId)
     } else {
       setSelectedStudent(null)
       setTotalHours(0)
+      setStudentReports([])
+    }
+  }
+
+  const handleExcuseSubmit = async (reportId: string) => {
+    if (!excuseText.trim()) return
+    
+    try {
+      const response = await fetch(getApiUrl('/api/reports'), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId,
+          excuse: excuseText.trim(),
+          hours: 8 // Automatically set to 8 hours when excused
+        })
+      })
+      
+      if (response.ok) {
+        // Refresh the reports
+        if (studentId) {
+          fetchStudentReports(studentId)
+          fetchStudentTotalHours(studentId)
+        }
+        setEditingReport(null)
+        setExcuseText('')
+      } else {
+        console.error('Failed to submit excuse')
+      }
+    } catch (error) {
+      console.error('Error submitting excuse:', error)
     }
   }
 
@@ -154,7 +204,7 @@ export default function CoordinatorDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   return (
-      <div style={{ 
+    <div style={{ 
         width: '100vw', 
         height: '100vh', 
         padding: '0',
@@ -386,9 +436,72 @@ export default function CoordinatorDashboard() {
           {activeTab === 'reports' && (
             <div style={{ width: '100%', maxWidth: 1200 }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
-              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-                <div style={{ color: '#6b7280' }}>Coming soon: list of weekly submissions with date/status.</div>
-              </div>
+              {section && studentId && selectedStudent ? (
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                  <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
+                    <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Student: {selectedStudent.userName}</div>
+                    <div style={{ fontSize: 14, color: '#0c4a6e' }}>ID: {selectedStudent.studentId}</div>
+                  </div>
+                  
+                  <div style={{ marginBottom: 16 }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: '#111827' }}>Weekly Reports</h4>
+                    {studentReports.length > 0 ? (
+                      <div style={{ display: 'grid', gap: 12 }}>
+                        {studentReports.map((report, index) => (
+                          <div key={index} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, backgroundColor: '#fafafa' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                              <div>
+                                <div style={{ fontWeight: 600, color: '#111827', marginBottom: 4 }}>Week {report.weekNumber || index + 1}</div>
+                                <div style={{ fontSize: 14, color: '#6b7280' }}>Date: {report.date || 'N/A'}</div>
+                                <div style={{ fontSize: 14, color: '#6b7280' }}>Hours: {report.hours || 0}</div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                {report.excuse ? (
+                                  <span style={{ padding: '4px 8px', borderRadius: 4, backgroundColor: '#fef2f2', color: '#dc2626', fontSize: 12, fontWeight: 600 }}>
+                                    Excused
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => setEditingReport(report)}
+                                    style={{ padding: '4px 8px', borderRadius: 4, backgroundColor: '#3b82f6', color: 'white', border: 'none', fontSize: 12, cursor: 'pointer' }}
+                                  >
+                                    Add Excuse
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {report.excuse && (
+                              <div style={{ marginBottom: 12, padding: 8, backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 4 }}>
+                                <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 600, marginBottom: 4 }}>Excuse:</div>
+                                <div style={{ fontSize: 14, color: '#dc2626' }}>{report.excuse}</div>
+                              </div>
+                            )}
+                            
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 4 }}>Activities:</div>
+                              <div style={{ fontSize: 14, color: '#111827' }}>{report.activities || 'No activities reported'}</div>
+                            </div>
+                            
+                            <div>
+                              <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginBottom: 4 }}>Learnings:</div>
+                              <div style={{ fontSize: 14, color: '#111827' }}>{report.learnings || 'No learnings reported'}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ color: '#6b7280', textAlign: 'center', padding: 20 }}>
+                        No reports found for this student.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                  <div style={{ color: '#6b7280' }}>Please select a student to view their reports.</div>
+                </div>
+              )}
             </div>
           )}
 
@@ -400,6 +513,57 @@ export default function CoordinatorDashboard() {
               </div>
             </div>
           )}
+
+          {/* Excuse Modal */}
+      {editingReport && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', borderRadius: 8, padding: 24, width: '90%', maxWidth: 500 }}>
+            <h3 style={{ margin: '0 0 16px 0', color: '#111827' }}>Add Excuse for Week {editingReport.weekNumber || 'N/A'}</h3>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Reason:</label>
+              <textarea
+                value={excuseText}
+                onChange={(e) => setExcuseText(e.target.value)}
+                placeholder="Enter the excuse reason (e.g., medical emergency, family emergency, etc.)"
+                style={{
+                  width: '100%',
+                  minHeight: 100,
+                  padding: 12,
+                  border: '1px solid #d1d5db',
+                  borderRadius: 6,
+                  fontSize: 14,
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setEditingReport(null)
+                  setExcuseText('')
+                }}
+                style={{ padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 6, backgroundColor: 'white', color: '#6b7280', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleExcuseSubmit(editingReport.id)}
+                disabled={!excuseText.trim()}
+                style={{ 
+                  padding: '8px 16px', 
+                  border: 'none', 
+                  borderRadius: 6, 
+                  backgroundColor: excuseText.trim() ? '#dc2626' : '#9ca3af', 
+                  color: 'white', 
+                  cursor: excuseText.trim() ? 'pointer' : 'not-allowed' 
+                }}
+              >
+                Submit Excuse
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
         </div>
       </div>

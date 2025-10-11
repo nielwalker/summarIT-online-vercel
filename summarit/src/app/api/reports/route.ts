@@ -68,6 +68,38 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const data = await req.json()
+    console.log('Updating report with excuse:', data)
+    
+    // Import the Supabase client
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    
+    // Update the report with excuse and hours
+    const { error } = await supabase
+      .from('WeeklyReport')
+      .update({ 
+        excuse: data.excuse,
+        hours: data.hours || 8 // Default to 8 hours when excused
+      })
+      .eq('id', data.reportId)
+    
+    if (error) {
+      console.error('Error updating report:', error)
+      return NextResponse.json({ error: 'Failed to update report: ' + error.message }, { status: 500, headers: corsHeaders as Record<string, string> })
+    }
+    
+    return NextResponse.json({ success: true }, { headers: corsHeaders as Record<string, string> })
+  } catch (error: any) {
+    console.error('Error updating report:', error)
+    return NextResponse.json({ error: 'Failed to update report: ' + error.message }, { status: 500, headers: corsHeaders as Record<string, string> })
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const url = new URL(req.url)

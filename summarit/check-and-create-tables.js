@@ -75,7 +75,8 @@ async function checkAndCreateTables() {
           "date" TEXT NOT NULL,
           "hours" INTEGER NOT NULL,
           "activities" TEXT NOT NULL,
-          "learnings" TEXT NOT NULL
+          "learnings" TEXT NOT NULL,
+          "excuse" TEXT
         )
       `;
       console.log('✅ Created WeeklyReport table');
@@ -83,6 +84,22 @@ async function checkAndCreateTables() {
       console.log('\n🎉 All tables created successfully!');
     } else {
       console.log('\n✅ All required tables already exist!');
+      
+      // Check if excuse column exists in WeeklyReport table
+      const excuseColumn = await prisma.$queryRaw`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'WeeklyReport' 
+        AND column_name = 'excuse'
+      `;
+      
+      if (excuseColumn.length === 0) {
+        console.log('🔧 Adding excuse column to WeeklyReport table...');
+        await prisma.$executeRaw`ALTER TABLE "WeeklyReport" ADD COLUMN "excuse" TEXT`;
+        console.log('✅ Added excuse column to WeeklyReport table');
+      } else {
+        console.log('✅ Excuse column already exists in WeeklyReport table');
+      }
     }
 
     // Test fetching data
