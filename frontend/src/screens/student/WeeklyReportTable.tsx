@@ -6,14 +6,13 @@ type WeekEntry = {
   date: string
   hours: number | ''
   activities: string
-  score: number | ''
   learnings: string
   submitted?: boolean
   id?: number
 }
 
 function createBlankEntry(): WeekEntry {
-  return { date: '', hours: '', activities: '', score: '', learnings: '', submitted: false }
+  return { date: '', hours: '', activities: '', learnings: '', submitted: false }
 }
 
 function createInitialWeeks(): WeekEntry[][] {
@@ -64,7 +63,8 @@ export function WeeklyReportTable() {
         processedValue = truncateToWordLimit(value, MAX_WORDS_LEARNINGS) as WeekEntry[K]
       }
       
-      next[weekIndex][rowIdx] = { ...currentEntry, [key]: processedValue, submitted: false }
+      // Preserve the ID when updating fields
+      next[weekIndex][rowIdx] = { ...currentEntry, [key]: processedValue, submitted: false, id: currentEntry.id }
       return next
     })
   }
@@ -73,8 +73,9 @@ export function WeeklyReportTable() {
     setWeeks((prev) => {
       const next = prev.map((weekRows) => weekRows.slice())
       const weekIndex = currentWeek - 1
+      const currentEntry = next[weekIndex][rowIdx]
       // Mark the row as not submitted but keep the ID for updates
-      next[weekIndex][rowIdx] = { ...next[weekIndex][rowIdx], submitted: false }
+      next[weekIndex][rowIdx] = { ...currentEntry, submitted: false, id: currentEntry.id }
       return next
     })
   }
@@ -159,7 +160,7 @@ export function WeeklyReportTable() {
         return
       }
       
-      const items: Array<{ id: number; weekNumber: number; date: string; hours: number; activities: string; score: number; learnings: string }>
+      const items: Array<{ id: number; weekNumber: number; date: string; hours: number; activities: string; learnings: string }>
         = await res.json()
       
       console.log('Loaded reports from Supabase:', items)
@@ -169,7 +170,7 @@ export function WeeklyReportTable() {
       const buckets = new Map<number, WeekEntry[]>()
       for (const it of items) {
         const list = buckets.get(it.weekNumber) ?? []
-        list.push({ id: it.id, date: it.date, hours: it.hours, activities: it.activities, score: it.score, learnings: it.learnings, submitted: true })
+        list.push({ id: it.id, date: it.date, hours: it.hours, activities: it.activities, learnings: it.learnings, submitted: true })
         buckets.set(it.weekNumber, list)
       }
       for (const [wk, list] of buckets) {

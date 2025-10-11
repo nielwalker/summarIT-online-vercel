@@ -88,18 +88,26 @@ export async function PUT(req: NextRequest) {
       if (data.activities !== undefined) updateData.activities = data.activities
       if (data.learnings !== undefined) updateData.learnings = data.learnings
       
-      const { error } = await supabase
+      const { data: updatedReport, error } = await supabase
         .from('WeeklyReport')
         .update(updateData)
         .eq('id', data.reportId)
+        .select()
+        .single()
       
       if (error) {
         console.error('Error updating report:', error)
         return NextResponse.json({ error: 'Failed to update report: ' + error.message }, { status: 500, headers: corsHeaders as Record<string, string> })
       }
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Report updated successfully',
+        id: updatedReport.id
+      }, { headers: corsHeaders as Record<string, string> })
     } else {
       // Create a new report entry for excuse only (no activities/learnings for summarization)
-      const { error } = await supabase
+      const { data: newReport, error } = await supabase
         .from('WeeklyReport')
         .insert({
           userName: 'Coordinator Entry',
@@ -113,14 +121,20 @@ export async function PUT(req: NextRequest) {
           learnings: '',
           excuse: data.excuse
         })
+        .select()
+        .single()
       
       if (error) {
         console.error('Error creating excuse entry:', error)
         return NextResponse.json({ error: 'Failed to create excuse entry: ' + error.message }, { status: 500, headers: corsHeaders as Record<string, string> })
       }
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Excuse entry created successfully',
+        id: newReport.id
+      }, { headers: corsHeaders as Record<string, string> })
     }
-    
-    return NextResponse.json({ success: true }, { headers: corsHeaders as Record<string, string> })
   } catch (error: any) {
     console.error('Error updating report:', error)
     return NextResponse.json({ error: 'Failed to update report: ' + error.message }, { status: 500, headers: corsHeaders as Record<string, string> })
