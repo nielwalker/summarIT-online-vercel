@@ -143,8 +143,28 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>
           {!showMonitoring && (
-            <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'center', margin: '0 auto', width: '100%', maxWidth: 900 }}>
-             {analysis.summary}
+            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', margin: '0 auto', width: '100%', maxWidth: 900 }}>
+              <div style={{ fontWeight: 600, marginBottom: 12, color: '#111827', fontSize: '16px' }}>Weekly Summary</div>
+              <div style={{ textAlign: 'left' }}>
+                {analysis.summary.split('.').filter(sentence => sentence.trim()).map((sentence, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start', 
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    <span style={{ 
+                      color: '#3b82f6', 
+                      marginRight: '8px', 
+                      marginTop: '2px',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}>•</span>
+                    <span>{sentence.trim()}{sentence.trim() && !sentence.endsWith('.') ? '.' : ''}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {showMonitoring && (

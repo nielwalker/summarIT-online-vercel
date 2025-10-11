@@ -59,6 +59,21 @@ export async function createReport(reportData: any) {
   return data
 }
 
+export async function updateReport(reportId: number, reportData: any) {
+  const { data, error } = await supabase
+    .from('WeeklyReport')
+    .update({
+      ...reportData,
+      updatedAt: new Date().toISOString()
+    })
+    .eq('id', reportId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function deleteReport(id: number) {
   const { error } = await supabase
     .from('WeeklyReport')

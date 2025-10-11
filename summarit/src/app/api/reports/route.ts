@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getReports, createReport, deleteReport } from '../../../lib/supabase'
+import { getReports, createReport, updateReport, deleteReport } from '../../../lib/supabase'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const data = await req.json()
-    console.log('Updating report with excuse:', data)
+    console.log('Updating report:', data)
     
     // Import the Supabase client
     const { createClient } = await import('@supabase/supabase-js')
@@ -80,12 +80,17 @@ export async function PUT(req: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseKey)
     
     if (data.reportId) {
-      // Update existing report with excuse only (don't change hours)
+      // Update existing report
+      const updateData: any = {}
+      if (data.excuse !== undefined) updateData.excuse = data.excuse
+      if (data.date !== undefined) updateData.date = data.date
+      if (data.hours !== undefined) updateData.hours = data.hours
+      if (data.activities !== undefined) updateData.activities = data.activities
+      if (data.learnings !== undefined) updateData.learnings = data.learnings
+      
       const { error } = await supabase
         .from('WeeklyReport')
-        .update({ 
-          excuse: data.excuse
-        })
+        .update(updateData)
         .eq('id', data.reportId)
       
       if (error) {

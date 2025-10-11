@@ -148,6 +148,14 @@ export default function ChairmanDashboard() {
       setMsg('Student ID, section, and company are required'); 
       return 
     }
+    
+    // Check for duplicate student ID
+    const existingStudent = allStudents.find(s => s.studentId === studentId)
+    if (existingStudent) {
+      setMsg(`Student ID ${studentId} is already taken. Please use a different ID.`)
+      return
+    }
+    
     try {
       const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
@@ -213,6 +221,14 @@ export default function ChairmanDashboard() {
   async function registerCoordinator() {
     setMsg('')
     if (!coordName || !coordSection || !coordId) { setMsg('Coordinator ID, name, and section are required'); return }
+    
+    // Check for duplicate coordinator ID
+    const existingCoordinator = allCoordinators.find(c => c.coordinatorId === Number(coordId))
+    if (existingCoordinator) {
+      setMsg(`Coordinator ID ${coordId} is already taken. Please use a different ID.`)
+      return
+    }
+    
     try {
       const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
@@ -237,6 +253,10 @@ export default function ChairmanDashboard() {
 
   // Delete functions
   async function deleteStudent(studentId: string) {
+    if (!confirm(`Are you sure you want to delete student ${studentId}? This action cannot be undone.`)) {
+      return
+    }
+    
     try {
       const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
@@ -257,6 +277,10 @@ export default function ChairmanDashboard() {
   }
 
   async function deleteCoordinator(coordinatorId: number) {
+    if (!confirm(`Are you sure you want to delete coordinator ${coordinatorId}? This action cannot be undone.`)) {
+      return
+    }
+    
     try {
       const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
@@ -277,6 +301,10 @@ export default function ChairmanDashboard() {
   }
 
   async function deleteCompany(companyId: number) {
+    if (!confirm(`Are you sure you want to delete this company? This action cannot be undone.`)) {
+      return
+    }
+    
     try {
       const res = await fetch(getApiUrl('/api/admin'), {
         method: 'POST',
@@ -660,11 +688,10 @@ export default function ChairmanDashboard() {
                 flex: 1, 
                 display: 'flex', 
                 flexDirection: 'column',
-                alignItems: 'center',
                 width: '100%',
                 padding: '20px 0'
               }}>
-                <div style={{ width: '100%', maxWidth: '900px', marginBottom: '16px' }}>
+                <div style={{ width: '100%' }}>
                   <ChairmanDashboardPOList section={section} selectedWeek={selectedWeek} />
                 </div>
                 {/* Removed bottom chart per request */}
@@ -682,13 +709,11 @@ export default function ChairmanDashboard() {
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Student Registration</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
-              <label>
-              <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student ID</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={studentId} 
                   onChange={(e) => setStudentId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                  placeholder="e.g. 20251234"
+                  placeholder="Student ID (e.g. 20251234)"
                   style={{ 
                     flex: 1,
                     padding: 8, 
@@ -706,60 +731,51 @@ export default function ChairmanDashboard() {
                   Generate
                 </button>
               </div>
-              </label>
-              <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Student Name</div>
-                <input 
-                  value={studentName} 
-                  onChange={(e) => setStudentName(e.target.value)} 
-                  placeholder="Student Name"
-                  style={{ 
-                    width: '100%', 
-                    padding: 8, 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: 4,
-                    backgroundColor: 'white',
-                    color: '#000000'
-                  }}
-                />
-              </label>
-              <label>
-                  <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company</div>
-                  <select 
-                    value={selectedCompanyId} 
-                    onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: 8, 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: 4,
-                    backgroundColor: 'white',
-                    color: '#000000'
-                  }}
-                  >
-                    <option value="">Select Company</option>
-                    {companies.map(company => (
-                      <option key={company.id} value={company.id}>{company.name}</option>
-                    ))}
-                  </select>
-              </label>
-              <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Section</div>
-                <select 
-                  value={section} 
-                  onChange={(e) => setSection(e.target.value)}
-                  style={{ 
-                    width: '100%', 
-                    padding: 8, 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: 4,
-                    backgroundColor: 'white',
-                    color: '#000000'
-                  }}
-                >
-                    {coordinatorSections.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </label>
+              <input 
+                value={studentName} 
+                onChange={(e) => setStudentName(e.target.value)} 
+                placeholder="Student Name"
+                style={{ 
+                  width: '100%', 
+                  padding: 8, 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: 4,
+                  backgroundColor: 'white',
+                  color: '#000000'
+                }}
+              />
+              <select 
+                value={selectedCompanyId} 
+                onChange={(e) => setSelectedCompanyId(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  padding: 8, 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: 4,
+                  backgroundColor: 'white',
+                  color: '#000000'
+                }}
+              >
+                <option value="">Select Company</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>{company.name}</option>
+                ))}
+              </select>
+              <select 
+                value={section} 
+                onChange={(e) => setSection(e.target.value)}
+                style={{ 
+                  width: '100%', 
+                  padding: 8, 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: 4,
+                  backgroundColor: 'white',
+                  color: '#000000'
+                }}
+              >
+                <option value="">Select Section</option>
+                {coordinatorSections.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
               <button 
                 onClick={registerStudent}
                 style={{ 
@@ -908,39 +924,13 @@ export default function ChairmanDashboard() {
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Coordinator Registration</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
-              <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator ID</div>
-                  <input 
-                    value={coordId} 
-                    onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                    placeholder="e.g. 20251234"
-                  style={{ 
-                    width: '100%', 
-                    padding: 8, 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: 4,
-                    backgroundColor: 'white',
-                    color: '#000000'
-                  }}
-                />
-                <div style={{ marginTop: 8 }}>
-                  <button
-                    type="button"
-                    onClick={() => setCoordId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
-                    style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                  >
-                    Generate
-                  </button>
-                </div>
-              </label>
-              <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Coordinator Name</div>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <input 
-                  value={coordName} 
-                  onChange={(e) => setCoordName(e.target.value)} 
-                  placeholder="Coordinator Name"
+                  value={coordId} 
+                  onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
+                  placeholder="Coordinator ID (e.g. 20251234)"
                   style={{ 
-                    width: '100%', 
+                    flex: 1,
                     padding: 8, 
                     border: '1px solid #d1d5db', 
                     borderRadius: 4,
@@ -948,23 +938,40 @@ export default function ChairmanDashboard() {
                     color: '#000000'
                   }}
                 />
-              </label>
-              <label>
-                <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Assigned Section</div>
-                  <input 
-                  value={coordSection} 
-                  onChange={(e) => setCoordSection(e.target.value)}
-                    placeholder="e.g. IT4R8, IT4R9, IT4R10, IT4R11"
-                  style={{ 
-                    width: '100%', 
-                    padding: 8, 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: 4,
-                    backgroundColor: 'white',
-                    color: '#000000'
-                  }}
-                  />
-              </label>
+                <button
+                  type="button"
+                  onClick={() => setCoordId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                  style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                >
+                  Generate
+                </button>
+              </div>
+              <input 
+                value={coordName} 
+                onChange={(e) => setCoordName(e.target.value)} 
+                placeholder="Coordinator Name"
+                style={{ 
+                  width: '100%', 
+                  padding: 8, 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: 4,
+                  backgroundColor: 'white',
+                  color: '#000000'
+                }}
+              />
+              <input 
+                value={coordSection} 
+                onChange={(e) => setCoordSection(e.target.value)}
+                placeholder="Assigned Section (e.g. IT4R8, IT4R9, IT4R10, IT4R11)"
+                style={{ 
+                  width: '100%', 
+                  padding: 8, 
+                  border: '1px solid #d1d5db', 
+                  borderRadius: 4,
+                  backgroundColor: 'white',
+                  color: '#000000'
+                }}
+              />
               <button 
                 onClick={registerCoordinator}
                 style={{ 
@@ -1125,70 +1132,58 @@ export default function ChairmanDashboard() {
         }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Company Registration</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
-                <label>
-                  <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company Name</div>
-                  <input 
-                    value={companyName} 
-                    onChange={(e) => setCompanyName(e.target.value)} 
-                    placeholder="Company Name"
-              style={{
-                      width: '100%', 
-                      padding: 8, 
-                border: '1px solid #d1d5db',
-                      borderRadius: 4,
-                backgroundColor: 'white',
-                color: '#000000'
-              }}
-                  />
-          </label>
-                <label>
-                  <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Company Address</div>
-                  <input 
-                    value={companyAddress} 
-                    onChange={(e) => setCompanyAddress(e.target.value)} 
-                    placeholder="Company Address"
-              style={{
-                      width: '100%', 
-                      padding: 8, 
-                border: '1px solid #d1d5db',
-                      borderRadius: 4,
-                backgroundColor: 'white',
-                color: '#000000'
-                    }}
-                  />
-                </label>
-                <label>
-                  <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Supervisor Name</div>
-                  <input 
-                    value={supervisor} 
-                    onChange={(e) => setSupervisor(e.target.value)} 
-                    placeholder="Supervisor Name"
-                    style={{ 
-                      width: '100%', 
-                      padding: 8, 
-                      border: '1px solid #d1d5db', 
-                      borderRadius: 4,
-                      backgroundColor: 'white',
-                      color: '#000000'
-                    }}
-                  />
-                </label>
-                <label>
-                  <div style={{ fontWeight: 500, marginBottom: 4, color: '#000000' }}>Contact Number</div>
-                  <input 
-                    value={companyContact} 
-                    onChange={(e) => setCompanyContact(e.target.value)} 
-                    placeholder="Contact Number"
-                    style={{ 
-                      width: '100%', 
-                      padding: 8, 
-                      border: '1px solid #d1d5db', 
-                      borderRadius: 4,
-                      backgroundColor: 'white',
-                      color: '#000000'
-                    }}
-                  />
-                </label>
+                <input 
+                  value={companyName} 
+                  onChange={(e) => setCompanyName(e.target.value)} 
+                  placeholder="Company Name"
+                  style={{
+                    width: '100%', 
+                    padding: 8, 
+                    border: '1px solid #d1d5db',
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    color: '#000000'
+                  }}
+                />
+                <input 
+                  value={companyAddress} 
+                  onChange={(e) => setCompanyAddress(e.target.value)} 
+                  placeholder="Company Address"
+                  style={{
+                    width: '100%', 
+                    padding: 8, 
+                    border: '1px solid #d1d5db',
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    color: '#000000'
+                  }}
+                />
+                <input 
+                  value={supervisor} 
+                  onChange={(e) => setSupervisor(e.target.value)} 
+                  placeholder="Supervisor Name"
+                  style={{ 
+                    width: '100%', 
+                    padding: 8, 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    color: '#000000'
+                  }}
+                />
+                <input 
+                  value={companyContact} 
+                  onChange={(e) => setCompanyContact(e.target.value)} 
+                  placeholder="Contact Number"
+                  style={{ 
+                    width: '100%', 
+                    padding: 8, 
+                    border: '1px solid #d1d5db', 
+                    borderRadius: 4,
+                    backgroundColor: 'white',
+                    color: '#000000'
+                  }}
+                />
                 <button 
                   onClick={registerCompany}
                   style={{ 

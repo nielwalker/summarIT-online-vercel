@@ -112,32 +112,8 @@ export default function CoordinatorDashboard() {
       const response = await fetch(getApiUrl(`/api/reports?studentId=${encodeURIComponent(studentId)}`))
       if (response.ok) {
         const data = await response.json()
-        const existingReports = data || []
-        
-        // Ensure we have reports for all weeks 1-13, even if they don't exist in the database
-        const allWeeks = Array.from({ length: 13 }, (_, i) => i + 1)
-        
-        // Create placeholder reports for missing weeks
-        const completeReports = allWeeks.map(week => {
-          const existingReport = existingReports.find((r: any) => r.weekNumber === week)
-          if (existingReport) {
-            return existingReport
-          } else {
-            // Create a placeholder report for missing weeks
-            return {
-              id: `placeholder-${week}`,
-              weekNumber: week,
-              date: '',
-              hours: 0,
-              activities: '',
-              learnings: '',
-              excuse: '',
-              studentId: studentId
-            }
-          }
-        })
-        
-        setStudentReports(completeReports)
+        // Only use actual reports from the database, no placeholders
+        setStudentReports(data || [])
       } else {
         setStudentReports([])
       }
@@ -181,7 +157,16 @@ export default function CoordinatorDashboard() {
     if (!studentId || !report) return
     
     try {
-      const reportData = {
+      // Use PUT for updates (when report has an ID) or POST for new entries
+      const method = report.id && !report.id.toString().startsWith('placeholder-') ? 'PUT' : 'POST'
+      const reportData = method === 'PUT' ? {
+        reportId: report.id,
+        date: report.date,
+        hours: report.hours || 0,
+        activities: report.excuse ? 'Excused' : '',
+        learnings: report.excuse ? 'Excused' : '',
+        excuse: report.excuse || ''
+      } : {
         userName: selectedStudent?.userName || 'Coordinator Entry',
         role: 'coordinator',
         section: section,
@@ -195,7 +180,7 @@ export default function CoordinatorDashboard() {
       }
       
       const response = await fetch(getApiUrl('/api/reports'), {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportData)
       })
@@ -204,7 +189,7 @@ export default function CoordinatorDashboard() {
         // Refresh the reports from server
         await fetchStudentReports(studentId)
         await fetchStudentTotalHours(studentId)
-        alert('Report saved successfully!')
+        alert(`Report ${method === 'PUT' ? 'updated' : 'saved'} successfully!`)
       } else {
         console.error('Failed to save report')
         alert('Failed to save report. Please try again.')

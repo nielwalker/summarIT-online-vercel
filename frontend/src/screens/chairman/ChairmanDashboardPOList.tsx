@@ -224,12 +224,12 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
           </div>
 
           {/* PO Details Table */}
-          <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', overflow: 'hidden' }}>
+          <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', overflow: 'hidden', width: '100%' }}>
             <div style={{ background: '#f8f9fa', padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
               <h4 style={{ margin: 0, color: '#000000', fontSize: '18px', fontWeight: '600' }}>Program Outcome Details</h4>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '100%' }}>
                 <thead>
                   <tr style={{ background: '#f1f5f9' }}>
                     <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>PO Code</th>

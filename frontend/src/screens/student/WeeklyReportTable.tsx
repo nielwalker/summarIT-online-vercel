@@ -25,16 +25,46 @@ export function WeeklyReportTable() {
   const [currentWeek, setCurrentWeek] = useState(1)
   const [weeks, setWeeks] = useState<WeekEntry[][]>([])
   const [loading, setLoading] = useState(true)
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
   const { role } = useAuthStore()
   const [section] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem('section') || 'IT4R8') : 'IT4R8')
   const [studentId] = useState(() => typeof window !== 'undefined' ? (localStorage.getItem('studentId') || '') : '')
+
+  // Word limit constants
+  const MAX_WORDS_ACTIVITIES = 250
+  const MAX_WORDS_LEARNINGS = 250
+
+  // Helper function to count words
+  const countWords = (text: string): number => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length
+  }
+
+  // Helper function to truncate text to word limit
+  const truncateToWordLimit = (text: string, maxWords: number): string => {
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0)
+    if (words.length <= maxWords) return text
+    return words.slice(0, maxWords).join(' ')
+  }
+
+  // Note: Debouncing can be added here for auto-save functionality if needed
 
   function updateField<K extends keyof WeekEntry>(rowIdx: number, key: K, value: WeekEntry[K]) {
     setWeeks((prev) => {
       const next = prev.map((weekRows) => weekRows.slice())
       const weekIndex = currentWeek - 1
       // Any edit marks the row as not submitted yet (since it no longer matches database)
-      next[weekIndex][rowIdx] = { ...next[weekIndex][rowIdx], [key]: value, submitted: false, id: undefined }
+      // Keep the original ID if it exists for updates
+      const currentEntry = next[weekIndex][rowIdx]
+      
+      // Apply word limits for activities and learnings
+      let processedValue = value
+      if (key === 'activities' && typeof value === 'string') {
+        processedValue = truncateToWordLimit(value, MAX_WORDS_ACTIVITIES) as WeekEntry[K]
+      } else if (key === 'learnings' && typeof value === 'string') {
+        processedValue = truncateToWordLimit(value, MAX_WORDS_LEARNINGS) as WeekEntry[K]
+      }
+      
+      next[weekIndex][rowIdx] = { ...currentEntry, [key]: processedValue, submitted: false }
       return next
     })
   }
@@ -43,7 +73,7 @@ export function WeeklyReportTable() {
     setWeeks((prev) => {
       const next = prev.map((weekRows) => weekRows.slice())
       const weekIndex = currentWeek - 1
-      // Mark the row as not submitted so it can be edited
+      // Mark the row as not submitted but keep the ID for updates
       next[weekIndex][rowIdx] = { ...next[weekIndex][rowIdx], submitted: false }
       return next
     })
@@ -96,8 +126,16 @@ export function WeeklyReportTable() {
     }
   }
 
-  async function loadReports() {
+  async function loadReports(forceRefresh = false) {
     try {
+      // Cache for 30 seconds to avoid unnecessary API calls
+      const now = Date.now()
+      const cacheTime = 30000 // 30 seconds
+      if (!forceRefresh && (now - lastFetchTime) < cacheTime) {
+        console.log('Using cached data, skipping API call')
+        return
+      }
+
       setLoading(true)
       const studentId = localStorage.getItem('studentId')
       const section = localStorage.getItem('section')
@@ -141,6 +179,7 @@ export function WeeklyReportTable() {
         }
       }
       setWeeks(grid)
+      setLastFetchTime(now)
     } catch (error) {
       console.error('Error loading reports:', error)
       setWeeks(createInitialWeeks())
@@ -157,25 +196,69 @@ export function WeeklyReportTable() {
   async function submitWeek(rowIdx: number) {
     const entry = weeks[currentWeek - 1][rowIdx]
     console.log('Submit week', currentWeek, 'row', rowIdx + 1, entry)
+    
+    // Validation: Check if all required fields are filled
+    const missingFields = []
+    if (!entry.date) missingFields.push('Date')
+    if (entry.hours === '' || entry.hours === 0) missingFields.push('Hours')
+    if (!entry.activities.trim()) missingFields.push('Activities')
+    if (!entry.learnings.trim()) missingFields.push('Learnings')
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in the following required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Validation: Check word limits
+    const activitiesWordCount = countWords(entry.activities)
+    const learningsWordCount = countWords(entry.learnings)
+    
+    if (activitiesWordCount > MAX_WORDS_ACTIVITIES) {
+      alert(`Activities field exceeds the ${MAX_WORDS_ACTIVITIES} word limit. Current: ${activitiesWordCount} words.`)
+      return
+    }
+    
+    if (learningsWordCount > MAX_WORDS_LEARNINGS) {
+      alert(`Learnings field exceeds the ${MAX_WORDS_LEARNINGS} word limit. Current: ${learningsWordCount} words.`)
+      return
+    }
+    
+    // Check if already submitted to prevent duplication
+    if (entry.submitted && entry.id) {
+      alert('This entry has already been submitted. Click Edit to modify.')
+      return
+    }
+    
     try {
       // Get the actual student name from localStorage or use studentId as fallback
       const actualStudentName = typeof window !== 'undefined' ? 
         (localStorage.getItem('userName') || localStorage.getItem('studentId') || 'Unknown Student') : 
         'Unknown Student'
       
+      // Use PUT for updates (when entry has an ID) or POST for new entries
+      const method = entry.id ? 'PUT' : 'POST'
+      const body = entry.id ? {
+        reportId: entry.id,
+        date: entry.date,
+        hours: entry.hours === '' ? 0 : entry.hours,
+        activities: entry.activities,
+        learnings: entry.learnings,
+      } : {
+        userName: actualStudentName,
+        role: role ?? 'student',
+        section,
+        studentId: typeof window !== 'undefined' ? localStorage.getItem('studentId') : undefined,
+        weekNumber: currentWeek,
+        date: entry.date,
+        hours: entry.hours === '' ? 0 : entry.hours,
+        activities: entry.activities,
+        learnings: entry.learnings,
+      }
+      
       const res = await fetch(getApiUrl('/api/reports'), {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userName: actualStudentName, // Use actual student name instead of role
-          role: role ?? 'student',
-          section,
-          studentId: typeof window !== 'undefined' ? localStorage.getItem('studentId') : undefined,
-          weekNumber: currentWeek,
-          ...entry,
-          hours: entry.hours === '' ? 0 : entry.hours,
-          score: entry.score === '' ? 0 : entry.score,
-        }),
+        body: JSON.stringify(body),
       })
       
       if (!res.ok) {
@@ -189,12 +272,12 @@ export function WeeklyReportTable() {
       // Mark this row as submitted after successful save
       setWeeks((prev) => {
         const next = prev.map((w) => w.slice())
-        next[currentWeek - 1][rowIdx] = { ...next[currentWeek - 1][rowIdx], submitted: true, id: result.id }
+        next[currentWeek - 1][rowIdx] = { ...next[currentWeek - 1][rowIdx], submitted: true, id: result.id || entry.id }
         return next
       })
       // Reload from server to persist across refresh
-      loadReports()
-      alert(`Week ${currentWeek} - Row ${rowIdx + 1} saved successfully!`)
+      loadReports(true)
+      alert(`Week ${currentWeek} - Row ${rowIdx + 1} ${entry.id ? 'updated' : 'saved'} successfully!`)
     } catch (e: unknown) {
       console.error('Submit error:', e)
       const msg = e instanceof Error ? e.message : String(e)
@@ -311,7 +394,8 @@ export function WeeklyReportTable() {
             {weeks[currentWeek - 1].map((row, rowIdx) => (
               <tr key={rowIdx} style={{ 
                 borderBottom: '1px solid #e2e8f0',
-                transition: 'background 0.2s'
+                transition: 'background 0.2s',
+                minHeight: '60px' // Increased height to accommodate word counters
               }}
               onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
@@ -320,13 +404,16 @@ export function WeeklyReportTable() {
                     type="date" 
                     value={row.date} 
                     onChange={(e) => updateField(rowIdx, 'date', e.target.value)}
+                    disabled={row.submitted}
                     style={{
                       width: '100%',
                       padding: '8px 10px',
                       border: '1px solid #cbd5e1',
                       borderRadius: '6px',
                       fontSize: '14px',
-                      outline: 'none'
+                      outline: 'none',
+                      backgroundColor: row.submitted ? '#f1f5f9' : 'white',
+                      color: row.submitted ? '#64748b' : '#1e293b'
                     }}
                   />
                 </td>
@@ -335,43 +422,82 @@ export function WeeklyReportTable() {
                     type="number" 
                     value={row.hours} 
                     onChange={(e) => updateField(rowIdx, 'hours', e.target.value === '' ? '' : Number(e.target.value))}
+                    disabled={row.submitted}
                     style={{
                       width: '100%',
                       padding: '8px 10px',
                       border: '1px solid #cbd5e1',
                       borderRadius: '6px',
                       fontSize: '14px',
-                      outline: 'none'
+                      outline: 'none',
+                      backgroundColor: row.submitted ? '#f1f5f9' : 'white',
+                      color: row.submitted ? '#64748b' : '#1e293b'
                     }}
                   />
                 </td>
                 <td style={{ padding: '12px' }}>
-                  <input 
-                    value={row.activities} 
-                    onChange={(e) => updateField(rowIdx, 'activities', e.target.value)} 
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      value={row.activities} 
+                      onChange={(e) => updateField(rowIdx, 'activities', e.target.value)} 
+                      disabled={row.submitted}
+                      placeholder="Describe your tasks/activities (max 250 words)"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: row.submitted ? '#f1f5f9' : 'white',
+                        color: row.submitted ? '#64748b' : '#1e293b'
+                      }}
+                    />
+                    {!row.submitted && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-18px',
+                        right: '0',
+                        fontSize: '11px',
+                        color: countWords(row.activities) > MAX_WORDS_ACTIVITIES ? '#dc2626' : '#6b7280',
+                        fontWeight: '500'
+                      }}>
+                        {countWords(row.activities)}/{MAX_WORDS_ACTIVITIES} words
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '12px' }}>
-                  <input 
-                    value={row.learnings} 
-                    onChange={(e) => updateField(rowIdx, 'learnings', e.target.value)} 
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      value={row.learnings} 
+                      onChange={(e) => updateField(rowIdx, 'learnings', e.target.value)} 
+                      disabled={row.submitted}
+                      placeholder="Describe what you learned (max 250 words)"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        backgroundColor: row.submitted ? '#f1f5f9' : 'white',
+                        color: row.submitted ? '#64748b' : '#1e293b'
+                      }}
+                    />
+                    {!row.submitted && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-18px',
+                        right: '0',
+                        fontSize: '11px',
+                        color: countWords(row.learnings) > MAX_WORDS_LEARNINGS ? '#dc2626' : '#6b7280',
+                        fontWeight: '500'
+                      }}>
+                        {countWords(row.learnings)}/{MAX_WORDS_LEARNINGS} words
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '12px', textAlign: 'center' }}>
                   <span style={{ 
