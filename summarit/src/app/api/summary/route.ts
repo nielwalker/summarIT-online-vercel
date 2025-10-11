@@ -28,9 +28,10 @@ export async function POST(req: NextRequest) {
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     
-    // For summarization, only use reports with actual content (no excuses)
-    const reportsForSummary = filtered.filter(r => !r.excuse)
-    console.log('All reports for week:', filtered.length, 'Reports with content:', reportsForSummary.length, 'Week numbers:', filtered.map(r => r.weekNumber))
+    // For coordinator summaries, use all reports for the selected week
+    // For chairman summaries, only use reports with actual content (no excuses)
+    const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
+    console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
     // Build a robust combined text. Ensure each entry becomes a complete sentence
     const combinedEntries = reportsForSummary
       .map(r => `${r.activities || ''} ${r.learnings || ''}`.trim())

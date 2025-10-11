@@ -64,9 +64,8 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
       console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
-      // For summary text, only use reports with actual content (no excuses)
-      const reportsForSummary = filtered.filter(r => !r.excuse)
-      const text = reportsForSummary.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
+      // For summary text, use all reports for the selected week (including excuses for context)
+      const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
       console.log('Individual report texts:', filtered.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
       const { scores, hitsPerPO } = extractHighlights(text)
@@ -112,15 +111,24 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       }
       
       const summary = finalSummary
-      const uniqByDate = new Map<string, { date: string; hours: number }>()
-      filtered.forEach(r => {
-        const key = String(r.date || '')
-        if (!uniqByDate.has(key)) uniqByDate.set(key, { date: key || '—', hours: Number(r.hours || 0) })
-      })
-      const submittedRows = Array.from(uniqByDate.values()).map(r => ({ date: r.date || '—', hours: r.hours || 0, status: 'Submitted' as const }))
-      const paddedRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> = [...submittedRows]
-      // Show all 6 days of the week, not just 5
-      while (paddedRows.length < 6) paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
+      
+      // For monitoring, show all reports for the selected week (including excuses)
+      const monitoringReports = filtered.map(r => ({
+        date: r.date || '—',
+        hours: Number(r.hours || 0),
+        status: (r.activities || r.learnings) ? 'Submitted' as const : 'Missing' as const
+      }))
+      
+      // Sort by date and limit to 6 entries (one per day)
+      const sortedMonitoring = monitoringReports
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 6)
+      
+      // Pad with missing entries if less than 6
+      const paddedRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> = [...sortedMonitoring]
+      while (paddedRows.length < 6) {
+        paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
+      }
       setAnalysis({ scores, bullets: items, summary, weekRows: paddedRows })
     } catch (e: any) {
       setError(e.message || 'Analysis failed')
