@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList, Tooltip } from 'recharts'
 import { getApiUrl } from '../../utils/api'
 
 type Props = {
@@ -168,35 +168,123 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         {bullets.length === 0 && <li>No PO matched.</li>}
       </ul>
       {!loading && chartData.some(d => d.value > 0) && (
-        <div style={{ width: '100%', height: 450, marginTop: 24, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', padding: '20px' }}>
-          <h4 style={{ margin: '0 0 16px 0', color: '#000000', fontSize: '16px' }}>Program Outcome Analysis</h4>
-          <ResponsiveContainer width="100%" height="90%">
-            <BarChart data={chartData} margin={{ top: 30, right: 30, left: 20, bottom: 100 }}>
-              <XAxis 
-                dataKey="po" 
-                interval={0} 
-                angle={-45} 
-                textAnchor="end" 
-                height={120} 
-                tick={{ fontSize: 10, fill: '#000000' }} 
-              />
-              <YAxis 
-                domain={[0, 100]} 
-                tick={{ fontSize: 12, fill: '#000000' }} 
-                width={50}
-                label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#000000' } }}
-              />
-              <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} maxBarSize={50}>
-                <LabelList 
-                  dataKey="value" 
-                  position="top" 
-                  formatter={(v: any) => v > 0 ? `${v}%` : ''} 
-                  fill="#000000" 
-                  style={{ fontSize: 11, fontWeight: 700 }} 
+        <div style={{ width: '100%', marginTop: 24 }}>
+          {/* Graph Section */}
+          <div style={{ height: 600, border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', padding: '20px', marginBottom: 24 }}>
+            <h4 style={{ margin: '0 0 16px 0', color: '#000000', fontSize: '18px', fontWeight: '600' }}>Program Outcome Analysis</h4>
+            <ResponsiveContainer width="100%" height="90%">
+              <BarChart data={chartData} margin={{ top: 30, right: 30, left: 20, bottom: 100 }}>
+                <XAxis 
+                  dataKey="po" 
+                  interval={0} 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={120} 
+                  tick={{ fontSize: 10, fill: '#000000' }} 
                 />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                <YAxis 
+                  domain={[0, 100]} 
+                  tick={{ fontSize: 12, fill: '#000000' }} 
+                  width={50}
+                  label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#000000' } }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#ffffff', 
+                    border: '1px solid #e5e7eb', 
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  formatter={(value: any) => [
+                    `${value}%`, 
+                    'Score'
+                  ]}
+                  labelFormatter={(label: any) => `PO: ${label}`}
+                />
+                <Bar 
+                  dataKey="value" 
+                  fill="#3b82f6" 
+                  radius={[6, 6, 0, 0]} 
+                  maxBarSize={60}
+                  style={{ 
+                    transition: 'all 0.3s ease',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                  }}
+                >
+                  <LabelList 
+                    dataKey="value" 
+                    position="top" 
+                    formatter={(v: any) => v > 0 ? `${v}%` : ''} 
+                    fill="#000000" 
+                    style={{ fontSize: 11, fontWeight: 700 }} 
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* PO Details Table */}
+          <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, background: '#ffffff', overflow: 'hidden' }}>
+            <div style={{ background: '#f8f9fa', padding: '16px', borderBottom: '1px solid #e5e7eb' }}>
+              <h4 style={{ margin: 0, color: '#000000', fontSize: '18px', fontWeight: '600' }}>Program Outcome Details</h4>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>PO Code</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>Program Outcome</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>Score (%)</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PO_DEFS.map((def, index) => {
+                    const score = scores[index] || 0
+                    const isHighlighted = bullets.some(b => b.idx === index)
+                    return (
+                      <tr 
+                        key={def.code} 
+                        style={{ 
+                          background: index % 2 === 0 ? '#ffffff' : '#f9fafb',
+                          borderBottom: '1px solid #f1f5f9'
+                        }}
+                      >
+                        <td style={{ padding: '12px 16px', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>{def.label}</td>
+                        <td style={{ padding: '12px 16px', color: '#475569', fontSize: '14px', lineHeight: '1.5' }}>{def.desc}</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center', color: '#1e293b', fontWeight: '600', fontSize: '14px' }}>{score}%</td>
+                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                          {isHighlighted ? (
+                            <span style={{ 
+                              padding: '4px 12px', 
+                              borderRadius: '20px', 
+                              background: '#dcfce7', 
+                              color: '#166534', 
+                              fontSize: '12px', 
+                              fontWeight: '600' 
+                            }}>
+                              Achieved
+                            </span>
+                          ) : (
+                            <span style={{ 
+                              padding: '4px 12px', 
+                              borderRadius: '20px', 
+                              background: '#fef2f2', 
+                              color: '#991b1b', 
+                              fontSize: '12px', 
+                              fontWeight: '600' 
+                            }}>
+                              Not Met
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

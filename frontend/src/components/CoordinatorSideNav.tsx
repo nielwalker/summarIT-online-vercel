@@ -62,12 +62,11 @@ export default function CoordinatorSideNav({ onLogout, activeTab, setActiveTab, 
     <div id="coordinator-side-nav" style={{ position: 'fixed', left: 0, top: 0, height: '100vh', width: isCollapsed ? '64px' : '256px', backgroundColor: '#1e3a8a', color: 'white', transition: 'width 0.2s ease-in-out', zIndex: 50, display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '16px', borderBottom: '1px solid #3b82f6', display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
         <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="/summarit-logo.svg" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
+          <img src="/sidenavbarlogo.png" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
         </div>
         {!isCollapsed && (
           <div style={{ marginLeft: '12px' }}>
-            <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 'bold' }}>Coordinator</h2>
-            <p style={{ margin: 0, fontSize: '14px', color: '#93c5fd' }}>Navigation</p>
+            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: 'bold' }}>Coordinator</h2>
           </div>
         )}
       </div>

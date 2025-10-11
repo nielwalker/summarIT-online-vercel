@@ -214,7 +214,6 @@ export function WeeklyReportTable() {
     <div style={{ marginTop: 16 }}>
       {/* Section dropdown removed; section is fixed from login */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', paddingBottom: 16, marginBottom: 16 }}>
-        <label style={{ color: '#1e293b', fontWeight: 600, fontSize: '14px' }}>Week:</label>
         <select 
           value={currentWeek}
           onChange={(e) => setCurrentWeek(Number(e.target.value))}

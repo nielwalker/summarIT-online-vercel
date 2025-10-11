@@ -28,6 +28,7 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchStudentDetails = async () => {
@@ -83,8 +84,11 @@ export default function StudentDashboard() {
       localStorage.removeItem('userName')
       localStorage.removeItem('studentId')
       localStorage.removeItem('section')
+      setLogoutMessage('Successfully logged out')
+      setTimeout(() => {
+        navigate('/')
+      }, 1500)
     } catch {}
-    navigate('/')
   }
 
   return (
@@ -120,6 +124,24 @@ export default function StudentDashboard() {
         backgroundColor: '#f8fafc',
         transition: 'margin-left 0.2s ease-in-out'
       }}>
+        {logoutMessage && (
+          <div style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '12px 20px',
+            background: '#dcfce7',
+            border: '1px solid #bbf7d0',
+            borderRadius: '8px',
+            color: '#166534',
+            fontSize: '14px',
+            fontWeight: '500',
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}>
+            {logoutMessage}
+          </div>
+        )}
         {activeTab === 'dashboard' ? (
           <div style={{ padding: '20px' }}>
             <div style={{ marginBottom: '24px' }}>

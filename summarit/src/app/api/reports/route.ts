@@ -102,7 +102,7 @@ export async function PUT(req: NextRequest) {
           section: 'N/A',
           studentId: data.studentId,
           weekNumber: data.weekNumber,
-          date: new Date().toISOString().split('T')[0],
+          date: data.date || new Date().toISOString().split('T')[0],
           hours: 0, // No hours for excuse-only entries
           activities: '',
           learnings: '',

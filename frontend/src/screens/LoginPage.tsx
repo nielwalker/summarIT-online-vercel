@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,17 +54,25 @@ export default function LoginPage() {
         localStorage.setItem('token', data.token)
         localStorage.setItem('role', data.role)
         if (data.userName) localStorage.setItem('userName', data.userName)
-        if (role === 'student') {
-          localStorage.setItem('studentId', userId)
-          if (data.section) localStorage.setItem('section', data.section)
-          navigate('/student')
-        } else if (role === 'coordinator') {
-          localStorage.setItem('coordinatorId', String(userId))
-          if (Array.isArray(data.sections)) localStorage.setItem('sections', JSON.stringify(data.sections))
-          navigate('/coordinator')
-        } else {
-          navigate('/chairman')
-        }
+        
+        // Show success message
+        const roleName = role === 'student' ? 'Student' : role === 'coordinator' ? 'Coordinator' : 'Chairperson'
+        setSuccessMessage(`Successfully logged in as ${roleName}`)
+        
+        // Navigate after a short delay to show the success message
+        setTimeout(() => {
+          if (role === 'student') {
+            localStorage.setItem('studentId', userId)
+            if (data.section) localStorage.setItem('section', data.section)
+            navigate('/student')
+          } else if (role === 'coordinator') {
+            localStorage.setItem('coordinatorId', String(userId))
+            if (Array.isArray(data.sections)) localStorage.setItem('sections', JSON.stringify(data.sections))
+            navigate('/coordinator')
+          } else {
+            navigate('/chairman')
+          }
+        }, 1500)
         return
       }
       throw new Error(lastErr || 'Login failed')
@@ -80,19 +89,31 @@ export default function LoginPage() {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%)',
+      backgroundImage: 'url(/loginbg.png)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
       padding: '20px'
     }}>
       <div style={{
         width: '100%',
         maxWidth: '500px',
-        background: 'white',
+        background: 'rgba(255, 255, 255, 0.95)',
         borderRadius: '12px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        padding: '48px 40px'
+        padding: '48px 40px',
+        backdropFilter: 'blur(10px)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '240px', height: 'auto' }} />
+          <img src="/SummarIT png.png" alt="SummarIT" style={{ width: '320px', height: 'auto' }} />
+          <p style={{ 
+            marginTop: '16px', 
+            fontSize: '16px', 
+            color: '#4b5563',
+            fontWeight: '500'
+          }}>
+            Please enter your login details below.
+          </p>
         </div>
         
         <form onSubmit={handleLogin}>
@@ -106,6 +127,20 @@ export default function LoginPage() {
               fontSize: '14px',
               marginBottom: '20px'
             }}>{error}</div>
+          )}
+          
+          {successMessage && (
+            <div style={{
+              padding: '12px 16px',
+              background: '#dcfce7',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              color: '#166534',
+              fontSize: '14px',
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontWeight: '500'
+            }}>{successMessage}</div>
           )}
           
           <div style={{ marginBottom: '16px' }}>

@@ -17,6 +17,7 @@ export default function ChairmanDashboard() {
   const [coordId, setCoordId] = useState('')
   const [coordSection, setCoordSection] = useState<string>('')
   const [msg, setMsg] = useState<string>('')
+  const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
   // Auto-dismiss notifications after a few seconds
   useEffect(() => {
     if (!msg) return
@@ -450,8 +451,11 @@ export default function ChairmanDashboard() {
               localStorage.removeItem('userName')
               localStorage.removeItem('studentId')
               localStorage.removeItem('section')
+              setLogoutMessage('Successfully logged out')
+              setTimeout(() => {
+                navigate('/')
+              }, 1500)
             } catch {}
-            navigate('/')
           }}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
@@ -471,6 +475,24 @@ export default function ChairmanDashboard() {
           backgroundColor: '#f8fafc',
           transition: 'margin-left 0.2s ease-in-out'
         }}>
+          {logoutMessage && (
+            <div style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              padding: '12px 20px',
+              background: '#dcfce7',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              color: '#166534',
+              fontSize: '14px',
+              fontWeight: '500',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              {logoutMessage}
+            </div>
+          )}
           {/* Header */}
           <div style={{ 
             marginBottom: '20px'
@@ -558,7 +580,6 @@ export default function ChairmanDashboard() {
                   </select>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Week:</span>
                   <select 
                     value={selectedWeek} 
                     onChange={(e) => {

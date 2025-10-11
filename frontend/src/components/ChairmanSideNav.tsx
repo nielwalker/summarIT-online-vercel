@@ -114,12 +114,11 @@ export default function ChairmanSideNav({ onLogout, activeMenu, setActiveMenu, i
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <img src="/summarit logo.png" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
+          <img src="/sidenavbarlogo.png" alt="SummarIT" style={{ width: '32px', height: '32px' }} />
         </div>
         {!isCollapsed && (
           <div style={{ marginLeft: '12px' }}>
-            <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 'bold' }}>Chairman Portal</h2>
-            <p style={{ margin: '0', fontSize: '14px', color: '#93c5fd' }}>Management Center</p>
+            <h2 style={{ margin: '0', fontSize: '18px', fontWeight: 'bold' }}>Chairman Portal</h2>
           </div>
         )}
       </div>

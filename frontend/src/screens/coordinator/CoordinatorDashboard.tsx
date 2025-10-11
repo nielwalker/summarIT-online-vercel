@@ -18,6 +18,8 @@ export default function CoordinatorDashboard() {
   const [studentReports, setStudentReports] = useState<any[]>([])
   const [editingReport, setEditingReport] = useState<any>(null)
   const [excuseText, setExcuseText] = useState<string>('')
+  const [selectedWeekForReports, setSelectedWeekForReports] = useState<number>(1)
+  const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
 
 
   // Load sections assigned to the logged-in coordinator
@@ -142,6 +144,7 @@ export default function CoordinatorDashboard() {
           reportId: editingReport.id,
           excuse: excuseText.trim(),
           weekNumber: editingReport.weekNumber,
+          date: editingReport.date,
           studentId: studentId
         })
       })
@@ -222,7 +225,15 @@ export default function CoordinatorDashboard() {
         left: '0'
       }}>
         <CoordinatorSideNav 
-          onLogout={() => { try { localStorage.clear() } catch {}; navigate('/') }}
+          onLogout={() => { 
+            try { 
+              localStorage.clear()
+              setLogoutMessage('Successfully logged out')
+              setTimeout(() => {
+                navigate('/')
+              }, 1500)
+            } catch {} 
+          }}
           activeTab={activeTab}
           setActiveTab={(t) => setActiveTab(t as any)}
           isCollapsed={sidebarCollapsed}
@@ -238,6 +249,24 @@ export default function CoordinatorDashboard() {
           padding: '20px',
           marginLeft: sidebarCollapsed ? '64px' : '256px'
         }}>
+          {logoutMessage && (
+            <div style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              padding: '12px 20px',
+              background: '#dcfce7',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              color: '#166534',
+              fontSize: '14px',
+              fontWeight: '500',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              {logoutMessage}
+            </div>
+          )}
           <h2 style={{ margin: 0, color: '#000000', textAlign: 'center' }}>Coordinator Dashboard - Student Analysis</h2>
         </div>
         
@@ -388,7 +417,6 @@ export default function CoordinatorDashboard() {
                   <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
-                      <span style={{ fontWeight: '500', color: '#000000' }}>Week:</span>
                       <select 
                         value={selectedWeek} 
                         onChange={(e) => setSelectedWeek(Number(e.target.value))}
@@ -445,12 +473,33 @@ export default function CoordinatorDashboard() {
                   </div>
                   
                   <div style={{ marginBottom: 16 }}>
-                    <h4 style={{ margin: '0 0 12px 0', color: '#111827' }}>Weekly Reports - Excuse Management</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      <h4 style={{ margin: 0, color: '#111827' }}>Daily Reports - Excuse Management</h4>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <select 
+                          value={selectedWeekForReports} 
+                          onChange={(e) => setSelectedWeekForReports(Number(e.target.value))}
+                          style={{
+                            padding: '6px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '4px',
+                            backgroundColor: 'white',
+                            color: '#000000'
+                          }}
+                        >
+                          {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (
+                            <option key={week} value={week}>
+                              Week {week}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: '#f8f9fa' }}>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Week</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Day</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Date</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Hours</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Status</th>
@@ -459,15 +508,23 @@ export default function CoordinatorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {Array.from({ length: 13 }, (_, i) => i + 1).map(week => {
-                            const report = studentReports.find(r => r.weekNumber === week)
+                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day, index) => {
+                            // Calculate the date for this day of the selected week
+                            const weekStart = new Date(2025, 0, 6 + (selectedWeekForReports - 1) * 7) // Start from first Monday of 2025
+                            const dayDate = new Date(weekStart)
+                            dayDate.setDate(weekStart.getDate() + index)
+                            const dateString = dayDate.toISOString().split('T')[0]
+                            
+                            const report = studentReports.find(r => r.date === dateString)
+                            const hasReport = !!report
+                            
                             return (
-                              <tr key={week} style={{ background: week % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Week {week}</td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.date || '—'}</td>
+                              <tr key={day} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>{day}</td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{dateString}</td>
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>{report?.hours || 0}</td>
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                  {report ? (
+                                  {hasReport ? (
                                     <span style={{ padding: '4px 8px', borderRadius: 12, background: '#dcfce7', color: '#166534', fontSize: 12, fontWeight: 600 }}>
                                       Submitted
                                     </span>
@@ -485,21 +542,31 @@ export default function CoordinatorDashboard() {
                                   )}
                                 </td>
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                                  <button
-                                    onClick={() => setEditingReport({ weekNumber: week, id: report?.id, excuse: report?.excuse || '' })}
-                                    style={{ 
-                                      padding: '6px 12px', 
-                                      borderRadius: 6, 
-                                      backgroundColor: report?.excuse ? '#f59e0b' : '#3b82f6', 
-                                      color: 'white', 
-                                      border: 'none', 
-                                      fontSize: 12, 
-                                      cursor: 'pointer',
-                                      fontWeight: 500
-                                    }}
-                                  >
-                                    {report?.excuse ? 'Edit Excuse' : 'Add Excuse'}
-                                  </button>
+                                  {!hasReport ? (
+                                    <button
+                                      onClick={() => setEditingReport({ 
+                                        weekNumber: selectedWeekForReports, 
+                                        day: day,
+                                        date: dateString,
+                                        id: null, 
+                                        excuse: '' 
+                                      })}
+                                      style={{ 
+                                        padding: '6px 12px', 
+                                        borderRadius: 6, 
+                                        backgroundColor: '#3b82f6', 
+                                        color: 'white', 
+                                        border: 'none', 
+                                        fontSize: 12, 
+                                        cursor: 'pointer',
+                                        fontWeight: 500
+                                      }}
+                                    >
+                                      Add Excuse
+                                    </button>
+                                  ) : (
+                                    <span style={{ color: '#6b7280', fontSize: 12 }}>No action needed</span>
+                                  )}
                                 </td>
                               </tr>
                             )
@@ -531,7 +598,7 @@ export default function CoordinatorDashboard() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: 'white', borderRadius: 8, padding: 24, width: '90%', maxWidth: 500 }}>
             <h3 style={{ margin: '0 0 16px 0', color: '#111827' }}>
-              {editingReport.excuse ? 'Edit Excuse' : 'Add Excuse'} for Week {editingReport.weekNumber || 'N/A'}
+              {editingReport.excuse ? 'Edit Excuse' : 'Add Excuse'} for {editingReport.day || 'Day'} - Week {editingReport.weekNumber || 'N/A'}
             </h3>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Reason:</label>
