@@ -94,11 +94,14 @@ export default function CoordinatorDashboard() {
 
   const fetchStudentTotalHours = async (studentId: string) => {
     try {
+      console.log('Fetching total hours for student:', studentId)
       const response = await fetch(getApiUrl(`/api/reports?action=getStudentTotalHours&studentId=${encodeURIComponent(studentId)}`))
       if (response.ok) {
         const data = await response.json()
+        console.log('Total hours response:', data)
         setTotalHours(data.totalHours || 0)
       } else {
+        console.error('Failed to fetch total hours:', response.status, response.statusText)
         setTotalHours(0)
       }
     } catch (error) {

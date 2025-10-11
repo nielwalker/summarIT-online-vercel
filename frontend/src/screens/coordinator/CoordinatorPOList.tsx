@@ -60,7 +60,9 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       const reports: any[] = await resp.json()
       console.log('All reports:', reports.length, 'Selected week:', selectedWeek)
       console.log('All week numbers:', reports.map(r => r.weekNumber))
-      const filtered = selectedWeek ? reports.filter(r => (r.weekNumber || 1) === selectedWeek) : reports
+      // For coordinator summary, always use all reports regardless of selected week
+      // The selectedWeek is only used for monitoring results, not for summary
+      const filtered = reports
       console.log('Filtered reports:', filtered.length, 'Week numbers:', filtered.map(r => r.weekNumber))
       filtered.sort((a, b) => String(a.date).localeCompare(String(b.date)))
       const text = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
@@ -82,7 +84,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             body: JSON.stringify({ 
               section, 
               studentId,
-              week: selectedWeek,
+              week: null, // Don't filter by week for coordinator summary - use all weeks
               useGPT: true,
               analysisType: 'coordinator'
             })

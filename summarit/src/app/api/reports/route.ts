@@ -24,7 +24,10 @@ export async function GET(req: NextRequest) {
     if (action === 'getStudentTotalHours' && studentId) {
       // Get total hours for a specific student
       const reports = await getReports(undefined, studentId)
+      console.log('Reports for student', studentId, ':', reports.length, 'reports')
+      console.log('Report hours:', reports.map(r => ({ id: r.id, week: r.weekNumber, hours: r.hours })))
       const totalHours = reports.reduce((sum, report) => sum + (report.hours || 0), 0)
+      console.log('Calculated total hours:', totalHours)
       return NextResponse.json({ totalHours }, { headers: corsHeaders as Record<string, string> })
     }
     
