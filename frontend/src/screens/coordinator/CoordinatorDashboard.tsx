@@ -156,9 +156,35 @@ export default function CoordinatorDashboard() {
   const handleSaveReport = async (report: any) => {
     if (!studentId || !report) return
     
+    // Validation checks
+    if (!report.date) {
+      alert('Please select a date before saving.')
+      return
+    }
+    
+    // Check for duplicate dates
+    const isDuplicate = studentReports.some(r => 
+      r.id !== report.id && 
+      r.date === report.date
+    )
+    
+    if (isDuplicate) {
+      alert('This date is already used in another entry. Please choose a different date.')
+      return
+    }
+    
+    // Check if week is full (for new entries)
+    const weekReports = studentReports.filter(r => r.weekNumber === report.weekNumber)
+    const isNewEntry = !report.id || report.id.toString().startsWith('temp-')
+    
+    if (isNewEntry && weekReports.length >= 6) {
+      alert(`Week ${report.weekNumber} is full (6 entries). Cannot add more entries.`)
+      return
+    }
+    
     try {
       // Use PUT for updates (when report has an ID) or POST for new entries
-      const method = report.id && !report.id.toString().startsWith('placeholder-') ? 'PUT' : 'POST'
+      const method = report.id && !report.id.toString().startsWith('temp-') ? 'PUT' : 'POST'
       const reportData = method === 'PUT' ? {
         reportId: report.id,
         date: report.date,
@@ -191,8 +217,9 @@ export default function CoordinatorDashboard() {
         await fetchStudentTotalHours(studentId)
         alert(`Report ${method === 'PUT' ? 'updated' : 'saved'} successfully!`)
       } else {
-        console.error('Failed to save report')
-        alert('Failed to save report. Please try again.')
+        const errorData = await response.json()
+        console.error('Failed to save report:', errorData)
+        alert(`Failed to save report: ${errorData.error || 'Please try again.'}`)
       }
     } catch (error) {
       console.error('Error saving report:', error)
@@ -583,85 +610,136 @@ export default function CoordinatorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {studentReports
-                            .filter(report => report.weekNumber === selectedWeekForReports)
-                            .map((report, index) => {
-                              const reportDate = report?.date || ''
-                              const dayName = reportDate ? new Date(reportDate).toLocaleDateString('en-US', { weekday: 'long' }) : `Day ${index + 1}`
-                              
-                              return (
-                                <tr key={report.id || index} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>
-                                    {dayName}
-                                  </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                    <input
-                                      type="date"
-                                      value={reportDate}
-                                      onChange={(e) => {
-                                        // Update the report date
+                          {Array.from({ length: 6 }, (_, dayIndex) => {
+                            // Find existing report for this day in the selected week
+                            const existingReport = studentReports.find(report => 
+                              report.weekNumber === selectedWeekForReports && 
+                              report.dayIndex === dayIndex
+                            )
+                            
+                            // Check if week is full (6 entries already exist)
+                            const weekReports = studentReports.filter(report => report.weekNumber === selectedWeekForReports)
+                            const isWeekFull = weekReports.length >= 6
+                            
+                            // Check for duplicate dates
+                            const currentDate = existingReport?.date || ''
+                            const isDateDuplicate = currentDate && studentReports.some(report => 
+                              report.id !== existingReport?.id && 
+                              report.date === currentDate
+                            )
+                            
+                            return (
+                              <tr key={dayIndex} style={{ background: dayIndex % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>
+                                  Day {dayIndex + 1}
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                  <input
+                                    type="date"
+                                    value={existingReport?.date || ''}
+                                    onChange={(e) => {
+                                      const newDate = e.target.value
+                                      
+                                      // Check for duplicate dates
+                                      const isDuplicate = studentReports.some(report => 
+                                        report.id !== existingReport?.id && 
+                                        report.date === newDate
+                                      )
+                                      
+                                      if (isDuplicate) {
+                                        alert('This date is already used in another entry. Please choose a different date.')
+                                        return
+                                      }
+                                      
+                                      // Update or create report
+                                      if (existingReport) {
                                         const updatedReports = studentReports.map(r => 
-                                          r.id === report.id ? { ...r, date: e.target.value } : r
+                                          r.id === existingReport.id ? { ...r, date: newDate } : r
                                         )
                                         setStudentReports(updatedReports)
-                                      }}
-                                      style={{
-                                        padding: '4px 8px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '4px',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        width: '100%'
-                                      }}
-                                    />
-                                  </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      max="8"
-                                      value={report?.hours || 0}
-                                      onChange={(e) => {
+                                      } else {
+                                        // Create new report entry
+                                        const newReport = {
+                                          id: `temp-${selectedWeekForReports}-${dayIndex}`,
+                                          weekNumber: selectedWeekForReports,
+                                          dayIndex: dayIndex,
+                                          date: newDate,
+                                          hours: 0,
+                                          excuse: '',
+                                          studentId: studentId
+                                        }
+                                        setStudentReports([...studentReports, newReport])
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '4px 8px',
+                                      border: isDateDuplicate ? '2px solid #dc2626' : '1px solid #d1d5db',
+                                      borderRadius: '4px',
+                                      fontSize: '14px',
+                                      backgroundColor: 'white',
+                                      width: '100%'
+                                    }}
+                                  />
+                                  {isDateDuplicate && (
+                                    <div style={{ fontSize: '11px', color: '#dc2626', marginTop: '2px' }}>
+                                      Date already used
+                                    </div>
+                                  )}
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="8"
+                                    value={existingReport?.hours || 0}
+                                    onChange={(e) => {
+                                      if (existingReport) {
                                         const updatedReports = studentReports.map(r => 
-                                          r.id === report.id ? { ...r, hours: parseInt(e.target.value) || 0 } : r
+                                          r.id === existingReport.id ? { ...r, hours: parseInt(e.target.value) || 0 } : r
                                         )
                                         setStudentReports(updatedReports)
-                                      }}
-                                      style={{
-                                        padding: '4px 8px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '4px',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        width: '60px'
-                                      }}
-                                    />
-                                  </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                    <textarea
-                                      value={report?.excuse || ''}
-                                      onChange={(e) => {
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '4px 8px',
+                                      border: '1px solid #d1d5db',
+                                      borderRadius: '4px',
+                                      fontSize: '14px',
+                                      backgroundColor: 'white',
+                                      width: '60px'
+                                    }}
+                                  />
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                                  <textarea
+                                    value={existingReport?.excuse || ''}
+                                    onChange={(e) => {
+                                      if (existingReport) {
                                         const updatedReports = studentReports.map(r => 
-                                          r.id === report.id ? { ...r, excuse: e.target.value } : r
+                                          r.id === existingReport.id ? { ...r, excuse: e.target.value } : r
                                         )
                                         setStudentReports(updatedReports)
-                                      }}
-                                      placeholder="Enter excuse if any..."
-                                      style={{
-                                        padding: '8px',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '4px',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        width: '100%',
-                                        minHeight: '60px',
-                                        resize: 'vertical'
-                                      }}
-                                    />
-                                  </td>
-                                  <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                                      }
+                                    }}
+                                    placeholder={isWeekFull && !existingReport ? "Week is full - cannot add excuse" : "Enter excuse if any..."}
+                                    disabled={isWeekFull && !existingReport}
+                                    style={{
+                                      padding: '8px',
+                                      border: '1px solid #d1d5db',
+                                      borderRadius: '4px',
+                                      fontSize: '14px',
+                                      backgroundColor: isWeekFull && !existingReport ? '#f3f4f6' : 'white',
+                                      width: '100%',
+                                      minHeight: '60px',
+                                      resize: 'vertical',
+                                      color: isWeekFull && !existingReport ? '#9ca3af' : '#111827'
+                                    }}
+                                  />
+                                </td>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                                  {existingReport ? (
                                     <button
-                                      onClick={() => handleSaveReport(report)}
+                                      onClick={() => handleSaveReport(existingReport)}
                                       style={{ 
                                         padding: '6px 12px', 
                                         borderRadius: 6, 
@@ -675,19 +753,52 @@ export default function CoordinatorDashboard() {
                                     >
                                       Save
                                     </button>
-                                  </td>
-                                </tr>
-                              )
-                            })}
-                          
-                          {/* Show message if no reports for selected week */}
-                          {studentReports.filter(report => report.weekNumber === selectedWeekForReports).length === 0 && (
-                            <tr>
-                              <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#6b7280', fontSize: 14 }}>
-                                No reports found for Week {selectedWeekForReports}
-                              </td>
-                            </tr>
-                          )}
+                                  ) : isWeekFull ? (
+                                    <span style={{ 
+                                      fontSize: '11px', 
+                                      color: '#dc2626', 
+                                      fontWeight: 500 
+                                    }}>
+                                      Week Full
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => {
+                                        if (isWeekFull) {
+                                          alert(`Week ${selectedWeekForReports} is full (6 entries). Cannot add more entries.`)
+                                          return
+                                        }
+                                        
+                                        // Create new report entry
+                                        const newReport = {
+                                          id: `temp-${selectedWeekForReports}-${dayIndex}`,
+                                          weekNumber: selectedWeekForReports,
+                                          dayIndex: dayIndex,
+                                          date: '',
+                                          hours: 0,
+                                          excuse: '',
+                                          studentId: studentId
+                                        }
+                                        setStudentReports([...studentReports, newReport])
+                                      }}
+                                      style={{ 
+                                        padding: '6px 12px', 
+                                        borderRadius: 6, 
+                                        backgroundColor: '#3b82f6', 
+                                        color: 'white', 
+                                        border: 'none', 
+                                        fontSize: 12, 
+                                        cursor: 'pointer',
+                                        fontWeight: 500
+                                      }}
+                                    >
+                                      Add Entry
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
