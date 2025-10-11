@@ -16,9 +16,6 @@ export default function CoordinatorDashboard() {
   const [sections, setSections] = useState<string[]>([])
   const [totalHours, setTotalHours] = useState<number>(0)
   const [studentReports, setStudentReports] = useState<any[]>([])
-  const [editingReport, setEditingReport] = useState<any>(null)
-  const [excuseText, setExcuseText] = useState<string>('')
-  const [customExcuseText, setCustomExcuseText] = useState<string>('')
   const [selectedWeekForReports, setSelectedWeekForReports] = useState<number>(1)
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
   const [studentDetails, setStudentDetails] = useState<any>(null)
@@ -156,124 +153,7 @@ export default function CoordinatorDashboard() {
     }
   }
 
-  const handleSaveReport = async (report: any) => {
-    if (!studentId || !report) return
-    
-    // Validation checks
-    if (!report.date) {
-      alert('Please select a date before saving.')
-      return
-    }
-    
-    // Check for duplicate dates
-    const isDuplicate = studentReports.some(r => 
-      r.id !== report.id && 
-      r.date === report.date
-    )
-    
-    if (isDuplicate) {
-      alert('This date is already used in another entry. Please choose a different date.')
-      return
-    }
-    
-    // Check if week is full (for new entries)
-    const weekReports = studentReports.filter(r => r.weekNumber === report.weekNumber)
-    const isNewEntry = !report.id || report.id.toString().startsWith('temp-')
-    
-    if (isNewEntry && weekReports.length >= 6) {
-      alert(`Week ${report.weekNumber} is full (6 entries). Cannot add more entries.`)
-      return
-    }
-    
-    try {
-      // Use PUT for updates (when report has an ID) or POST for new entries
-      const method = report.id && !report.id.toString().startsWith('temp-') ? 'PUT' : 'POST'
-      const reportData = method === 'PUT' ? {
-        reportId: report.id,
-        date: report.date,
-        hours: report.hours || 0,
-        activities: report.excuse ? 'Excused' : '',
-        learnings: report.excuse ? 'Excused' : '',
-        excuse: report.excuse || ''
-      } : {
-        userName: selectedStudent?.userName || 'Coordinator Entry',
-        role: 'coordinator',
-        section: section,
-        studentId: studentId,
-        weekNumber: report.weekNumber,
-        date: report.date,
-        hours: report.hours || 0,
-        activities: report.excuse ? 'Excused' : '',
-        learnings: report.excuse ? 'Excused' : '',
-        excuse: report.excuse || ''
-      }
-      
-      const response = await fetch(getApiUrl('/api/reports'), {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reportData)
-      })
-      
-      if (response.ok) {
-        // Refresh the reports from server
-        await fetchStudentReports(studentId)
-        await fetchStudentTotalHours(studentId)
-        alert(`Report ${method === 'PUT' ? 'updated' : 'saved'} successfully!`)
-      } else {
-        const errorData = await response.json()
-        console.error('Failed to save report:', errorData)
-        alert(`Failed to save report: ${errorData.error || 'Please try again.'}`)
-      }
-    } catch (error) {
-      console.error('Error saving report:', error)
-      alert('Error saving report. Please try again.')
-    }
-  }
 
-  const handleExcuseSubmit = async () => {
-    if (!editingReport) return
-    
-    const finalExcuseText = excuseText === 'Other' ? customExcuseText.trim() : excuseText.trim()
-    if (!finalExcuseText) return
-    
-    try {
-      const response = await fetch(getApiUrl('/api/reports'), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reportId: editingReport.id,
-          excuse: finalExcuseText,
-          weekNumber: editingReport.weekNumber,
-          date: editingReport.date,
-          studentId: studentId
-        })
-      })
-        
-        if (response.ok) {
-        // Update the local state immediately
-        const updatedReports = studentReports.map(report => {
-          if (report.weekNumber === editingReport.weekNumber && report.date === editingReport.date) {
-            return { ...report, excuse: finalExcuseText }
-          }
-          return report
-        })
-        setStudentReports(updatedReports)
-        
-        // Refresh the reports from server
-        if (studentId) {
-          fetchStudentReports(studentId)
-          fetchStudentTotalHours(studentId)
-        }
-        setEditingReport(null)
-        setExcuseText('')
-        setCustomExcuseText('')
-      } else {
-        console.error('Failed to submit excuse')
-      }
-    } catch (error) {
-      console.error('Error submitting excuse:', error)
-    }
-  }
 
   const refreshStudents = () => {
     const fetchStudents = async () => {
@@ -577,10 +457,9 @@ export default function CoordinatorDashboard() {
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
               {section && studentId && selectedStudent ? (
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-                  
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <h4 style={{ margin: 0, color: '#111827' }}>Daily Reports - Excuse Management</h4>
+                      <h4 style={{ margin: 0, color: '#111827' }}>Weekly Reports - View Only</h4>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <select 
                           value={selectedWeekForReports} 
@@ -601,207 +480,91 @@ export default function CoordinatorDashboard() {
                         </select>
                       </div>
                     </div>
+                    
+                    {/* Week Summary */}
+                    <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
+                      <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Week {selectedWeekForReports} Summary</div>
+                      <div style={{ fontSize: 14, color: '#0c4a6e' }}>
+                        {(() => {
+                          const weekReports = studentReports.filter(report => report.weekNumber === selectedWeekForReports)
+                          const totalWeekHours = weekReports.reduce((sum, report) => sum + (report.hours || 0), 0)
+                          const submittedReports = weekReports.filter(report => report.activities || report.learnings)
+                          return `${submittedReports.length} reports submitted, ${totalWeekHours} total hours`
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Reports Table */}
                     <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ background: '#f8f9fa' }}>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Day</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Date</th>
                             <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Hours</th>
-                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Excuse</th>
-                            <th style={{ textAlign: 'center', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Action</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Activities/Tasks</th>
+                            <th style={{ textAlign: 'left', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>New Learnings</th>
+                            <th style={{ textAlign: 'center', padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>Status</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {Array.from({ length: 6 }, (_, dayIndex) => {
-                            // Find existing report for this day in the selected week
-                            const existingReport = studentReports.find(report => 
-                              report.weekNumber === selectedWeekForReports && 
-                              report.dayIndex === dayIndex
-                            )
+                          {(() => {
+                            const weekReports = studentReports
+                              .filter(report => report.weekNumber === selectedWeekForReports)
+                              .sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime())
                             
-                            // Check if week is full (6 entries already exist)
-                            const weekReports = studentReports.filter(report => report.weekNumber === selectedWeekForReports)
-                            const isWeekFull = weekReports.length >= 6
+                            if (weekReports.length === 0) {
+                              return (
+                                <tr>
+                                  <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#6b7280' }}>
+                                    No reports found for Week {selectedWeekForReports}
+                                  </td>
+                                </tr>
+                              )
+                            }
                             
-                            // Check for duplicate dates
-                            const currentDate = existingReport?.date || ''
-                            const isDateDuplicate = currentDate && studentReports.some(report => 
-                              report.id !== existingReport?.id && 
-                              report.date === currentDate
-                            )
-                            
-                            return (
-                              <tr key={dayIndex} style={{ background: dayIndex % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', fontWeight: 600 }}>
-                                  Day {dayIndex + 1}
+                            return weekReports.map((report, index) => (
+                              <tr key={report.id || index} style={{ background: index % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
+                                  {report.date || '—'}
                                 </td>
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                  <input
-                                    type="date"
-                                    value={existingReport?.date || ''}
-                                    onChange={(e) => {
-                                      const newDate = e.target.value
-                                      
-                                      // Check for duplicate dates
-                                      const isDuplicate = studentReports.some(report => 
-                                        report.id !== existingReport?.id && 
-                                        report.date === newDate
-                                      )
-                                      
-                                      if (isDuplicate) {
-                                        alert('This date is already used in another entry. Please choose a different date.')
-                                        return
-                                      }
-                                      
-                                      // Update or create report
-                                      if (existingReport) {
-                                        const updatedReports = studentReports.map(r => 
-                                          r.id === existingReport.id ? { ...r, date: newDate } : r
-                                        )
-                                        setStudentReports(updatedReports)
-                                      } else {
-                                        // Create new report entry
-                                        const newReport = {
-                                          id: `temp-${selectedWeekForReports}-${dayIndex}`,
-                                          weekNumber: selectedWeekForReports,
-                                          dayIndex: dayIndex,
-                                          date: newDate,
-                                          hours: 0,
-                                          excuse: '',
-                                          studentId: studentId
-                                        }
-                                        setStudentReports([...studentReports, newReport])
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '4px 8px',
-                                      border: isDateDuplicate ? '2px solid #dc2626' : '1px solid #d1d5db',
-                                      borderRadius: '4px',
-                                      fontSize: '14px',
-                                      backgroundColor: 'white',
-                                      width: '100%'
-                                    }}
-                                  />
-                                  {isDateDuplicate && (
-                                    <div style={{ fontSize: '11px', color: '#dc2626', marginTop: '2px' }}>
-                                      Date already used
-                                    </div>
-                                  )}
+                                  {report.hours || 0}
                                 </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    max="8"
-                                    value={existingReport?.hours || 0}
-                                    onChange={(e) => {
-                                      if (existingReport) {
-                                        const updatedReports = studentReports.map(r => 
-                                          r.id === existingReport.id ? { ...r, hours: parseInt(e.target.value) || 0 } : r
-                                        )
-                                        setStudentReports(updatedReports)
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '4px 8px',
-                                      border: '1px solid #d1d5db',
-                                      borderRadius: '4px',
-                                      fontSize: '14px',
-                                      backgroundColor: 'white',
-                                      width: '60px'
-                                    }}
-                                  />
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', maxWidth: '300px' }}>
+                                  <div style={{ 
+                                    maxHeight: '100px', 
+                                    overflow: 'auto', 
+                                    fontSize: '13px',
+                                    lineHeight: '1.4'
+                                  }}>
+                                    {report.activities || '—'}
+                                  </div>
                                 </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb' }}>
-                                  <textarea
-                                    value={existingReport?.excuse || ''}
-                                    onChange={(e) => {
-                                      if (existingReport) {
-                                        const updatedReports = studentReports.map(r => 
-                                          r.id === existingReport.id ? { ...r, excuse: e.target.value } : r
-                                        )
-                                        setStudentReports(updatedReports)
-                                      }
-                                    }}
-                                    placeholder={isWeekFull && !existingReport ? "Week is full - cannot add excuse" : "Enter excuse if any..."}
-                                    disabled={isWeekFull && !existingReport}
-                                    style={{
-                                      padding: '8px',
-                                      border: '1px solid #d1d5db',
-                                      borderRadius: '4px',
-                                      fontSize: '14px',
-                                      backgroundColor: isWeekFull && !existingReport ? '#f3f4f6' : 'white',
-                                      width: '100%',
-                                      minHeight: '60px',
-                                      resize: 'vertical',
-                                      color: isWeekFull && !existingReport ? '#9ca3af' : '#111827'
-                                    }}
-                                  />
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', maxWidth: '300px' }}>
+                                  <div style={{ 
+                                    maxHeight: '100px', 
+                                    overflow: 'auto', 
+                                    fontSize: '13px',
+                                    lineHeight: '1.4'
+                                  }}>
+                                    {report.learnings || '—'}
+                                  </div>
                                 </td>
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                                  {existingReport ? (
-                                    <button
-                                      onClick={() => handleSaveReport(existingReport)}
-                                      style={{ 
-                                        padding: '6px 12px', 
-                                        borderRadius: 6, 
-                                        backgroundColor: '#10b981', 
-                                        color: 'white', 
-                                        border: 'none', 
-                                        fontSize: 12, 
-                                        cursor: 'pointer',
-                                        fontWeight: 500
-                                      }}
-                                    >
-                                      Save
-                                    </button>
-                                  ) : isWeekFull ? (
-                                    <span style={{ 
-                                      fontSize: '11px', 
-                                      color: '#dc2626', 
-                                      fontWeight: 500 
-                                    }}>
-                                      Week Full
-                                    </span>
-                                  ) : (
-                                    <button
-                                      onClick={() => {
-                                        if (isWeekFull) {
-                                          alert(`Week ${selectedWeekForReports} is full (6 entries). Cannot add more entries.`)
-                                          return
-                                        }
-                                        
-                                        // Create new report entry
-                                        const newReport = {
-                                          id: `temp-${selectedWeekForReports}-${dayIndex}`,
-                                          weekNumber: selectedWeekForReports,
-                                          dayIndex: dayIndex,
-                                          date: '',
-                                          hours: 0,
-                                          excuse: '',
-                                          studentId: studentId
-                                        }
-                                        setStudentReports([...studentReports, newReport])
-                                      }}
-                                      style={{ 
-                                        padding: '6px 12px', 
-                                        borderRadius: 6, 
-                                        backgroundColor: '#3b82f6', 
-                                        color: 'white', 
-                                        border: 'none', 
-                                        fontSize: 12, 
-                                        cursor: 'pointer',
-                                        fontWeight: 500
-                                      }}
-                                    >
-                                      Add Entry
-                                    </button>
-                                  )}
+                                  <span style={{
+                                    padding: '4px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    backgroundColor: (report.activities || report.learnings) ? '#dcfce7' : '#fef3c7',
+                                    color: (report.activities || report.learnings) ? '#166534' : '#92400e'
+                                  }}>
+                                    {(report.activities || report.learnings) ? 'Submitted' : 'Missing'}
+                                  </span>
                                 </td>
                               </tr>
-                            )
-                          })}
+                            ))
+                          })()}
                         </tbody>
                       </table>
                     </div>
@@ -966,85 +729,6 @@ export default function CoordinatorDashboard() {
             </div>
           )}
 
-          {/* Excuse Modal */}
-      {editingReport && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: 'white', borderRadius: 8, padding: 24, width: '90%', maxWidth: 500 }}>
-            <h3 style={{ margin: '0 0 16px 0', color: '#111827' }}>
-              {editingReport.excuse ? 'Edit Excuse' : 'Add Excuse'} for {editingReport.day || 'Day'} - Week {editingReport.weekNumber || 'N/A'}
-            </h3>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: '#111827' }}>Excuse Type:</label>
-              <select
-                value={excuseText}
-                onChange={(e) => setExcuseText(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: 12,
-                  border: '1px solid #d1d5db',
-                  borderRadius: 6,
-                  fontSize: 14,
-                  backgroundColor: 'white',
-                  marginBottom: 12
-                }}
-              >
-                <option value="">Select excuse type...</option>
-                <option value="Medical Emergency">Medical Emergency</option>
-                <option value="Family Emergency">Family Emergency</option>
-                <option value="Transportation Issues">Transportation Issues</option>
-                <option value="Weather Conditions">Weather Conditions</option>
-                <option value="Personal Matters">Personal Matters</option>
-                <option value="Company-related Issues">Company-related Issues</option>
-                <option value="Academic Requirements">Academic Requirements</option>
-                <option value="Other">Other</option>
-              </select>
-              
-              {excuseText === 'Other' && (
-                <textarea
-                  value={customExcuseText}
-                  onChange={(e) => setCustomExcuseText(e.target.value)}
-                  placeholder="Please specify the excuse reason..."
-                  style={{
-                    width: '100%',
-                    minHeight: 80,
-                    padding: 12,
-                    border: '1px solid #d1d5db',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    resize: 'vertical'
-                  }}
-                />
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => {
-                  setEditingReport(null)
-                  setExcuseText('')
-                  setCustomExcuseText('')
-                }}
-                style={{ padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 6, backgroundColor: 'white', color: '#6b7280', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExcuseSubmit}
-                disabled={!excuseText.trim() || (excuseText === 'Other' && !customExcuseText.trim())}
-                style={{ 
-                  padding: '8px 16px', 
-                  border: 'none', 
-                  borderRadius: 6, 
-                  backgroundColor: (excuseText.trim() && (excuseText !== 'Other' || customExcuseText.trim())) ? '#dc2626' : '#9ca3af', 
-                  color: 'white', 
-                  cursor: (excuseText.trim() && (excuseText !== 'Other' || customExcuseText.trim())) ? 'pointer' : 'not-allowed' 
-                }}
-              >
-                {editingReport.excuse ? 'Update Excuse' : 'Submit Excuse'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
         </div>
       </div>
