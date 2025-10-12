@@ -66,7 +66,7 @@ export function WeeklyReportTable() {
       // Check for duplicate dates when updating date field
       if (key === 'date' && typeof value === 'string' && value !== '') {
         const duplicateDate = next[weekIndex].find((e, idx) => 
-          idx !== rowIdx && e.date === value && e.date !== ''
+          idx !== rowIdx && e.date === value && e.date !== '' && e.id
         )
         
         if (duplicateDate) {
@@ -225,7 +225,7 @@ export function WeeklyReportTable() {
     // Validation: Check for duplicate dates in the same week
     const currentWeekEntries = weeks[currentWeek - 1]
     const duplicateDate = currentWeekEntries.find((e, idx) => 
-      idx !== rowIdx && e.date === entry.date && e.date !== ''
+      idx !== rowIdx && e.date === entry.date && e.date !== '' && e.id
     )
     
     if (duplicateDate) {
@@ -235,7 +235,7 @@ export function WeeklyReportTable() {
 
     // Validation: Check if week already has 6 entries (excluding current row if it's an update)
     const existingEntries = currentWeekEntries.filter((e, idx) => 
-      idx !== rowIdx && e.date !== '' && (e.submitted || e.activities.trim() || e.learnings.trim())
+      idx !== rowIdx && (e.id || (e.date !== '' && (e.submitted || e.activities.trim() || e.learnings.trim())))
     )
     
     if (existingEntries.length >= 6 && !entry.id) {

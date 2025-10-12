@@ -484,9 +484,21 @@ export default function CoordinatorDashboard() {
                 <div style={{ fontWeight: 600, marginBottom: 12 }}>Monitoring Results</div>
                 {section && studentId && selectedStudent ? (
                   <>
-                    <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
-                      <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Total Accumulated Hours</div>
-                      <div style={{ fontSize: 24, fontWeight: 700, color: '#0c4a6e' }}>{totalHours} / 486 hours</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                      <div style={{ padding: 12, backgroundColor: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: 6 }}>
+                        <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Week {selectedWeek} Hours</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: '#0c4a6e' }}>
+                          {(() => {
+                            const weekReports = studentReports.filter(report => report.weekNumber === selectedWeek)
+                            const weekHours = weekReports.reduce((sum, report) => sum + (report.hours || 0), 0)
+                            return `${weekHours} hours`
+                          })()}
+                        </div>
+                      </div>
+                      <div style={{ padding: 12, backgroundColor: '#f0fdf4', border: '1px solid #22c55e', borderRadius: 6 }}>
+                        <div style={{ fontWeight: 600, color: '#15803d', marginBottom: 4 }}>Total Accumulated</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: '#166534' }}>{totalHours} / 486 hours</div>
+                      </div>
                     </div>
                     <CoordinatorPOList section={section} studentId={studentId} selectedWeek={selectedWeek} showMonitoring={true} />
                   </>

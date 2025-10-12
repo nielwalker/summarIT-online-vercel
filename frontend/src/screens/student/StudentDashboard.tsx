@@ -192,24 +192,141 @@ export default function StudentDashboard() {
           </div>
         ) : activeTab === 'company' ? (
           <div style={{ padding: '20px' }}>
-            <h2 style={{ margin: '0 0 12px 0', color: '#1f2937' }}>Company Information</h2>
-            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, color: '#111827' }}>
-                <div><strong>Name:</strong> {studentDetails?.student.companyName || '—'}</div>
-                <div><strong>Address:</strong> {studentDetails?.student.companyAddress || '—'}</div>
-                <div><strong>Supervisor:</strong> {studentDetails?.student.companySupervisor || '—'}</div>
-                <div><strong>Contact:</strong> {studentDetails?.student.companyContact || '—'}</div>
+            <h2 style={{ margin: '0 0 20px 0', color: '#1f2937', fontSize: '24px', fontWeight: '600' }}>Company Information</h2>
+            
+            {/* Company Information Card */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '24px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              marginBottom: '20px'
+            }}>
+              {/* Company Profile Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '24px',
+                paddingBottom: '20px',
+                borderBottom: '1px solid #f3f4f6'
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '16px',
+                  boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                  </svg>
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: '600', color: '#111827' }}>
+                    {studentDetails?.student.companyName || 'N/A'}
+                  </h3>
+                  <p style={{ margin: '0', fontSize: '14px', color: '#6b7280' }}>OJT Company</p>
+                </div>
+              </div>
+
+              {/* Company Details Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Address
+                  </label>
+                  <div style={{ fontSize: '16px', color: '#111827', fontWeight: '500' }}>
+                    {studentDetails?.student.companyAddress || 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Supervisor
+                  </label>
+                  <div style={{ fontSize: '16px', color: '#111827', fontWeight: '500' }}>
+                    {studentDetails?.student.companySupervisor || 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Contact Number
+                  </label>
+                  <div style={{ fontSize: '16px', color: '#111827', fontWeight: '500' }}>
+                    {studentDetails?.student.companyContact || 'N/A'}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         ) : activeTab === 'coordinator' ? (
           <div style={{ padding: '20px' }}>
-            <h2 style={{ margin: '0 0 12px 0', color: '#1f2937' }}>Coordinator Information</h2>
-            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, color: '#111827' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                <div><strong>Name:</strong> {studentDetails?.coordinator.userName || '—'}</div>
-                <div><strong>Coordinator ID:</strong> {studentDetails?.coordinator.coordinatorId || '—'}</div>
-                <div><strong>Section:</strong> {studentDetails?.student.section || '—'}</div>
+            <h2 style={{ margin: '0 0 20px 0', color: '#1f2937', fontSize: '24px', fontWeight: '600' }}>Coordinator Information</h2>
+            
+            {/* Coordinator Information Card */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '24px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              marginBottom: '20px'
+            }}>
+              {/* Coordinator Profile Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '24px',
+                paddingBottom: '20px',
+                borderBottom: '1px solid #f3f4f6'
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '16px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div>
+                  <h3 style={{ margin: '0 0 4px 0', fontSize: '20px', fontWeight: '600', color: '#111827' }}>
+                    {studentDetails?.coordinator.userName || 'N/A'}
+                  </h3>
+                  <p style={{ margin: '0', fontSize: '14px', color: '#6b7280' }}>OJT Coordinator</p>
+                </div>
+              </div>
+
+              {/* Coordinator Details Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Coordinator ID
+                  </label>
+                  <div style={{ fontSize: '16px', color: '#111827', fontWeight: '500' }}>
+                    {studentDetails?.coordinator.coordinatorId || 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Section
+                  </label>
+                  <div style={{ fontSize: '16px', color: '#111827', fontWeight: '500' }}>
+                    {studentDetails?.student.section || 'N/A'}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
