@@ -4,7 +4,7 @@ import { getApiUrl } from '../../utils/api'
 
 type Props = {
   section: string
-  selectedWeek?: number | 'overall'
+  selectedWeek?: number
 }
 
 const PO_DEFS: Array<{ code: string; label: string; desc: string }> = [
@@ -96,7 +96,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       const repResp = await fetch(repUrl)
       if (!repResp.ok) throw new Error(`Failed to fetch reports: ${repResp.status}`)
       const reports = await repResp.json()
-      const weekFiltered = Array.isArray(reports) && selectedWeek && selectedWeek !== 'overall' ? reports.filter((r: any) => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
+      const weekFiltered = Array.isArray(reports) && selectedWeek ? reports.filter((r: any) => Number(r.weekNumber || 1) === Number(selectedWeek)) : reports
       const text = (Array.isArray(weekFiltered) ? weekFiltered : []).map((r: any) => `${r.activities || ''} ${r.learnings || ''}`).join(' ')
       
       // Calculate local scores first
@@ -108,10 +108,10 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           section, 
-          week: selectedWeek === 'overall' ? undefined : selectedWeek, // Send undefined for overall
+          week: selectedWeek, // Send selected week
           useGPT: true, // Enable GPT-based analysis for Chairman
           analysisType: 'chairman', // Specify Chairman analysis type
-          isOverall: selectedWeek === 'overall' // Flag for overall analysis
+          isOverall: false // No overall analysis
         })
       })
       

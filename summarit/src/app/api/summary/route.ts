@@ -135,51 +135,36 @@ ${text}`
       } catch {}
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
       // Enhanced Chairman-specific GPT analysis
-      const sys = `You are an expert evaluator for BSIT internship journals.
+      const sys = `You are an expert evaluator creating brief, concise summaries of BSIT internship journals for chairpersons.
 
-Your task is to analyze student entries (Activities and Learnings) and determine which BSIT Program Outcomes (PO1–PO15) are demonstrated, based on context and intent — not just keywords.
+Your goal is to create SHORT, EASY-TO-READ summaries that capture the essential activities and learnings.
 
-You will provide kinds of insights:
-1. For each section selected in drop down menu— summarize week (for chairperson summary).
-2. if all section selected in drop down menu — summarize all weeks together (for chairperson's overall section summary).
-3. For overall analysis — provide comprehensive summary across all weeks for the selected section.
+The summary should:
+- Be BRIEF and CONCISE - aim for 2-3 sentences maximum.
+- Focus only on the MOST IMPORTANT activities and key learnings.
+- Use simple, clear language that's easy to read quickly.
+- Avoid unnecessary details and repetitive information.
+- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
+- Write in natural, readable language with proper grammar and sentence structure.
+- Prioritize clarity and brevity over comprehensiveness.
 
-When identifying Program Outcome (PO) hits:
-- Use both Activities (what they did) and Learnings (what they understood).
-- Match a PO only when context clearly supports it.
-- Mention which POs were hit, along with the reason why.
-- Also mention why other POs were not hit, e.g., "No activity related to design or implementation was mentioned, so PO5 is not applicable."
-- Avoid vague, filler statements like "I learned a lot" or "I helped the team."
-- Use synonyms and related verbs (e.g., troubleshoot → analyze, build → design, collaborate → teamwork).
+Do not list Program Outcomes or detailed analysis. Your output is only for chairpersons to quickly review section progress.`
 
-Your explanation must be logical, concise, and context-based.`
+      const usr = `Create a brief, concise summary of the following student journal entry:
 
-      const usr = `Evaluate the student's ${isOverall ? 'overall internship' : 'weekly journal'} entry below and produce the following:
+**If data is for one week:**
+- Write a SHORT summary (2-3 sentences) highlighting the most important activities and key learnings.
 
-**A. Summary for Chairperson's ${isOverall ? 'Overall Section' : 'Weekly'} View:**
-- Write a concise paragraph (2–3 sentences) describing what the student${isOverall ? 's' : ''} actually did ${isOverall ? 'across all weeks' : 'that week'}, based on their Activities and Learnings.
+**If overall analysis:**
+- Write a SHORT summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
 
-**B. Program Outcome (PO) Mapping:**
-1. List the POs that were hit, with a short reason why they apply.
-2. List the POs that were not hit, with a short reason why they were excluded or irrelevant to the entry.
-3. Avoid guessing — only match when clear evidence exists.
-
-**BSIT Program Outcomes:**
-a. PO1 – Apply knowledge of computing, science, and mathematics in solving computing/IT-related problems through critical and creative thinking.
-b. PO2 – Use current best practices and standards in solving complex computing/IT-related problems and requirements.
-c. PO3 – Analyze complex computing/IT-related problems by applying analytical and quantitative reasoning; and define the computing requirements appropriate to its solution.
-d. PO4 – Identify and analyze user needs and take them into account in the selection, creation, evaluation and administration of computer-based systems.
-e. PO5 – Design creatively, implement and evaluate different computer-based systems, processes, components, or programs to meet desired needs and requirements under various constraints.
-f. PO6 – Integrate effectively the IT-based solutions into the user environment with appropriate consideration for public health and safety, cultural, societal, and environmental concerns.
-g. PO7 – Select, adapt and apply appropriate techniques, resources, skills, and modern computing tools to complex computing activities, with an understanding of the limitations.
-h. PO8 – Function effectively as individual, or work collaboratively and respectfully as a member or leader in diverse development teams and in multidisciplinary and/or multicultural settings.
-i. PO9 – Assist in the creation of an effective IT project plan.
-j. PO10 – Communicate effectively in both oral and in written form by being able to deliver and comprehend instructions clearly, and present persuasively to diverse audiences the complex computing/IT-related ideas and perspectives.
-k. PO11 – Assess local and global impact of computing information technology on individuals, organizations, and society.
-l. PO12 – Act in recognition of professional, ethical, legal, security and social responsibilities in the utilization of information technology.
-m. PO13 – Recognize the need to engage in independent learning and keep pace with the latest developments in specialized IT fields (Database Management, Networking, Computer Vision, etc.).
-n. PO14 – Participate in generation of new knowledge or research and development projects aligned with local/national goals, contributing to economic development.
-o. PO15 – Preserve and promote Filipino historical and cultural heritage.
+Requirements:
+- Be BRIEF and CONCISE - maximum 2-3 sentences.
+- Focus only on the MOST IMPORTANT activities and learnings.
+- Use simple, clear language that's easy to read quickly.
+- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
+- Write in natural, readable language with proper grammar and sentence structure.
+- Prioritize brevity and clarity over comprehensive coverage.
 
 Entry:
 ${text}`
