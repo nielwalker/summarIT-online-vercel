@@ -213,7 +213,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
   // PO bullet display removed for coordinator view
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', position: 'relative', zIndex: 100 }}>
       {error && (
         <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626' }}>{error}</div>
       )}
@@ -223,9 +223,9 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         </div>
       )}
       {analysis && (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: 12, position: 'relative', zIndex: 100 }}>
           {!showMonitoring && (
-            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', width: '100%' }}>
+            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', width: '100%', position: 'relative', zIndex: 100 }}>
               <div style={{ 
                 textAlign: 'left',
                 fontSize: '14px',
@@ -237,7 +237,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             </div>
           )}
           {showMonitoring && (
-            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, width: '100%' }}>
+            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, width: '100%', position: 'relative', zIndex: 100 }}>
               <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
