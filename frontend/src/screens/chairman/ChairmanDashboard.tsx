@@ -510,7 +510,6 @@ export default function ChairmanDashboard() {
           flexDirection: 'column',
           height: '100vh',
           overflowY: 'auto',
-          padding: '20px',
           backgroundColor: '#f8fafc',
           transition: 'margin-left 0.2s ease-in-out'
         }}>
@@ -534,7 +533,8 @@ export default function ChairmanDashboard() {
           )}
           {/* Header */}
           <div style={{ 
-            marginBottom: '20px'
+            marginBottom: '20px',
+            padding: '20px 20px 0 20px'
           }}>
             <h1 style={{ 
               margin: '0 0 8px 0', 
@@ -559,6 +559,8 @@ export default function ChairmanDashboard() {
         {msg && (
           <div style={{ 
             marginBottom: '20px', 
+            marginLeft: '20px',
+            marginRight: '20px',
             padding: '12px',
             backgroundColor: msg.includes('successfully') || msg.includes('registered') ? '#f0f9ff' : '#fef2f2',
             border: `1px solid ${msg.includes('successfully') || msg.includes('registered') ? '#3b82f6' : '#dc2626'}`,
@@ -582,7 +584,7 @@ export default function ChairmanDashboard() {
                 gap: 16, 
                 alignItems: 'center', 
                 margin: '0 auto 20px auto',
-                padding: '12px',
+                padding: '12px 20px',
                 backgroundColor: '#f8f9fa',
                 borderRadius: '8px',
             border: '1px solid #e5e7eb', 
@@ -685,10 +687,9 @@ export default function ChairmanDashboard() {
                 flex: 1, 
                 display: 'flex', 
                 flexDirection: 'column',
-                width: '100%',
-                padding: '20px 0'
+                width: '100%'
               }}>
-                <div style={{ width: '100%' }}>
+                <div style={{ width: '100%', padding: '0 20px' }}>
                   <ChairmanDashboardPOList section={section} selectedWeek={selectedWeek} />
                 </div>
                 {/* Removed bottom chart per request */}
@@ -702,7 +703,8 @@ export default function ChairmanDashboard() {
               padding: '20px',
               backgroundColor: '#f9fafb',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb'
+              border: '1px solid #e5e7eb',
+              margin: '0 20px'
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Student Registration</h3>
               <div style={{ display: 'grid', gap: 12 }}>
@@ -917,7 +919,8 @@ export default function ChairmanDashboard() {
               padding: '20px',
               backgroundColor: '#f9fafb',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb'
+              border: '1px solid #e5e7eb',
+              margin: '0 20px'
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Coordinator Registration</h3>
               <div style={{ display: 'grid', gap: 12 }}>
@@ -1121,12 +1124,13 @@ export default function ChairmanDashboard() {
         
           {/* Company Registration Content */}
           {activeMenu === 'company' && (
-        <div style={{ 
+            <div style={{ 
               padding: '20px',
               backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb'
-        }}>
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              margin: '0 20px'
+            }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Company Registration</h3>
               <div style={{ display: 'grid', gap: 12 }}>
                 <input 
