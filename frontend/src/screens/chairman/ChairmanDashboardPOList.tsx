@@ -149,7 +149,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
   const chartData = useMemo(() => PO_DEFS.map((def, i) => ({ po: `${def.label} (${def.code})`, value: scores[i] || 0 })), [scores])
 
   return (
-    <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ width: '100%' }}>
       {error && (
         <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626' }}>{error}</div>
       )}

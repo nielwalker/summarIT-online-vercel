@@ -96,33 +96,43 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             finalSummary = summaryData.summary || finalSummary
           } else {
             console.error('GPT summary failed, using fallback')
-            // Fallback to concise summary - create brief summary from key activities
+            // Fallback to very concise summary - create brief summary from key activities
             const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
             const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
             
-            // Create a brief summary by taking first few key activities and learnings
-            const keyActivities = activities.slice(0, 2).join(', ')
-            const keyLearnings = learnings.slice(0, 1).join(', ')
+            // Create a very brief summary by taking first key activity and learning
+            const keyActivity = activities[0]?.substring(0, 50) || ''
+            const keyLearning = learnings[0]?.substring(0, 50) || ''
             
             let briefSummary = ''
-            if (keyActivities) briefSummary += `Key activities: ${keyActivities}.`
-            if (keyLearnings) briefSummary += ` Main learning: ${keyLearnings}.`
+            if (keyActivity) briefSummary += `Activities: ${keyActivity}${keyActivity.length >= 50 ? '...' : ''}.`
+            if (keyLearning) briefSummary += ` Learning: ${keyLearning}${keyLearning.length >= 50 ? '...' : ''}.`
+            
+            // Ensure summary is under 150 characters
+            if (briefSummary.length > 150) {
+              briefSummary = briefSummary.substring(0, 147) + '...'
+            }
             
             finalSummary = briefSummary || 'No submissions for this week.'
           }
         } catch (e) {
           console.error('Summary API error:', e)
-          // Fallback to concise summary - create brief summary from key activities
+          // Fallback to very concise summary - create brief summary from key activities
           const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
           const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
           
-          // Create a brief summary by taking first few key activities and learnings
-          const keyActivities = activities.slice(0, 2).join(', ')
-          const keyLearnings = learnings.slice(0, 1).join(', ')
+          // Create a very brief summary by taking first key activity and learning
+          const keyActivity = activities[0]?.substring(0, 50) || ''
+          const keyLearning = learnings[0]?.substring(0, 50) || ''
           
           let briefSummary = ''
-          if (keyActivities) briefSummary += `Key activities: ${keyActivities}.`
-          if (keyLearnings) briefSummary += ` Main learning: ${keyLearnings}.`
+          if (keyActivity) briefSummary += `Activities: ${keyActivity}${keyActivity.length >= 50 ? '...' : ''}.`
+          if (keyLearning) briefSummary += ` Learning: ${keyLearning}${keyLearning.length >= 50 ? '...' : ''}.`
+          
+          // Ensure summary is under 150 characters
+          if (briefSummary.length > 150) {
+            briefSummary = briefSummary.substring(0, 147) + '...'
+          }
           
           finalSummary = briefSummary || 'No submissions for this week.'
         }
@@ -161,7 +171,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
   // PO bullet display removed for coordinator view
 
   return (
-    <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
+    <div style={{ width: '100%' }}>
       {error && (
         <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626' }}>{error}</div>
       )}
@@ -173,7 +183,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       {analysis && (
         <div style={{ display: 'grid', gap: 12 }}>
           {!showMonitoring && (
-            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', margin: '0 auto', width: '100%', maxWidth: 900 }}>
+            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', width: '100%' }}>
               <div style={{ 
                 textAlign: 'left',
                 fontSize: '14px',
@@ -185,7 +195,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             </div>
           )}
           {showMonitoring && (
-            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, margin: '0 auto', width: '100%', maxWidth: 900 }}>
+            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, width: '100%' }}>
               <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>

@@ -587,7 +587,6 @@ export default function ChairmanDashboard() {
                 borderRadius: '8px',
             border: '1px solid #e5e7eb', 
                 width: '100%',
-                maxWidth: '600px',
                 justifyContent: 'center'
               }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -706,7 +705,7 @@ export default function ChairmanDashboard() {
               border: '1px solid #e5e7eb'
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Student Registration</h3>
-              <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
+              <div style={{ display: 'grid', gap: 12 }}>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={studentId} 
@@ -921,7 +920,7 @@ export default function ChairmanDashboard() {
               border: '1px solid #e5e7eb'
             }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Coordinator Registration</h3>
-              <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
+              <div style={{ display: 'grid', gap: 12 }}>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={coordId} 
@@ -1129,7 +1128,7 @@ export default function ChairmanDashboard() {
           border: '1px solid #e5e7eb'
         }}>
               <h3 style={{ margin: '0 0 20px 0', color: '#000000' }}>Company Registration</h3>
-              <div style={{ display: 'grid', gap: 12, maxWidth: '500px' }}>
+              <div style={{ display: 'grid', gap: 12 }}>
                 <input 
                   value={companyName} 
                   onChange={(e) => setCompanyName(e.target.value)} 
@@ -1341,7 +1340,6 @@ export default function ChairmanDashboard() {
             borderRadius: '12px',
             padding: '24px',
             width: '90%',
-            maxWidth: '600px',
             maxHeight: '90vh',
             overflowY: 'auto',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'

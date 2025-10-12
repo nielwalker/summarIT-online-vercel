@@ -27,8 +27,7 @@ export default function StudentProfile({ studentDetails }: StudentProfileProps) 
       minHeight: '100vh'
     }}>
       <div style={{
-        maxWidth: '800px',
-        margin: '0 auto',
+        width: '100%',
         backgroundColor: 'white',
         borderRadius: '12px',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
@@ -80,7 +79,7 @@ export default function StudentProfile({ studentDetails }: StudentProfileProps) 
               </svg>
               Student Information
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
               <div>
                 <label style={{ fontSize: '14px', fontWeight: '500', color: '#64748b', marginBottom: '4px', display: 'block' }}>Student ID</label>
                 <div style={{ fontSize: '16px', color: '#1e3a8a', fontWeight: '500' }}>
@@ -124,7 +123,7 @@ export default function StudentProfile({ studentDetails }: StudentProfileProps) 
               </svg>
               Company Information
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
               <div>
                 <label style={{ fontSize: '14px', fontWeight: '500', color: '#64748b', marginBottom: '4px', display: 'block' }}>Company Name</label>
                 <div style={{ fontSize: '16px', color: '#1e3a8a', fontWeight: '500' }}>
@@ -173,7 +172,7 @@ export default function StudentProfile({ studentDetails }: StudentProfileProps) 
               </svg>
               Coordinator Information
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
               <div>
                 <label style={{ fontSize: '14px', fontWeight: '500', color: '#64748b', marginBottom: '4px', display: 'block' }}>Coordinator Name</label>
                 <div style={{ fontSize: '16px', color: '#1e3a8a', fontWeight: '500' }}>

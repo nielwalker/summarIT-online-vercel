@@ -283,8 +283,7 @@ export default function CoordinatorDashboard() {
           backgroundColor: '#f8f9fa',
           borderRadius: '8px',
           border: '1px solid #e5e7eb',
-          width: '100%',
-          maxWidth: '900px'
+          width: '100%'
         }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Section:</span>
@@ -388,7 +387,7 @@ export default function CoordinatorDashboard() {
           marginLeft: sidebarCollapsed ? '64px' : '256px'
         }}>
           {activeTab === 'dashboard' && (
-            <div style={{ width: '100%', maxWidth: 1200 }}>
+            <div style={{ width: '100%' }}>
               <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
                 <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
@@ -450,7 +449,7 @@ export default function CoordinatorDashboard() {
           )}
 
           {activeTab === 'reports' && (
-            <div style={{ width: '100%', maxWidth: 1200 }}>
+            <div style={{ width: '100%' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
               {section && studentId && selectedStudent ? (
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
@@ -527,7 +526,7 @@ export default function CoordinatorDashboard() {
                                 <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827' }}>
                                   {report.hours || 0}
                                 </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', maxWidth: '300px' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', width: '35%' }}>
                                   <div style={{ 
                                     maxHeight: '100px', 
                                     overflow: 'auto', 
@@ -537,7 +536,7 @@ export default function CoordinatorDashboard() {
                                     {report.activities || '—'}
                                   </div>
                                 </td>
-                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', maxWidth: '300px' }}>
+                                <td style={{ padding: 12, borderBottom: '1px solid #e5e7eb', color: '#111827', width: '35%' }}>
                                   <div style={{ 
                                     maxHeight: '100px', 
                                     overflow: 'auto', 
@@ -576,7 +575,7 @@ export default function CoordinatorDashboard() {
           )}
 
           {activeTab === 'students' && (
-            <div style={{ width: '100%', maxWidth: 1200 }}>
+            <div style={{ width: '100%' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Information</h3>
               {selectedStudent ? (
                 <div style={{ display: 'grid', gap: 16 }}>
@@ -609,7 +608,7 @@ export default function CoordinatorDashboard() {
                     </div>
                     
                     {studentDetails && (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
                         <div>
                           <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
                             Course
@@ -682,7 +681,7 @@ export default function CoordinatorDashboard() {
                         </div>
                       </div>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
                         <div>
                           <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
                             Address

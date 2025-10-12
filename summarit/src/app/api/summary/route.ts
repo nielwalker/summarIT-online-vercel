@@ -81,32 +81,32 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Enhanced Coordinator-specific GPT analysis
-      const sys = `You are an evaluator creating brief, concise summaries of BSIT internship journals for coordinators.
+      const sys = `You are an evaluator creating VERY BRIEF summaries of BSIT internship journals for coordinators.
 
-Your goal is to create SHORT, EASY-TO-READ summaries that capture the essential activities and learnings.
+Your goal is to create EXTREMELY SHORT, EASY-TO-READ summaries that capture only the most essential activities and learnings.
 
 The summary should:
-- Be BRIEF and CONCISE - aim for 2-3 sentences maximum.
-- Focus only on the MOST IMPORTANT activities and key learnings.
+- Be VERY BRIEF and CONCISE - aim for 1-2 sentences maximum (under 150 characters).
+- Focus ONLY on the MOST IMPORTANT activities and key learnings.
 - Use simple, clear language that's easy to read quickly.
-- Avoid unnecessary details and repetitive information.
+- Avoid ALL unnecessary details and repetitive information.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
 - Prioritize clarity and brevity over comprehensiveness.
 
-Do not list Program Outcomes or graph data. Your output is only for coordinators to quickly review student progress.`
+CRITICAL: Keep the summary under 150 characters. Do not list Program Outcomes or graph data. Your output is only for coordinators to quickly review student progress.`
 
-      const usr = `Create a brief, concise summary of the following student journal entry:
+      const usr = `Create a VERY BRIEF summary of the following student journal entry:
 
 **If data is for one week:**
-- Write a SHORT summary (2-3 sentences) highlighting the most important activities and key learnings.
+- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) highlighting the most important activities and key learnings.
 
 **If over all selected in drop down menu weeks:**
-- Write a SHORT summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
+- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) describing the student's main tasks and learnings throughout the OJT.
 
 Requirements:
-- Be BRIEF and CONCISE - maximum 2-3 sentences.
-- Focus only on the MOST IMPORTANT activities and learnings.
+- Be VERY BRIEF and CONCISE - maximum 1-2 sentences, under 150 characters total.
+- Focus ONLY on the MOST IMPORTANT activities and learnings.
 - Use simple, clear language that's easy to read quickly.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
@@ -130,37 +130,43 @@ ${text}`
         })
         if (resp.ok) {
           const data = await resp.json()
-          gptSummary = data?.choices?.[0]?.message?.content || null
+          const rawSummary = data?.choices?.[0]?.message?.content || null
+          // Enforce character limit - truncate if over 150 characters
+          if (rawSummary && rawSummary.length > 150) {
+            gptSummary = rawSummary.substring(0, 147) + '...'
+          } else {
+            gptSummary = rawSummary
+          }
         }
       } catch {}
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
       // Enhanced Chairman-specific GPT analysis
-      const sys = `You are an expert evaluator creating brief, concise summaries of BSIT internship journals for chairpersons.
+      const sys = `You are an expert evaluator creating VERY BRIEF summaries of BSIT internship journals for chairpersons.
 
-Your goal is to create SHORT, EASY-TO-READ summaries that capture the essential activities and learnings.
+Your goal is to create EXTREMELY SHORT, EASY-TO-READ summaries that capture only the most essential activities and learnings.
 
 The summary should:
-- Be BRIEF and CONCISE - aim for 2-3 sentences maximum.
-- Focus only on the MOST IMPORTANT activities and key learnings.
+- Be VERY BRIEF and CONCISE - aim for 1-2 sentences maximum (under 150 characters).
+- Focus ONLY on the MOST IMPORTANT activities and key learnings.
 - Use simple, clear language that's easy to read quickly.
-- Avoid unnecessary details and repetitive information.
+- Avoid ALL unnecessary details and repetitive information.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
 - Prioritize clarity and brevity over comprehensiveness.
 
-Do not list Program Outcomes or detailed analysis. Your output is only for chairpersons to quickly review section progress.`
+CRITICAL: Keep the summary under 150 characters. Do not list Program Outcomes or detailed analysis. Your output is only for chairpersons to quickly review section progress.`
 
-      const usr = `Create a brief, concise summary of the following student journal entry:
+      const usr = `Create a VERY BRIEF summary of the following student journal entry:
 
 **If data is for one week:**
-- Write a SHORT summary (2-3 sentences) highlighting the most important activities and key learnings.
+- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) highlighting the most important activities and key learnings.
 
 **If overall analysis:**
-- Write a SHORT summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
+- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) describing the student's main tasks and learnings throughout the OJT.
 
 Requirements:
-- Be BRIEF and CONCISE - maximum 2-3 sentences.
-- Focus only on the MOST IMPORTANT activities and learnings.
+- Be VERY BRIEF and CONCISE - maximum 1-2 sentences, under 150 characters total.
+- Focus ONLY on the MOST IMPORTANT activities and learnings.
 - Use simple, clear language that's easy to read quickly.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
@@ -184,7 +190,13 @@ ${text}`
         })
         if (resp.ok) {
           const data = await resp.json()
-          gptSummary = data?.choices?.[0]?.message?.content || null
+          const rawSummary = data?.choices?.[0]?.message?.content || null
+          // Enforce character limit - truncate if over 150 characters
+          if (rawSummary && rawSummary.length > 150) {
+            gptSummary = rawSummary.substring(0, 147) + '...'
+          } else {
+            gptSummary = rawSummary
+          }
         }
       } catch {}
     } else if (apiKey && text) {
