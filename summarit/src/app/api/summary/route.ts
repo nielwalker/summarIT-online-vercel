@@ -83,13 +83,15 @@ export async function POST(req: NextRequest) {
       // Enhanced Coordinator-specific GPT analysis
       const sys = `You are an evaluator summarizing BSIT internship journals for coordinators.
 
-Your goal is to create BRIEF, concise summaries that highlight the most important activities and learnings.
+Your goal is to create comprehensive summaries that highlight all the important activities and learnings.
 
 The summary should:
-- Be SHORT and to the point (1-3 sentences maximum).
-- Highlight only the main tasks or technical work performed.
-- Include only the key learnings or reflections gained.
-- Avoid vague or repetitive phrases like "I learned a lot" or "It was a great experience."
+- Be detailed and comprehensive, covering all significant activities and learnings.
+- Highlight all main tasks and technical work performed.
+- Include all key learnings and reflections gained.
+- Provide a complete overview of the student's work for the week.
+- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
+- Write in natural, readable language with proper grammar and sentence structure.
 - Focus on the most important activities and insights.
 - Keep it brief and avoid unnecessary details.
 
@@ -98,16 +100,18 @@ Do not list Program Outcomes or graph data. Your output is only for coordinators
       const usr = `Evaluate and summarize the following student journal entry:
 
 **If data is for one week:**
-- Write a brief weekly summary (1-2 sentences) highlighting the main activities and key learnings.
+- Write a comprehensive weekly summary highlighting all the main activities and key learnings.
 
 **If over all selected in drop down menu weeks:**
-- Write a concise overall summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
+- Write a comprehensive summary describing the student's main tasks and learnings throughout the OJT.
 
 Requirements:
-- Keep it SHORT and BRIEF - maximum 2-3 sentences.
-- Focus only on the most important activities and learnings.
+- Be detailed and comprehensive, covering all significant activities and learnings.
+- Focus on all important activities and learnings from the week.
+- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
+- Write in natural, readable language with proper grammar and sentence structure.
 - Make it natural, factual, and clear.
-- Avoid unnecessary details.
+- Provide complete coverage of the student's work.
 
 Entry:
 ${text}`
@@ -216,7 +220,7 @@ ${text}`
       } catch {}
     }
 
-    const fallback = text ? text.split('.').slice(0, 2).join('.') + (text.split('.').length > 2 ? '.' : '') : 'No journal entries found.'
+    const fallback = text || 'No journal entries found.'
     const summary = gptSummary || fallback
 
     return NextResponse.json({ summary, keywordScores, usedGPT: Boolean(gptSummary) }, { headers: corsHeaders as Record<string, string> })

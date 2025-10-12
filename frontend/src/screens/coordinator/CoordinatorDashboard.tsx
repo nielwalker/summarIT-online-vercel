@@ -89,6 +89,18 @@ export default function CoordinatorDashboard() {
     fetchStudents()
   }, [section])
 
+  // Periodic refresh of student data every 30 seconds
+  useEffect(() => {
+    if (!studentId) return
+
+    const interval = setInterval(() => {
+      console.log('Auto-refreshing student data...')
+      refreshStudentData()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [studentId])
+
   const fetchStudentTotalHours = async (studentId: string) => {
     try {
       console.log('Fetching total hours for student:', studentId)
@@ -153,7 +165,22 @@ export default function CoordinatorDashboard() {
     }
   }
 
+  // Refresh data when week selection changes
+  useEffect(() => {
+    if (studentId) {
+      refreshStudentData()
+    }
+  }, [selectedWeek, selectedWeekForReports])
 
+
+
+  const refreshStudentData = () => {
+    if (studentId) {
+      fetchStudentTotalHours(studentId)
+      fetchStudentReports(studentId)
+      fetchStudentAndCompanyDetails(studentId)
+    }
+  }
 
   const refreshStudents = () => {
     const fetchStudents = async () => {
@@ -257,7 +284,25 @@ export default function CoordinatorDashboard() {
               {logoutMessage}
             </div>
           )}
-          <h2 style={{ margin: 0, color: '#000000', textAlign: 'center' }}>Coordinator Dashboard - Student Analysis</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+            <h2 style={{ margin: 0, color: '#000000' }}>Coordinator Dashboard - Student Analysis</h2>
+          <button 
+              onClick={refreshStudentData}
+            style={{
+              padding: '8px 16px',
+                backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+                borderRadius: '4px',
+              cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+            }}
+              title="Refresh student data"
+          >
+              🔄 Refresh
+          </button>
+          </div>
         </div>
         
         <div style={{ 
@@ -639,7 +684,7 @@ export default function CoordinatorDashboard() {
                         </div>
                         <div>
                           <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: 4, textTransform: 'uppercase' }}>
-                            Status
+                            Progress
                           </label>
                           <span style={{ 
                             padding: '4px 12px', 

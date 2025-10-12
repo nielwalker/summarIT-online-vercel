@@ -96,16 +96,16 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             finalSummary = summaryData.summary || finalSummary
           } else {
             console.error('GPT summary failed, using fallback')
-            // Fallback to basic summary
+            // Fallback to basic summary - use all content, no limits
             const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
+            const rawSummary = sentences.join('. ').replace(/\s+/g, ' ').trim() // Use all content with proper sentence connectors
             finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
           }
         } catch (e) {
           console.error('Summary API error:', e)
-          // Fallback to basic summary
+          // Fallback to basic summary - use all content, no limits
           const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.slice(0, 2).join(' ').replace(/\s+/g, ' ').trim() // Limit to 2 sentences for brevity
+          const rawSummary = sentences.join('. ').replace(/\s+/g, ' ').trim() // Use all content with proper sentence connectors
           finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
         }
       }

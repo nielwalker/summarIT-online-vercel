@@ -63,6 +63,18 @@ export function WeeklyReportTable() {
         processedValue = truncateToWordLimit(value, MAX_WORDS_LEARNINGS) as WeekEntry[K]
       }
       
+      // Check for duplicate dates when updating date field
+      if (key === 'date' && typeof value === 'string' && value !== '') {
+        const duplicateDate = next[weekIndex].find((e, idx) => 
+          idx !== rowIdx && e.date === value && e.date !== ''
+        )
+        
+        if (duplicateDate) {
+          alert(`Date ${value} is already used in this week. Please choose a different date.`)
+          return prev // Don't update if duplicate date
+        }
+      }
+      
       // Preserve the ID when updating fields
       next[weekIndex][rowIdx] = { ...currentEntry, [key]: processedValue, submitted: false, id: currentEntry.id }
       return next
@@ -207,6 +219,27 @@ export function WeeklyReportTable() {
     
     if (missingFields.length > 0) {
       alert(`Please fill in the following required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Validation: Check for duplicate dates in the same week
+    const currentWeekEntries = weeks[currentWeek - 1]
+    const duplicateDate = currentWeekEntries.find((e, idx) => 
+      idx !== rowIdx && e.date === entry.date && e.date !== ''
+    )
+    
+    if (duplicateDate) {
+      alert(`Date ${entry.date} is already used in this week. Please choose a different date.`)
+      return
+    }
+
+    // Validation: Check if week already has 6 entries (excluding current row if it's an update)
+    const existingEntries = currentWeekEntries.filter((e, idx) => 
+      idx !== rowIdx && e.date !== '' && (e.submitted || e.activities.trim() || e.learnings.trim())
+    )
+    
+    if (existingEntries.length >= 6 && !entry.id) {
+      alert(`Week ${currentWeek} already has 6 entries. You cannot add more entries to this week.`)
       return
     }
 
