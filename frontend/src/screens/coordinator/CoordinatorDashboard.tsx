@@ -284,24 +284,30 @@ export default function CoordinatorDashboard() {
               {logoutMessage}
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <h2 style={{ margin: 0, color: '#000000' }}>Coordinator Dashboard - Student Analysis</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: '120px' }}>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Total Students</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#000000' }}>{students.length}</div>
+              </div>
           <button 
-              onClick={refreshStudentData}
+                onClick={refreshStudentData}
             style={{
               padding: '8px 16px',
-                backgroundColor: '#007bff',
+                  backgroundColor: '#007bff',
               color: 'white',
               border: 'none',
-                borderRadius: '4px',
+                  borderRadius: '4px',
               cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
+                  fontSize: '14px',
+                  fontWeight: '500'
             }}
-              title="Refresh student data"
+                title="Refresh student data"
           >
-              🔄 Refresh
+                🔄 Refresh
           </button>
+            </div>
           </div>
         </div>
         
@@ -443,13 +449,8 @@ export default function CoordinatorDashboard() {
         }}>
           {activeTab === 'dashboard' && (
             <div style={{ width: '100%', maxWidth: 1200 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 }}>
-                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>Total Students</div>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: '#000000' }}>{students.length}</div>
-                </div>
-                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+                <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
                   <select 
@@ -476,7 +477,6 @@ export default function CoordinatorDashboard() {
                   ) : (
                     <div style={{ color: '#6b7280' }}>Select a student and week to see the summary.</div>
                   )}
-                </div>
               </div>
               
               {/* Monitoring Results Section */}
