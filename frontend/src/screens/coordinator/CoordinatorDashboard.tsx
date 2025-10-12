@@ -182,44 +182,6 @@ export default function CoordinatorDashboard() {
     }
   }
 
-  const refreshStudents = () => {
-    const fetchStudents = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const response = await fetch(getApiUrl(`/api/admin?action=listStudents&section=${encodeURIComponent(section)}`))
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch students: ${response.status}`)
-        }
-        
-        const data = await response.json()
-        
-        // Check if response contains error
-        if (data.error) {
-          throw new Error(data.error)
-        }
-        
-        // Ensure we always set an array
-        if (Array.isArray(data)) {
-          setStudents(data)
-          console.log(`Refreshed ${data.length} students for section ${section}:`, data)
-        } else {
-          console.error('Expected array but got:', data)
-          setStudents([])
-          setError('Invalid response format from server')
-        }
-      } catch (err: any) {
-        console.error('Error fetching students:', err)
-        setStudents([])
-        setError(err.message || 'Failed to load students')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchStudents()
-  }
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports' | 'students'>('dashboard')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
@@ -383,28 +345,6 @@ export default function CoordinatorDashboard() {
               ))}
             </select>
           </label>
-          <button
-            onClick={refreshStudents}
-            disabled={loading}
-            style={{
-              padding: '8px 16px',
-              background: loading ? '#94a3b8' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#2563eb')}
-            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#3b82f6')}
-          >
-            🔄 {loading ? 'Loading...' : 'Refresh'}
-          </button>
         </div>
         
         {error && (

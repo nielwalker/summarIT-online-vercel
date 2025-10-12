@@ -96,17 +96,35 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             finalSummary = summaryData.summary || finalSummary
           } else {
             console.error('GPT summary failed, using fallback')
-            // Fallback to basic summary - use all content, no limits
-            const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-            const rawSummary = sentences.join('. ').replace(/\s+/g, ' ').trim() // Use all content with proper sentence connectors
-            finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
+            // Fallback to concise summary - create brief summary from key activities
+            const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
+            const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
+            
+            // Create a brief summary by taking first few key activities and learnings
+            const keyActivities = activities.slice(0, 2).join(', ')
+            const keyLearnings = learnings.slice(0, 1).join(', ')
+            
+            let briefSummary = ''
+            if (keyActivities) briefSummary += `Key activities: ${keyActivities}.`
+            if (keyLearnings) briefSummary += ` Main learning: ${keyLearnings}.`
+            
+            finalSummary = briefSummary || 'No submissions for this week.'
           }
         } catch (e) {
           console.error('Summary API error:', e)
-          // Fallback to basic summary - use all content, no limits
-          const sentences = filtered.map(r => `${r.activities || ''} ${r.learnings || ''}`.trim()).filter(Boolean)
-          const rawSummary = sentences.join('. ').replace(/\s+/g, ' ').trim() // Use all content with proper sentence connectors
-          finalSummary = rawSummary ? `Week ${selectedWeek || ''} Summary: ${rawSummary}` : 'No submissions for this week.'
+          // Fallback to concise summary - create brief summary from key activities
+          const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
+          const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
+          
+          // Create a brief summary by taking first few key activities and learnings
+          const keyActivities = activities.slice(0, 2).join(', ')
+          const keyLearnings = learnings.slice(0, 1).join(', ')
+          
+          let briefSummary = ''
+          if (keyActivities) briefSummary += `Key activities: ${keyActivities}.`
+          if (keyLearnings) briefSummary += ` Main learning: ${keyLearnings}.`
+          
+          finalSummary = briefSummary || 'No submissions for this week.'
         }
       }
       
@@ -156,7 +174,6 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         <div style={{ display: 'grid', gap: 12 }}>
           {!showMonitoring && (
             <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', margin: '0 auto', width: '100%', maxWidth: 900 }}>
-              <div style={{ fontWeight: 600, marginBottom: 12, color: '#111827', fontSize: '16px' }}>Weekly Summary</div>
               <div style={{ 
                 textAlign: 'left',
                 fontSize: '14px',

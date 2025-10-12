@@ -81,37 +81,36 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Enhanced Coordinator-specific GPT analysis
-      const sys = `You are an evaluator summarizing BSIT internship journals for coordinators.
+      const sys = `You are an evaluator creating brief, concise summaries of BSIT internship journals for coordinators.
 
-Your goal is to create comprehensive summaries that highlight all the important activities and learnings.
+Your goal is to create SHORT, EASY-TO-READ summaries that capture the essential activities and learnings.
 
 The summary should:
-- Be detailed and comprehensive, covering all significant activities and learnings.
-- Highlight all main tasks and technical work performed.
-- Include all key learnings and reflections gained.
-- Provide a complete overview of the student's work for the week.
+- Be BRIEF and CONCISE - aim for 2-3 sentences maximum.
+- Focus only on the MOST IMPORTANT activities and key learnings.
+- Use simple, clear language that's easy to read quickly.
+- Avoid unnecessary details and repetitive information.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
-- Focus on the most important activities and insights.
-- Keep it brief and avoid unnecessary details.
+- Prioritize clarity and brevity over comprehensiveness.
 
-Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress and learning context.`
+Do not list Program Outcomes or graph data. Your output is only for coordinators to quickly review student progress.`
 
-      const usr = `Evaluate and summarize the following student journal entry:
+      const usr = `Create a brief, concise summary of the following student journal entry:
 
 **If data is for one week:**
-- Write a comprehensive weekly summary highlighting all the main activities and key learnings.
+- Write a SHORT summary (2-3 sentences) highlighting the most important activities and key learnings.
 
 **If over all selected in drop down menu weeks:**
-- Write a comprehensive summary describing the student's main tasks and learnings throughout the OJT.
+- Write a SHORT summary (2-3 sentences) describing the student's main tasks and learnings throughout the OJT.
 
 Requirements:
-- Be detailed and comprehensive, covering all significant activities and learnings.
-- Focus on all important activities and learnings from the week.
+- Be BRIEF and CONCISE - maximum 2-3 sentences.
+- Focus only on the MOST IMPORTANT activities and learnings.
+- Use simple, clear language that's easy to read quickly.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
-- Make it natural, factual, and clear.
-- Provide complete coverage of the student's work.
+- Prioritize brevity and clarity over comprehensive coverage.
 
 Entry:
 ${text}`
