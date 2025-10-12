@@ -382,7 +382,8 @@ export default function CoordinatorDashboard() {
           flexDirection: 'column', 
           alignItems: 'center',
           justifyContent: 'flex-start',
-          padding: '20px',
+          padding: '20px 20px 20px 20px',
+          marginRight: '20px',
           width: '100%',
           boxSizing: 'border-box',
           overflow: 'auto',
@@ -390,7 +391,7 @@ export default function CoordinatorDashboard() {
           zIndex: 100
         }}>
           {activeTab === 'dashboard' && (
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', marginRight: '20px' }}>
               <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16, zIndex: 100 }}>
                 <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
@@ -453,7 +454,7 @@ export default function CoordinatorDashboard() {
           )}
 
           {activeTab === 'reports' && (
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', marginRight: '20px' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
               {section && studentId && selectedStudent ? (
                 <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, zIndex: 100 }}>
@@ -580,7 +581,7 @@ export default function CoordinatorDashboard() {
           )}
 
           {activeTab === 'students' && (
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', marginRight: '20px' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Information</h3>
               {selectedStudent ? (
                 <div style={{ display: 'grid', gap: 16 }}>
