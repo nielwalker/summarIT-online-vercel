@@ -304,7 +304,8 @@ export default function CoordinatorDashboard() {
                 backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 12px center',
-                minWidth: '140px'
+                minWidth: '140px',
+                zIndex: 100
               }}
             >
               <option value="" disabled>{sections.length ? 'Select Section' : 'No sections available'}</option>
@@ -333,7 +334,8 @@ export default function CoordinatorDashboard() {
                 backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23475569\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")',
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 12px center',
-                minWidth: '200px'
+                minWidth: '200px',
+                zIndex: 100
               }}
             >
               <option value="">
@@ -399,7 +401,8 @@ export default function CoordinatorDashboard() {
                       border: '1px solid #d1d5db',
                       borderRadius: '4px',
                       backgroundColor: 'white',
-                      color: '#000000'
+                      color: '#000000',
+                      zIndex: 100
                     }}
                   >
                         {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (
@@ -464,7 +467,8 @@ export default function CoordinatorDashboard() {
                             border: '1px solid #d1d5db',
                             borderRadius: '4px',
                             backgroundColor: 'white',
-                            color: '#000000'
+                            color: '#000000',
+                            zIndex: 100
                           }}
                         >
                           {Array.from({ length: 13 }, (_, i) => i + 1).map(week => (

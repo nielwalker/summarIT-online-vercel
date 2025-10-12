@@ -96,45 +96,87 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             finalSummary = summaryData.summary || finalSummary
           } else {
             console.error('GPT summary failed, using fallback')
-            // Fallback to very concise summary - create brief summary from key activities
+            // Fallback to structured summary - create summary from key activities and learnings
             const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
             const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
             
-            // Create a very brief summary by taking first key activity and learning
-            const keyActivity = activities[0]?.substring(0, 50) || ''
-            const keyLearning = learnings[0]?.substring(0, 50) || ''
+            // Create a structured summary with up to 7 sentences
+            let structuredSummary = ''
+            let sentenceCount = 0
+            const maxSentences = 7
             
-            let briefSummary = ''
-            if (keyActivity) briefSummary += `Activities: ${keyActivity}${keyActivity.length >= 50 ? '...' : ''}.`
-            if (keyLearning) briefSummary += ` Learning: ${keyLearning}${keyLearning.length >= 50 ? '...' : ''}.`
-            
-            // Ensure summary is under 150 characters
-            if (briefSummary.length > 150) {
-              briefSummary = briefSummary.substring(0, 147) + '...'
+            // Add activity-based sentences
+            for (let i = 0; i < activities.length && sentenceCount < maxSentences; i++) {
+              const activity = activities[i]
+              if (activity && activity.length > 20) {
+                structuredSummary += `The student worked on ${activity.substring(0, 80)}${activity.length > 80 ? '...' : ''}. `
+                sentenceCount++
+              }
             }
             
-            finalSummary = briefSummary || 'No submissions for this week.'
+            // Add learning-based sentences
+            for (let i = 0; i < learnings.length && sentenceCount < maxSentences; i++) {
+              const learning = learnings[i]
+              if (learning && learning.length > 20) {
+                structuredSummary += `Key learning included ${learning.substring(0, 80)}${learning.length > 80 ? '...' : ''}. `
+                sentenceCount++
+              }
+            }
+            
+            // Add general summary sentences if we have space
+            if (sentenceCount < maxSentences && activities.length > 0) {
+              structuredSummary += `The student completed ${activities.length} main activities during this period. `
+              sentenceCount++
+            }
+            
+            if (sentenceCount < maxSentences && learnings.length > 0) {
+              structuredSummary += `Overall, ${learnings.length} key learning outcomes were documented. `
+              sentenceCount++
+            }
+            
+            finalSummary = structuredSummary.trim() || 'No submissions for this week.'
           }
         } catch (e) {
           console.error('Summary API error:', e)
-          // Fallback to very concise summary - create brief summary from key activities
+          // Fallback to structured summary - create summary from key activities and learnings
           const activities = filtered.map(r => r.activities?.trim()).filter(Boolean)
           const learnings = filtered.map(r => r.learnings?.trim()).filter(Boolean)
           
-          // Create a very brief summary by taking first key activity and learning
-          const keyActivity = activities[0]?.substring(0, 50) || ''
-          const keyLearning = learnings[0]?.substring(0, 50) || ''
+          // Create a structured summary with up to 7 sentences
+          let structuredSummary = ''
+          let sentenceCount = 0
+          const maxSentences = 7
           
-          let briefSummary = ''
-          if (keyActivity) briefSummary += `Activities: ${keyActivity}${keyActivity.length >= 50 ? '...' : ''}.`
-          if (keyLearning) briefSummary += ` Learning: ${keyLearning}${keyLearning.length >= 50 ? '...' : ''}.`
-          
-          // Ensure summary is under 150 characters
-          if (briefSummary.length > 150) {
-            briefSummary = briefSummary.substring(0, 147) + '...'
+          // Add activity-based sentences
+          for (let i = 0; i < activities.length && sentenceCount < maxSentences; i++) {
+            const activity = activities[i]
+            if (activity && activity.length > 20) {
+              structuredSummary += `The student worked on ${activity.substring(0, 80)}${activity.length > 80 ? '...' : ''}. `
+              sentenceCount++
+            }
           }
           
-          finalSummary = briefSummary || 'No submissions for this week.'
+          // Add learning-based sentences
+          for (let i = 0; i < learnings.length && sentenceCount < maxSentences; i++) {
+            const learning = learnings[i]
+            if (learning && learning.length > 20) {
+              structuredSummary += `Key learning included ${learning.substring(0, 80)}${learning.length > 80 ? '...' : ''}. `
+              sentenceCount++
+            }
+          }
+          
+          // Add general summary sentences if we have space
+          if (sentenceCount < maxSentences && activities.length > 0) {
+            structuredSummary += `The student completed ${activities.length} main activities during this period. `
+            sentenceCount++
+          }
+          
+          if (sentenceCount < maxSentences && learnings.length > 0) {
+            structuredSummary += `Overall, ${learnings.length} key learning outcomes were documented. `
+            sentenceCount++
+          }
+          
+          finalSummary = structuredSummary.trim() || 'No submissions for this week.'
         }
       }
       

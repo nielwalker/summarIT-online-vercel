@@ -309,8 +309,8 @@ export function WeeklyReportTable() {
         next[currentWeek - 1][rowIdx] = { ...next[currentWeek - 1][rowIdx], submitted: true, id: result.id || entry.id }
         return next
       })
-      // Reload from server to persist across refresh
-      loadReports(true)
+      // Update the last fetch time to prevent immediate reload
+      setLastFetchTime(Date.now())
       alert(`Week ${currentWeek} - Row ${rowIdx + 1} ${entry.id ? 'updated' : 'saved'} successfully!`)
     } catch (e: unknown) {
       console.error('Submit error:', e)

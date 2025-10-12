@@ -81,36 +81,38 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Enhanced Coordinator-specific GPT analysis
-      const sys = `You are an evaluator creating VERY BRIEF summaries of BSIT internship journals for coordinators.
+      const sys = `You are an evaluator creating structured summaries of BSIT internship journals for coordinators.
 
-Your goal is to create EXTREMELY SHORT, EASY-TO-READ summaries that capture only the most essential activities and learnings.
+Your goal is to create a well-structured summary that highlights the student's key activities and learnings.
 
 The summary should:
-- Be VERY BRIEF and CONCISE - aim for 1-2 sentences maximum (under 150 characters).
-- Focus ONLY on the MOST IMPORTANT activities and key learnings.
-- Use simple, clear language that's easy to read quickly.
-- Avoid ALL unnecessary details and repetitive information.
+- Be EXACTLY 7 sentences maximum - no more, no less.
+- Structure the content to show highlights of the student's job reports.
+- Focus on the most important activities and key learnings.
+- Use clear, professional language that's easy to read.
+- Avoid unnecessary details and repetitive information.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
-- Prioritize clarity and brevity over comprehensiveness.
+- Each sentence should highlight a different aspect of the student's work.
 
-CRITICAL: Keep the summary under 150 characters. Do not list Program Outcomes or graph data. Your output is only for coordinators to quickly review student progress.`
+CRITICAL: Write exactly 7 sentences. Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress.`
 
-      const usr = `Create a VERY BRIEF summary of the following student journal entry:
+      const usr = `Create a structured summary of the following student journal entry:
 
 **If data is for one week:**
-- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) highlighting the most important activities and key learnings.
+- Write a structured summary (exactly 7 sentences) highlighting the most important activities and key learnings for this week.
 
 **If over all selected in drop down menu weeks:**
-- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) describing the student's main tasks and learnings throughout the OJT.
+- Write a structured summary (exactly 7 sentences) describing the student's main tasks and learnings throughout the OJT period.
 
 Requirements:
-- Be VERY BRIEF and CONCISE - maximum 1-2 sentences, under 150 characters total.
-- Focus ONLY on the MOST IMPORTANT activities and learnings.
-- Use simple, clear language that's easy to read quickly.
+- Write EXACTLY 7 sentences - no more, no less.
+- Structure the content to show highlights of the student's job reports.
+- Focus on the most important activities and key learnings.
+- Use clear, professional language that's easy to read.
 - Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
 - Write in natural, readable language with proper grammar and sentence structure.
-- Prioritize brevity and clarity over comprehensive coverage.
+- Each sentence should highlight a different aspect of the student's work.
 
 Entry:
 ${text}`
@@ -130,47 +132,38 @@ ${text}`
         })
         if (resp.ok) {
           const data = await resp.json()
-          const rawSummary = data?.choices?.[0]?.message?.content || null
-          // Enforce character limit - truncate if over 150 characters
-          if (rawSummary && rawSummary.length > 150) {
-            gptSummary = rawSummary.substring(0, 147) + '...'
-          } else {
-            gptSummary = rawSummary
-          }
+          gptSummary = data?.choices?.[0]?.message?.content || null
         }
       } catch {}
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
       // Enhanced Chairman-specific GPT analysis
-      const sys = `You are an expert evaluator creating VERY BRIEF summaries of BSIT internship journals for chairpersons.
+      const sys = `You are an expert evaluator analyzing BSIT internship journals for chairpersons.
 
-Your goal is to create EXTREMELY SHORT, EASY-TO-READ summaries that capture only the most essential activities and learnings.
+Your goal is to provide ONLY an explanation of which Program Outcomes (POs) have been achieved and which have not been achieved.
 
-The summary should:
-- Be VERY BRIEF and CONCISE - aim for 1-2 sentences maximum (under 150 characters).
-- Focus ONLY on the MOST IMPORTANT activities and key learnings.
-- Use simple, clear language that's easy to read quickly.
-- Avoid ALL unnecessary details and repetitive information.
-- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
-- Write in natural, readable language with proper grammar and sentence structure.
-- Prioritize clarity and brevity over comprehensiveness.
+The analysis should:
+- Focus ONLY on explaining which POs have been hit/achieved and which have not.
+- Do NOT provide any summary of activities or learnings.
+- Do NOT provide any general text about the student's work.
+- Simply list which POs were achieved and which were not achieved.
+- Use clear, concise language.
 
-CRITICAL: Keep the summary under 150 characters. Do not list Program Outcomes or detailed analysis. Your output is only for chairpersons to quickly review section progress.`
+CRITICAL: Provide ONLY PO achievement explanations. No summaries, no activities, no learnings. Just PO hit/miss status.`
 
-      const usr = `Create a VERY BRIEF summary of the following student journal entry:
+      const usr = `Analyze the following student journal entry and provide ONLY an explanation of which Program Outcomes (POs) have been achieved:
 
 **If data is for one week:**
-- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) highlighting the most important activities and key learnings.
+- Analyze which POs were achieved in this week's activities and learnings.
 
 **If overall analysis:**
-- Write an EXTREMELY SHORT summary (1-2 sentences, under 150 characters) describing the student's main tasks and learnings throughout the OJT.
+- Analyze which POs were achieved throughout the entire OJT period.
 
 Requirements:
-- Be VERY BRIEF and CONCISE - maximum 1-2 sentences, under 150 characters total.
-- Focus ONLY on the MOST IMPORTANT activities and learnings.
-- Use simple, clear language that's easy to read quickly.
-- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
-- Write in natural, readable language with proper grammar and sentence structure.
-- Prioritize brevity and clarity over comprehensive coverage.
+- Provide ONLY PO achievement explanations.
+- List which POs were hit/achieved and which were not.
+- Do NOT provide any summary of activities or learnings.
+- Do NOT provide any general text about the student's work.
+- Focus solely on PO hit/miss status.
 
 Entry:
 ${text}`
@@ -190,13 +183,7 @@ ${text}`
         })
         if (resp.ok) {
           const data = await resp.json()
-          const rawSummary = data?.choices?.[0]?.message?.content || null
-          // Enforce character limit - truncate if over 150 characters
-          if (rawSummary && rawSummary.length > 150) {
-            gptSummary = rawSummary.substring(0, 147) + '...'
-          } else {
-            gptSummary = rawSummary
-          }
+          gptSummary = data?.choices?.[0]?.message?.content || null
         }
       } catch {}
     } else if (apiKey && text) {
