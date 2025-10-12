@@ -226,7 +226,8 @@ export default function CoordinatorDashboard() {
           width: '100%',
           marginBottom: '20px',
           padding: '20px',
-          marginLeft: sidebarCollapsed ? '64px' : '256px'
+          marginLeft: sidebarCollapsed ? '64px' : '256px',
+          transition: 'margin-left 0.2s ease-in-out'
         }}>
           {logoutMessage && (
             <div style={{
@@ -384,7 +385,8 @@ export default function CoordinatorDashboard() {
           boxSizing: 'border-box',
           overflow: 'auto',
           position: 'relative',
-          marginLeft: sidebarCollapsed ? '64px' : '256px'
+          marginLeft: sidebarCollapsed ? '64px' : '256px',
+          transition: 'margin-left 0.2s ease-in-out'
         }}>
           {activeTab === 'dashboard' && (
             <div style={{ width: '100%' }}>
