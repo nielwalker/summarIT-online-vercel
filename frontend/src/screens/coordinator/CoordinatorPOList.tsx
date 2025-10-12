@@ -215,17 +215,17 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
   return (
     <div style={{ width: '100%', position: 'relative', zIndex: 100 }}>
       {error && (
-        <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', marginRight: '20px' }}>{error}</div>
+        <div style={{ marginBottom: 12, padding: 12, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#dc2626', marginRight: '20px', width: 'calc(100% - 20px)' }}>{error}</div>
       )}
       {loading && (
-        <div style={{ marginBottom: 12, padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, color: '#0369a1', marginRight: '20px' }}>
+        <div style={{ marginBottom: 12, padding: 12, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, color: '#0369a1', marginRight: '20px', width: 'calc(100% - 20px)' }}>
           {`Analyzing week ${selectedWeek}…`}
         </div>
       )}
       {analysis && (
         <div style={{ display: 'grid', gap: 12, position: 'relative', zIndex: 100 }}>
           {!showMonitoring && (
-            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', width: '100%', position: 'relative', zIndex: 100, marginRight: '20px' }}>
+            <div style={{ padding: 16, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', width: 'calc(100% - 20px)', position: 'relative', zIndex: 100, marginRight: '20px' }}>
               <div style={{ 
                 textAlign: 'left',
                 fontSize: '14px',
@@ -237,7 +237,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
             </div>
           )}
           {showMonitoring && (
-            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, width: '100%', position: 'relative', zIndex: 100, marginRight: '20px' }}>
+            <div style={{ padding: 12, background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 8, width: 'calc(100% - 20px)', position: 'relative', zIndex: 100, marginRight: '20px' }}>
               <div style={{ marginBottom: 8, fontWeight: 600, color: '#000000' }}>Week {selectedWeek} Monitoring</div>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
