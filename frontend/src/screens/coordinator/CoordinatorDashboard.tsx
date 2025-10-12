@@ -202,7 +202,8 @@ export default function CoordinatorDashboard() {
         position: 'fixed',
         top: '0',
         left: sidebarCollapsed ? '64px' : '256px',
-        transition: 'left 0.2s ease-in-out'
+        transition: 'left 0.2s ease-in-out',
+        zIndex: 100
       }}>
         <CoordinatorSideNav 
           onLogout={() => { 
@@ -385,11 +386,12 @@ export default function CoordinatorDashboard() {
           width: '100%',
           boxSizing: 'border-box',
           overflow: 'auto',
-          position: 'relative'
+          position: 'relative',
+          zIndex: 100
         }}>
           {activeTab === 'dashboard' && (
             <div style={{ width: '100%' }}>
-              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16, zIndex: 100 }}>
                 <div style={{ fontWeight: 600, marginBottom: 8 }}>Weekly Summary</div>
                   <div style={{ marginBottom: 12 }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 8 }}>
@@ -421,7 +423,7 @@ export default function CoordinatorDashboard() {
               </div>
               
               {/* Monitoring Results Section */}
-              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 16 }}>
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginTop: 16, zIndex: 100 }}>
                 <div style={{ fontWeight: 600, marginBottom: 12 }}>Monitoring Results</div>
                 {section && studentId && selectedStudent ? (
                   <>
@@ -454,7 +456,7 @@ export default function CoordinatorDashboard() {
             <div style={{ width: '100%' }}>
               <h3 style={{ margin: '0 0 12px 0', color: '#111827' }}>Student Reports</h3>
               {section && studentId && selectedStudent ? (
-                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16 }}>
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, zIndex: 100 }}>
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                       <h4 style={{ margin: 0, color: '#111827' }}>Weekly Reports - View Only</h4>
@@ -583,7 +585,7 @@ export default function CoordinatorDashboard() {
               {selectedStudent ? (
                 <div style={{ display: 'grid', gap: 16 }}>
                   {/* Student Information Card */}
-                  <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20 }}>
+                  <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, zIndex: 100 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
                       <div style={{ 
                         width: 48, 
@@ -657,7 +659,7 @@ export default function CoordinatorDashboard() {
 
                   {/* Company Information Card */}
                   {companyDetails && (
-                    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20 }}>
+                    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 20, zIndex: 100 }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
             <div style={{
                           width: 48, 
