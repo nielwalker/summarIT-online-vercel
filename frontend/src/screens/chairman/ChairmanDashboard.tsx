@@ -994,6 +994,96 @@ export default function ChairmanDashboard() {
                 Register Coordinator
               </button>
             </div>
+
+              {/* Coordinators Table */}
+              <div style={{ marginTop: '30px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h4 style={{ margin: '0', color: '#000000' }}>Registered Coordinators</h4>
+                  <button
+                    onClick={loadAllData}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
+                <div style={{ 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '8px', 
+                  overflow: 'hidden',
+                  backgroundColor: 'white'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8f9fa' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Coordinator ID</th>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Name</th>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Sections</th>
+                        <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
+                        <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allCoordinators.map((coordinator, index) => (
+                        <tr key={coordinator.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb' }}>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.coordinatorId || 'N/A'}</td>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.userName}</td>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.sections.join(', ')}</td>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              backgroundColor: coordinator.approved ? '#dcfce7' : '#fee2e2',
+                              color: coordinator.approved ? '#166534' : '#991b1b'
+                            }}>
+                              {coordinator.approved ? 'Approved' : 'Pending'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                              <button
+                                onClick={() => {
+                                  setEditingCoordinator(coordinator.id)
+                                  setEditCoordName(coordinator.userName)
+                                  setEditCoordSections(coordinator.sections.join(', '))
+                                  setEditCoordIdValue(coordinator.coordinatorId?.toString() || '')
+                                  setModalType('coordinator')
+                                  setShowEditModal(true)
+                                }}
+                                style={{
+                                  padding: '6px 12px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {allCoordinators.length === 0 && (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+                      No coordinators registered yet
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         
