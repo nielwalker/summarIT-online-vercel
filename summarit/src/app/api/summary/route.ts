@@ -123,10 +123,10 @@ export async function POST(req: NextRequest) {
         }
       } catch {}
 
-      // Step 2: 2–3 sentence weekly summary (LEARNINGS ONLY per request)
+      // Step 2: 2–3 sentence weekly summary (rewrite + summarize Activities and Learnings)
       try {
-        const sys2 = `You are a summarization assistant. Create a 2–3 sentence summary USING ONLY THE CORRECTED LEARNINGS. Do not include or reference activities/tasks. Write clearly with proper grammar and natural flow. Keep tone professional and factual. Return JSON with a 'summary' field.`
-        const usr2 = `Corrected Learnings: ${correctedLearnings}`
+        const sys2 = `You are a summarization assistant for BSIT internship journals.\n\nYour task is to rewrite and summarize the student's Activities and Learnings into a short, natural, and grammatically correct paragraph (2–3 sentences).\n- Do not simply combine or list the sentences.\n- Rephrase the input into a single, smooth paragraph that reads naturally.\n- Use proper grammar, punctuation, and flow.\n- Keep the original meaning.\n- Ignore filler phrases like "I learned a lot" or "It was a good week."\n\nMake the summary sound natural and professionally written, as if it were part of a formal OJT report. Return JSON with a single field: { "summary": string }.`
+        const usr2 = `Activities: ${correctedActivities}\n\nLearnings: ${correctedLearnings}`
         const resp2 = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
