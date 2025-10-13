@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
     
     const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
     console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
-    // Improved combination with clearer structure per request
+    // Combine all daily entries for the selected week; no week labels
     const combinedEntries = reportsForSummary
-      .map(r => `Week ${r.weekNumber}: ${[r.activities || '', r.learnings || ''].join(' ').trim()}`)
+      .map(r => `${[r.activities || '', r.learnings || ''].join(' ').trim()}`)
       .filter(Boolean)
       .map(s => s.replace(/\s+/g, ' ').trim())
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
@@ -78,11 +78,11 @@ export async function POST(req: NextRequest) {
     let gptSummary: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
-      // Improved coordinator summary for multiple weeks
+      // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYour task is to rewrite and summarize the student's Activities and Learnings across multiple weeks into a smooth, natural, and grammatically correct paragraph.\n\nGuidelines:\n- Create a single cohesive paragraph of 3–5 sentences.\n- If multiple weeks are included, merge them into a chronological or thematic summary (not just concatenation).\n- Eliminate repetition and filler phrases like "I learned a lot".\n- Focus on what the student actually did and learned overall.\n- Return JSON in the format: { "summary": "..." }`
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nRewrite and summarize the student's Activities and Learnings for a single week into a short, natural paragraph (2–3 sentences).\n- Do not simply combine or list sentences.\n- Use proper grammar, punctuation, and flow.\n- Remove filler phrases (e.g., "I learned a lot").\n- Keep the original meaning.\nReturn JSON: { "summary": string }.`
 
-        const usr = `Journal Entries:\n${text}`
+        const usr = `Entries for the week:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             model: 'gpt-4o-mini',
             messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ],
-            temperature: 0.3
+            temperature: 0.2
           })
         })
         if (resp.ok) {
