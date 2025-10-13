@@ -487,18 +487,7 @@ export function WeeklyReportTable() {
                         color: row.submitted ? '#64748b' : '#1e293b'
                       }}
                     />
-                    {!row.submitted && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '-18px',
-                        right: '0',
-                        fontSize: '11px',
-                        color: countWords(row.activities) > MAX_WORDS_ACTIVITIES ? '#dc2626' : '#6b7280',
-                        fontWeight: '500'
-                      }}>
-                        {countWords(row.activities)}/{MAX_WORDS_ACTIVITIES} words
-                      </div>
-                    )}
+                    {/* word counter removed as per request */}
                   </div>
                 </td>
                 <td style={{ padding: '12px' }}>
@@ -519,18 +508,7 @@ export function WeeklyReportTable() {
                         color: row.submitted ? '#64748b' : '#1e293b'
                       }}
                     />
-                    {!row.submitted && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '-18px',
-                        right: '0',
-                        fontSize: '11px',
-                        color: countWords(row.learnings) > MAX_WORDS_LEARNINGS ? '#dc2626' : '#6b7280',
-                        fontWeight: '500'
-                      }}>
-                        {countWords(row.learnings)}/{MAX_WORDS_LEARNINGS} words
-                      </div>
-                    )}
+                    {/* word counter removed as per request */}
                   </div>
                 </td>
                 <td style={{ padding: '12px', textAlign: 'center' }}>

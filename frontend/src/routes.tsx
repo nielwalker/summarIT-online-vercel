@@ -30,6 +30,10 @@ export const router = createHashRouter([
     path: '/chairman',
     element: <Suspense fallback={fallbackEl}><ChairmanDashboard /></Suspense>,
   },
+  {
+    path: '/chairman/summary',
+    element: <Suspense fallback={fallbackEl}><ChairmanDashboard /></Suspense>,
+  },
 ])
 
 

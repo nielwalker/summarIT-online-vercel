@@ -276,29 +276,6 @@ export default function ChairmanDashboard() {
     }
   }
 
-  async function deleteCoordinator(coordinatorId: number) {
-    if (!confirm(`Are you sure you want to delete coordinator ${coordinatorId}? This action cannot be undone.`)) {
-      return
-    }
-    
-    try {
-      const res = await fetch(getApiUrl('/api/admin'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'deleteCoordinator', coordinatorId })
-      })
-      
-      if (res.ok) {
-        setMsg('Coordinator deleted successfully')
-        loadAllData() // Reload data
-      } else {
-        const error = await res.json()
-        setMsg(`Delete failed: ${error.error}`)
-      }
-    } catch (e: any) {
-      setMsg(`Delete error: ${e?.message || String(e)}`)
-    }
-  }
 
   async function deleteCompany(companyId: number) {
     if (!confirm(`Are you sure you want to delete this company? This action cannot be undone.`)) {
@@ -338,14 +315,6 @@ export default function ChairmanDashboard() {
     setShowEditModal(true)
   }
 
-  function startEditCoordinator(coordinator: any) {
-    setEditingCoordinator(coordinator.id)
-    setEditCoordName(coordinator.userName)
-    setEditCoordSections(coordinator.sections.join(', '))
-    setEditCoordIdValue(String(coordinator.coordinatorId || ''))
-    setModalType('coordinator')
-    setShowEditModal(true)
-  }
 
   function startEditCompany(company: any) {
     setEditingCompany(company.id)
@@ -664,13 +633,9 @@ export default function ChairmanDashboard() {
                   {(() => {
                     const sectionStudents = allStudents.filter(s => s.section === section)
                     const totalInterns = sectionStudents.length
-                    const coordinator = allCoordinators.find(c => Array.isArray(c.sections) && c.sections.includes(section))
                     const companies = Array.from(new Set(sectionStudents.map(s => s.companyName).filter(Boolean))) as string[]
                     return (
                       <>
-                        <div style={{ color: '#000000' }}>
-                          <strong>Coordinator:</strong> {coordinator ? `${coordinator.userName}${coordinator.coordinatorId ? ` (ID: ${coordinator.coordinatorId})` : ''}` : '—'}
-                        </div>
                         <div style={{ color: '#000000' }}>
                           <strong>Total Interns:</strong> {totalInterns}
                         </div>
@@ -711,8 +676,15 @@ export default function ChairmanDashboard() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={studentId} 
-                  onChange={(e) => setStudentId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                  placeholder="Student ID (e.g. 20251234)"
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    const digitsOnly = raw.replace(/[^0-9]/g, '')
+                    if (raw !== digitsOnly) {
+                      setMsg('Only digits are allowed for Student ID. Letters are not allowed.')
+                    }
+                    setStudentId(digitsOnly.slice(0, 10))
+                  }} 
+                  placeholder="Student ID (10 digits)"
                   style={{ 
                     flex: 1,
                     padding: 8, 
@@ -724,7 +696,7 @@ export default function ChairmanDashboard() {
                 />
                 <button
                   type="button"
-                  onClick={() => setStudentId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                  onClick={() => setStudentId(`2025${Math.floor(Math.random()*1000000).toString().padStart(6,'0')}`)}
                   style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
                 >
                   Generate
@@ -795,20 +767,48 @@ export default function ChairmanDashboard() {
               <div style={{ marginTop: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <h4 style={{ margin: '0', color: '#000000' }}>Registered Students</h4>
-                  <button
-                    onClick={loadAllData}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    🔄 Refresh
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={loadAllData}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      🔄 Refresh
+                    </button>
+                    <button
+                      onClick={() => {
+                        const rows = allStudents.map(s => `${s.studentId},${s.userName},${s.section},${s.companyName || ''}`)
+                        const csv = ['Student ID,Name,Section,Company', ...rows].join('\n')
+                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `students_${section}.csv`
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                        URL.revokeObjectURL(url)
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      ⬇️ Download CSV
+                    </button>
+                  </div>
                 </div>
           <div style={{ 
             border: '1px solid #e5e7eb', 
@@ -927,8 +927,15 @@ export default function ChairmanDashboard() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <input 
                   value={coordId} 
-                  onChange={(e) => setCoordId(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))} 
-                  placeholder="Coordinator ID (e.g. 20251234)"
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    const digitsOnly = raw.replace(/[^0-9]/g, '')
+                    if (raw !== digitsOnly) {
+                      setMsg('Only digits are allowed for Coordinator ID. Letters are not allowed.')
+                    }
+                    setCoordId(digitsOnly.slice(0, 10))
+                  }} 
+                  placeholder="Coordinator ID (10 digits)"
                   style={{ 
                     flex: 1,
                     padding: 8, 
@@ -940,7 +947,7 @@ export default function ChairmanDashboard() {
                 />
                 <button
                   type="button"
-                  onClick={() => setCoordId(`2025${Math.floor(Math.random()*10000).toString().padStart(4,'0')}`)}
+                  onClick={() => setCoordId(`2025${Math.floor(Math.random()*1000000).toString().padStart(6,'0')}`)}
                   style={{ padding: '8px 12px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}
                 >
                   Generate
@@ -987,138 +994,6 @@ export default function ChairmanDashboard() {
                 Register Coordinator
               </button>
             </div>
-              
-              {/* Coordinators Table */}
-              <div style={{ marginTop: '30px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h4 style={{ margin: '0', color: '#000000' }}>Registered Coordinators</h4>
-                  <button
-                    onClick={loadAllData}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '12px'
-                    }}
-                  >
-                    🔄 Refresh
-                  </button>
-          </div>
-                <div style={{ 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '8px', 
-                  overflow: 'hidden',
-                  backgroundColor: 'white'
-                }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f8f9fa' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Coordinator ID</th>
-                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Name</th>
-                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Sections</th>
-                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Status</th>
-                        <th style={{ padding: '12px', textAlign: 'center', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allCoordinators.map((coordinator, index) => (
-                        <tr key={coordinator.id} style={{ backgroundColor: index % 2 === 0 ? 'white' : '#f9fafb' }}>
-                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.coordinatorId ?? '—'}</td>
-                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>{coordinator.userName}</td>
-                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>
-                            {coordinator.sections.join(', ')}
-                          </td>
-                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#000000' }}>
-                            <span style={{ 
-                              padding: '4px 8px', 
-                              borderRadius: '4px', 
-                              backgroundColor: coordinator.approved ? '#dcfce7' : '#fef3c7',
-                              color: coordinator.approved ? '#166534' : '#92400e',
-                              fontSize: '12px'
-                            }}>
-                              {coordinator.approved ? 'Approved' : 'Pending'}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-                            {editingCoordinator === coordinator.id ? (
-                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                <button
-                                  onClick={updateCoordinator}
-                                  style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#059669',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                  }}
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  onClick={cancelEdit}
-                                  style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#6b7280',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                  }}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                <button
-                                  onClick={() => startEditCoordinator(coordinator)}
-                                  style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#3b82f6',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => deleteCoordinator(coordinator.id)}
-                                  style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#dc2626',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {allCoordinators.length === 0 && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
-                      No coordinators registered yet
-                    </div>
-                  )}
-        </div>
-        
-              </div>
             </div>
           )}
         
@@ -1174,8 +1049,15 @@ export default function ChairmanDashboard() {
                 />
                 <input 
                   value={companyContact} 
-                  onChange={(e) => setCompanyContact(e.target.value)} 
-                  placeholder="Contact Number"
+                  onChange={(e) => {
+                    const raw = e.target.value
+                    const digitsOnly = raw.replace(/[^0-9]/g, '')
+                    if (raw !== digitsOnly) {
+                      setMsg('Only digits are allowed for Contact Number.')
+                    }
+                    setCompanyContact(digitsOnly.slice(0, 11))
+                  }} 
+                  placeholder="Contact Number (11 digits)"
                   style={{ 
                     width: '100%', 
                     padding: 8, 
@@ -1380,7 +1262,12 @@ export default function ChairmanDashboard() {
                     <input
                       type="text"
                       value={editStudentId}
-                      onChange={(e) => setEditStudentId(e.target.value)}
+                      onChange={(e) => {
+                        const raw = e.target.value
+                        const digitsOnly = raw.replace(/[^0-9]/g, '')
+                        if (raw !== digitsOnly) setMsg('Only digits are allowed for Student ID.')
+                        setEditStudentId(digitsOnly.slice(0, 10))
+                      }}
                       style={{
                         padding: '12px',
                         border: '1px solid #d1d5db',
@@ -1523,9 +1410,14 @@ export default function ChairmanDashboard() {
                   </label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input
-                      type="number"
+                      type="text"
                       value={editCoordIdValue}
-                      onChange={(e) => setEditCoordIdValue(e.target.value)}
+                      onChange={(e) => {
+                        const raw = e.target.value
+                        const digitsOnly = raw.replace(/[^0-9]/g, '')
+                        if (raw !== digitsOnly) setMsg('Only digits are allowed for Coordinator ID.')
+                        setEditCoordIdValue(digitsOnly.slice(0, 10))
+                      }}
                       style={{
                         padding: '12px',
                         border: '1px solid #d1d5db',
@@ -1704,7 +1596,12 @@ export default function ChairmanDashboard() {
                   <input
                     type="text"
                     value={editCompanyContact}
-                    onChange={(e) => setEditCompanyContact(e.target.value)}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      const digitsOnly = raw.replace(/[^0-9]/g, '')
+                      if (raw !== digitsOnly) setMsg('Only digits are allowed for Contact Number.')
+                      setEditCompanyContact(digitsOnly.slice(0, 11))
+                    }}
                     style={{
                       padding: '12px',
                       border: '1px solid #d1d5db',
