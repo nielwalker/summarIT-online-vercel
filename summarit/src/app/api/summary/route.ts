@@ -28,13 +28,11 @@ export async function POST(req: NextRequest) {
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     
-    // For coordinator summaries, use all reports for the selected week
-    // For chairman summaries, only use reports with actual content (no excuses)
     const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
     console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
-    // Build a robust combined text. Ensure each entry becomes a complete sentence
+    // Improved combination with clearer structure per request
     const combinedEntries = reportsForSummary
-      .map(r => `${r.activities || ''} ${r.learnings || ''}`.trim())
+      .map(r => `Week ${r.weekNumber}: ${[r.activities || '', r.learnings || ''].join(' ').trim()}`)
       .filter(Boolean)
       .map(s => s.replace(/\s+/g, ' ').trim())
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
@@ -80,69 +78,40 @@ export async function POST(req: NextRequest) {
     let gptSummary: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
-      // New two-step coordinator flow: (1) Grammar correction, (2) 2–3 sentence summary
-      const activitiesText = reportsForSummary.map(r => r.activities || '').filter(Boolean).join(' ')
-      const learningsText = reportsForSummary.map(r => r.learnings || '').filter(Boolean).join(' ')
-
-      const extractJson = (str: string | null | undefined): any | null => {
-        if (!str) return null
-        try {
-          return JSON.parse(str)
-        } catch {}
-        const match = str.match(/```json[\s\S]*?```/i) || str.match(/\{[\s\S]*\}/)
-        if (match) {
-          const inner = match[0].replace(/```json|```/gi, '')
-          try { return JSON.parse(inner) } catch {}
-        }
-        return null
-      }
-
-      // Step 1: Grammar correction
-      let correctedActivities = activitiesText
-      let correctedLearnings = learningsText
+      // Improved coordinator summary for multiple weeks
       try {
-        const sys1 = `You are a language editor. Correct the grammar, punctuation, and structure of the following Activities and Learnings. Keep the original meaning. Do not summarize or merge them. Return results in JSON format.`
-        const usr1 = `Activities: ${activitiesText}\n\nLearnings: ${learningsText}`
-        const resp1 = await fetch('https://api.openai.com/v1/chat/completions', {
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYour task is to rewrite and summarize the student's Activities and Learnings across multiple weeks into a smooth, natural, and grammatically correct paragraph.\n\nGuidelines:\n- Create a single cohesive paragraph of 3–5 sentences.\n- If multiple weeks are included, merge them into a chronological or thematic summary (not just concatenation).\n- Eliminate repetition and filler phrases like "I learned a lot".\n- Focus on what the student actually did and learned overall.\n- Return JSON in the format: { "summary": "..." }`
+
+        const usr = `Journal Entries:\n${text}`
+
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
           body: JSON.stringify({
             model: 'gpt-4o-mini',
-            messages: [ { role: 'system', content: sys1 }, { role: 'user', content: usr1 } ],
-            temperature: 0
+            messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ],
+            temperature: 0.3
           })
         })
-        if (resp1.ok) {
-          const data1 = await resp1.json()
-          const content1 = data1?.choices?.[0]?.message?.content as string
-          const json1 = extractJson(content1)
-          if (json1) {
-            correctedActivities = json1.corrected_activities || correctedActivities
-            correctedLearnings = json1.corrected_learnings || correctedLearnings
+        if (resp.ok) {
+          const data = await resp.json()
+          const content = data?.choices?.[0]?.message?.content || ''
+          try {
+            const match = content.match(/```json[\s\S]*?```/i) || content.match(/\{[\s\S]*\}/)
+            if (match) {
+              const inner = match[0].replace(/```json|```/gi, '')
+              const parsed = JSON.parse(inner)
+              gptSummary = parsed.summary || content
+            } else {
+              gptSummary = content
+            }
+          } catch {
+            gptSummary = content
           }
         }
-      } catch {}
-
-      // Step 2: 2–3 sentence weekly summary (rewrite + summarize Activities and Learnings)
-      try {
-        const sys2 = `You are a summarization assistant for BSIT internship journals.\n\nYour task is to rewrite and summarize the student's Activities and Learnings into a short, natural, and grammatically correct paragraph (2–3 sentences).\n- Do not simply combine or list the sentences.\n- Rephrase the input into a single, smooth paragraph that reads naturally.\n- Use proper grammar, punctuation, and flow.\n- Keep the original meaning.\n- Ignore filler phrases like "I learned a lot" or "It was a good week."\n\nMake the summary sound natural and professionally written, as if it were part of a formal OJT report. Return JSON with a single field: { "summary": string }.`
-        const usr2 = `Activities: ${correctedActivities}\n\nLearnings: ${correctedLearnings}`
-        const resp2 = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [ { role: 'system', content: sys2 }, { role: 'user', content: usr2 } ],
-            temperature: 0.2
-          })
-        })
-        if (resp2.ok) {
-          const data2 = await resp2.json()
-          const content2 = data2?.choices?.[0]?.message?.content as string
-          const json2 = extractJson(content2)
-          gptSummary = (json2 && (json2.summary as string)) || content2 || null
-        }
-      } catch {}
+      } catch (err) {
+        console.error('GPT summarization failed:', err)
+      }
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
       // Enhanced Chairman-specific GPT analysis
       const sys = `You are an expert evaluator analyzing BSIT internship journals for chairpersons.
