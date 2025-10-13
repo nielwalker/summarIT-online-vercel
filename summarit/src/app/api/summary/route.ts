@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     
     const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
     console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
-    // Combine only learnings for the selected week; no week labels
+    // Combine only learnings from daily reports for the selected week into a paragraph form
     const combinedEntries = reportsForSummary
       .map(r => `${r.learnings || ''}`.trim())
       .filter(Boolean)
@@ -80,9 +80,9 @@ export async function POST(req: NextRequest) {
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nRewrite and summarize the student's Learnings for a single week into a short, natural paragraph (2–3 sentences).\n- Do not simply combine or list sentences.\n- Use proper grammar, punctuation, and flow.\n- Remove filler phrases (e.g., "I learned a lot").\n- Keep the original meaning.\nReturn JSON: { "summary": string }.`
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive a paragraph containing all the student's learnings for a selected week. Your task is to summarize this paragraph into a concise, well-structured summary (2–3 sentences).\n- Do not simply copy or list the content.\n- Create a coherent summary that captures the main learnings and insights.\n- Use proper grammar, punctuation, and flow.\n- Remove repetitive or filler content.\n- Keep the original meaning but make it more concise.\nReturn JSON: { "summary": string }.`
 
-        const usr = `Learnings for the week:\n${text}`
+        const usr = `Weekly paragraph to summarize:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
