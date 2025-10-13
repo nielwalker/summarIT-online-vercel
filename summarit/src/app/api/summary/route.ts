@@ -80,59 +80,67 @@ export async function POST(req: NextRequest) {
     let gptSummary: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
-      // Enhanced Coordinator-specific GPT analysis
-      const sys = `You are an evaluator creating structured summaries of BSIT internship journals for coordinators.
+      // New two-step coordinator flow: (1) Grammar correction, (2) 2–3 sentence summary
+      const activitiesText = reportsForSummary.map(r => r.activities || '').filter(Boolean).join(' ')
+      const learningsText = reportsForSummary.map(r => r.learnings || '').filter(Boolean).join(' ')
 
-Your goal is to create a well-structured summary that highlights the student's key activities and learnings.
+      const extractJson = (str: string | null | undefined): any | null => {
+        if (!str) return null
+        try {
+          return JSON.parse(str)
+        } catch {}
+        const match = str.match(/```json[\s\S]*?```/i) || str.match(/\{[\s\S]*\}/)
+        if (match) {
+          const inner = match[0].replace(/```json|```/gi, '')
+          try { return JSON.parse(inner) } catch {}
+        }
+        return null
+      }
 
-The summary should:
-- Be EXACTLY 7 sentences maximum - no more, no less.
-- Structure the content to show highlights of the student's job reports.
-- Focus on the most important activities and key learnings.
-- Use clear, professional language that's easy to read.
-- Avoid unnecessary details and repetitive information.
-- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
-- Write in natural, readable language with proper grammar and sentence structure.
-- Each sentence should highlight a different aspect of the student's work.
-
-CRITICAL: Write exactly 7 sentences. Do not list Program Outcomes or graph data. Your output is only for coordinators to review student progress.`
-
-      const usr = `Create a structured summary of the following student journal entry:
-
-**If data is for one week:**
-- Write a structured summary (exactly 7 sentences) highlighting the most important activities and key learnings for this week.
-
-**If over all selected in drop down menu weeks:**
-- Write a structured summary (exactly 7 sentences) describing the student's main tasks and learnings throughout the OJT period.
-
-Requirements:
-- Write EXACTLY 7 sentences - no more, no less.
-- Structure the content to show highlights of the student's job reports.
-- Focus on the most important activities and key learnings.
-- Use clear, professional language that's easy to read.
-- Use proper connector words (and, is, are, but, however, therefore, etc.) to create smooth, flowing sentences.
-- Write in natural, readable language with proper grammar and sentence structure.
-- Each sentence should highlight a different aspect of the student's work.
-
-Entry:
-${text}`
-
+      // Step 1: Grammar correction
+      let correctedActivities = activitiesText
+      let correctedLearnings = learningsText
       try {
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        const sys1 = `You are a language editor. Correct the grammar, punctuation, and structure of the following Activities and Learnings. Keep the original meaning. Do not summarize or merge them. Return results in JSON format.`
+        const usr1 = `Activities: ${activitiesText}\n\nLearnings: ${learningsText}`
+        const resp1 = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({ 
-            model: 'gpt-4o-mini', 
-            messages: [ 
-              { role: 'system', content: sys }, 
-              { role: 'user', content: usr } 
-            ], 
-            temperature: 0.2 
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [ { role: 'system', content: sys1 }, { role: 'user', content: usr1 } ],
+            temperature: 0
           })
         })
-        if (resp.ok) {
-          const data = await resp.json()
-          gptSummary = data?.choices?.[0]?.message?.content || null
+        if (resp1.ok) {
+          const data1 = await resp1.json()
+          const content1 = data1?.choices?.[0]?.message?.content as string
+          const json1 = extractJson(content1)
+          if (json1) {
+            correctedActivities = json1.corrected_activities || correctedActivities
+            correctedLearnings = json1.corrected_learnings || correctedLearnings
+          }
+        }
+      } catch {}
+
+      // Step 2: 2–3 sentence weekly summary
+      try {
+        const sys2 = `You are a summarization assistant. Combine the corrected Activities and Learnings into a 2–3 sentence summary. Write clearly, with proper grammar and natural flow. Do not repeat or just merge sentences. Keep tone professional and factual. Return JSON with a 'summary' field.`
+        const usr2 = `Corrected Activities: ${correctedActivities}\n\nCorrected Learnings: ${correctedLearnings}`
+        const resp2 = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [ { role: 'system', content: sys2 }, { role: 'user', content: usr2 } ],
+            temperature: 0.2
+          })
+        })
+        if (resp2.ok) {
+          const data2 = await resp2.json()
+          const content2 = data2?.choices?.[0]?.message?.content as string
+          const json2 = extractJson(content2)
+          gptSummary = (json2 && (json2.summary as string)) || content2 || null
         }
       } catch {}
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
