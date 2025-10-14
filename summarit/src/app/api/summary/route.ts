@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
     console.log('Raw learnings from each report:', reportsForSummary.map(r => ({ 
       id: r.id, 
       date: r.date, 
-      learnings: r.learnings?.substring(0, 100) + '...' 
+      learnings: r.learnings // Show full learnings, no truncation
     })))
     
     const combinedEntries = reportsForSummary
@@ -187,12 +187,12 @@ export async function POST(req: NextRequest) {
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
     
     console.log('Combined entries count:', combinedEntries.length)
-    console.log('Combined entries preview:', combinedEntries.map(e => e.substring(0, 50) + '...'))
+    console.log('Combined entries (full):', combinedEntries) // Show full entries, no truncation
     
     // Step 1: Collect all daily learnings
     const rawText = combinedEntries.join(' ').trim()
     console.log('Raw text length:', rawText.length)
-    console.log('Raw text preview:', rawText.substring(0, 300) + '...')
+    console.log('Raw text (full):', rawText) // Show full text, no truncation
     
     // Step 2: Merge & Clean - normalize and split into sentences
     const normalizedText = rawText.toLowerCase()
@@ -241,8 +241,13 @@ export async function POST(req: NextRequest) {
       .map(s => capitalizeFirst(s))
       .join('. ')
       .trim() + (compressedSentences.length > 0 ? '.' : '')
-    console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
-    console.log('Individual report texts:', reportsForSummary.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
+    console.log('Final processed text length:', text.length)
+    console.log('Final processed text (full):', text)
+    console.log('Individual report texts (full):', reportsForSummary.map(r => ({ 
+      week: r.weekNumber, 
+      activities: r.activities, 
+      learnings: r.learnings 
+    })))
 
     const KEYWORD_SETS: string[][] = [
       ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],
@@ -305,7 +310,12 @@ YOUR TASK: Transform the raw input into a professional, synthesized summary that
 
 Return JSON: { "summary": string }`
 
-        const usr = `Raw learnings data to synthesize into a professional summary:\n${text}`
+        const usr = `You have ${reportsForSummary.length} daily reports from Week ${week} for student ${studentId}. 
+
+Raw learnings data to synthesize into a professional summary (use ALL of this data):
+${text}
+
+IMPORTANT: This data represents ${reportsForSummary.length} days of learning. Create a comprehensive summary that captures the student's learning progression across ALL these days, not just a few.`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -416,19 +426,14 @@ ${text}`
        // Create a more professional fallback summary for the selected week
        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20)
        if (sentences.length > 0) {
-         // Take the most meaningful sentences and create a summary
-         const keySentences = sentences.slice(0, Math.min(2, sentences.length))
+         // Take the most meaningful sentences and create a summary - NO WORD LIMIT
+         const keySentences = sentences.slice(0, Math.min(3, sentences.length)) // Increased to 3 sentences
          const summaryText = keySentences
            .map(s => s.trim().charAt(0).toUpperCase() + s.trim().slice(1))
            .join('. ') + '.'
          
-         // If the summary is too long, truncate it intelligently
-         if (summaryText.length > 200) {
-           const words = summaryText.split(' ')
-           fallback = words.slice(0, 30).join(' ') + '...'
-         } else {
-           fallback = summaryText
-         }
+         // NO TRUNCATION - use full summary
+         fallback = summaryText
        }
      }
      

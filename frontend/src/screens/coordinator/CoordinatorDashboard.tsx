@@ -488,7 +488,9 @@ export default function CoordinatorDashboard() {
                       <div style={{ fontWeight: 600, color: '#0369a1', marginBottom: 4 }}>Week {selectedWeekForReports} Summary</div>
                       <div style={{ fontSize: 14, color: '#0c4a6e' }}>
                         {(() => {
-                          const weekReports = studentReports.filter(report => report.weekNumber === selectedWeekForReports)
+                          const weekReports = studentReports
+                            .filter(report => report.weekNumber === selectedWeekForReports)
+                            .slice(0, 5) // Limit to 5 reports per week
                           const totalWeekHours = weekReports.reduce((sum, report) => sum + (report.hours || 0), 0)
                           const submittedReports = weekReports.filter(report => report.activities || report.learnings)
                           return `${submittedReports.length} reports submitted, ${totalWeekHours} total hours`
@@ -513,6 +515,7 @@ export default function CoordinatorDashboard() {
                             const weekReports = studentReports
                               .filter(report => report.weekNumber === selectedWeekForReports)
                               .sort((a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime())
+                              .slice(0, 5) // Limit to 5 reports per week
                             
                             if (weekReports.length === 0) {
                               return (
