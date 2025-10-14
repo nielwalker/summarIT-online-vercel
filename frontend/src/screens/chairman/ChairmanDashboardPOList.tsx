@@ -31,6 +31,8 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
   const [summary, setSummary] = useState<string>('')
   const [scores, setScores] = useState<number[]>(Array.from({ length: 15 }, () => 0))
   const [bullets, setBullets] = useState<Array<{ idx: number; score: number; hits: string[] }>>([])
+  const [posHitExplanation, setPosHitExplanation] = useState<string>('')
+  const [posNotHitExplanation, setPosNotHitExplanation] = useState<string>('')
 
   function extractHighlights(text: string): { scores: number[]; hitsPerPO: string[][] } {
     const lower = text.toLowerCase()
@@ -124,6 +126,9 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         if (Array.isArray(s?.keywordScores) && s.keywordScores.length === 15) {
           finalScores = s.keywordScores
         }
+        // Set PO explanations
+        if (s?.posHitExplanation) setPosHitExplanation(s.posHitExplanation)
+        if (s?.posNotHitExplanation) setPosNotHitExplanation(s.posNotHitExplanation)
       }
       
       // Set scores and summary
@@ -139,6 +144,8 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       setError(e.message || 'Failed to analyze')
       setBullets([])
       setScores(Array.from({ length: 15 }, () => 0))
+      setPosHitExplanation('')
+      setPosNotHitExplanation('')
     } finally {
       setLoading(false)
     }
@@ -159,6 +166,66 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       {!!summary && (
         <div style={{ padding: 12, background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, color: '#000000', textAlign: 'left', marginBottom: 12 }}>
          {summary}
+        </div>
+      )}
+      
+      {/* PO Explanations Section */}
+      {(posHitExplanation || posNotHitExplanation) && (
+        <div style={{ marginBottom: 16 }}>
+          {posHitExplanation && (
+            <div style={{ 
+              padding: 16, 
+              background: '#f0fdf4', 
+              border: '1px solid #bbf7d0', 
+              borderRadius: 8, 
+              marginBottom: 12 
+            }}>
+              <h4 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#166534', 
+                fontSize: '16px', 
+                fontWeight: '600' 
+              }}>
+                ✅ POs Achieved
+              </h4>
+              <p style={{ 
+                margin: 0, 
+                color: '#15803d', 
+                fontSize: '14px', 
+                lineHeight: '1.5',
+                whiteSpace: 'pre-line'
+              }}>
+                {posHitExplanation}
+              </p>
+            </div>
+          )}
+          
+          {posNotHitExplanation && (
+            <div style={{ 
+              padding: 16, 
+              background: '#fef2f2', 
+              border: '1px solid #fecaca', 
+              borderRadius: 8 
+            }}>
+              <h4 style={{ 
+                margin: '0 0 8px 0', 
+                color: '#dc2626', 
+                fontSize: '16px', 
+                fontWeight: '600' 
+              }}>
+                ❌ POs Not Achieved
+              </h4>
+              <p style={{ 
+                margin: 0, 
+                color: '#b91c1c', 
+                fontSize: '14px', 
+                lineHeight: '1.5',
+                whiteSpace: 'pre-line'
+              }}>
+                {posNotHitExplanation}
+              </p>
+            </div>
+          )}
         </div>
       )}
       <ul style={{ margin: 0, paddingLeft: 20, color: '#000000' }}>
