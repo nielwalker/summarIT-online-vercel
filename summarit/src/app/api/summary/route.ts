@@ -47,9 +47,9 @@ export async function POST(req: NextRequest) {
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     
-    // For coordinator: get ALL weeks of learnings for the student, not just selected week
+    // For coordinator: get reports for the selected week only
     const reportsForSummary = analysisType === 'coordinator' 
-      ? reports // Get ALL reports for the student across all weeks
+      ? filtered // Get reports for the selected week only
       : filtered.filter(r => !r.excuse) // For chairman, use filtered reports
     
     console.log('All reports for student:', reports.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', reportsForSummary.map(r => r.weekNumber))
@@ -154,9 +154,9 @@ export async function POST(req: NextRequest) {
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings from ALL weeks of a student's internship. Your task is to create a comprehensive summary (3–5 sentences) that captures their overall learning journey.\n- The input has already been cleaned of duplicates and similar phrases across all weeks.\n- Create a coherent summary that captures the key learning insights from their entire internship.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a comprehensive learning summary covering their full internship period.\nReturn JSON: { "summary": string }.`
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings from the SELECTED WEEK of a student's internship. Your task is to create a concise summary (2–3 sentences) that captures their key learnings for this specific week.\n- The input has already been cleaned of duplicates and similar phrases from the selected week.\n- Create a coherent summary that captures the main learning insights from this week only.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a weekly learning summary for the selected week.\nReturn JSON: { "summary": string }.`
 
-        const usr = `Cleaned learnings from all weeks to summarize:\n${text}`
+        const usr = `Cleaned learnings from selected week to summarize:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -254,8 +254,20 @@ ${text}`
       } catch {}
     }
 
-    const fallback = text || 'No journal entries found.'
-    const summary = gptSummary || fallback
+     // Enhanced fallback summary for coordinator (weekly)
+     let fallback = text || 'No journal entries found.'
+     if (analysisType === 'coordinator' && text && !gptSummary) {
+       // Create a more professional fallback summary for the selected week
+       const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20)
+       if (sentences.length > 0) {
+         const keySentences = sentences.slice(0, 2) // Take first 2 meaningful sentences for weekly summary
+         fallback = keySentences
+           .map(s => s.trim().charAt(0).toUpperCase() + s.trim().slice(1))
+           .join('. ') + '.'
+       }
+     }
+     
+     const summary = gptSummary || fallback
 
     return NextResponse.json({ summary, keywordScores, usedGPT: Boolean(gptSummary) }, { headers: corsHeaders as Record<string, string> })
   } catch (error: any) {
