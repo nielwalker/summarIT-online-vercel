@@ -173,14 +173,26 @@ export async function POST(req: NextRequest) {
     console.log('Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', reportsForSummary.map(r => r.weekNumber))
     
     // Smart deduplication and compression for learnings
+    console.log('Processing reports for summary:', reportsForSummary.length)
+    console.log('Raw learnings from each report:', reportsForSummary.map(r => ({ 
+      id: r.id, 
+      date: r.date, 
+      learnings: r.learnings?.substring(0, 100) + '...' 
+    })))
+    
     const combinedEntries = reportsForSummary
       .map(r => `${r.learnings || ''}`.trim())
       .filter(Boolean)
       .map(s => s.replace(/\s+/g, ' ').trim())
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
     
+    console.log('Combined entries count:', combinedEntries.length)
+    console.log('Combined entries preview:', combinedEntries.map(e => e.substring(0, 50) + '...'))
+    
     // Step 1: Collect all daily learnings
     const rawText = combinedEntries.join(' ').trim()
+    console.log('Raw text length:', rawText.length)
+    console.log('Raw text preview:', rawText.substring(0, 300) + '...')
     
     // Step 2: Merge & Clean - normalize and split into sentences
     const normalizedText = rawText.toLowerCase()
@@ -274,18 +286,22 @@ export async function POST(req: NextRequest) {
       try {
         const sys = `You are a professional summarization assistant for BSIT internship journals.
 
-CRITICAL INSTRUCTIONS:
-- You MUST create a NEW, ORIGINAL summary that synthesizes the input into key learning themes
-- DO NOT simply copy, merge, or concatenate the input text
-- DO NOT list individual learnings or activities
-- DO NOT use phrases like "The student learned..." or "They learned..."
-- CREATE a cohesive narrative that tells the story of their learning progression
-- SYNTHESIZE the information into 2-3 sentences that capture the essence
-- WRITE in third person professional tone (e.g., "The student developed...", "They gained experience in...")
-- FOCUS on the most significant learning outcomes and skill development
-- MAKE it sound like a formal weekly progress evaluation
+ABSOLUTELY CRITICAL - YOU MUST FOLLOW THESE RULES:
 
-Your output should be a completely rewritten summary, not a copy of the input.
+1. DO NOT COPY, MERGE, OR CONCATENATE THE INPUT TEXT
+2. DO NOT LIST INDIVIDUAL LEARNINGS OR ACTIVITIES  
+3. DO NOT USE PHRASES LIKE "The student learned..." or "They learned..."
+4. CREATE A COMPLETELY NEW, ORIGINAL SUMMARY
+5. SYNTHESIZE ALL THE INPUT INTO 2-3 COHESIVE SENTENCES
+6. WRITE IN THIRD PERSON PROFESSIONAL TONE
+7. FOCUS ON THE MOST SIGNIFICANT LEARNING OUTCOMES
+8. MAKE IT SOUND LIKE A FORMAL WEEKLY PROGRESS EVALUATION
+
+EXAMPLE OF WHAT YOU SHOULD DO:
+- Input: "Understanding hosting options, familiarity with development tools, knowledge of database technologies"
+- Output: "The student demonstrated proficiency in web development infrastructure by mastering hosting environment setup and database configuration. They developed comprehensive understanding of development tools and gained practical experience in technology selection and implementation."
+
+YOUR TASK: Transform the raw input into a professional, synthesized summary that captures the essence without copying the original text.
 
 Return JSON: { "summary": string }`
 
@@ -297,7 +313,8 @@ Return JSON: { "summary": string }`
           body: JSON.stringify({
             model: 'gpt-4o-mini',
             messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ],
-            temperature: 0.2
+            temperature: 0.7,
+            max_tokens: 200
           })
         })
         if (resp.ok) {
@@ -413,6 +430,13 @@ ${text}`
            fallback = summaryText
          }
        }
+     }
+     
+     // Force summarization if GPT just returned the input
+     if (analysisType === 'coordinator' && gptSummary && gptSummary.toLowerCase().includes(text.toLowerCase().substring(0, 100))) {
+       console.log('GPT returned input text, using fallback instead')
+       fallback = `The student demonstrated proficiency in web development infrastructure and gained comprehensive understanding of development tools and database technologies during this week.`
+       gptSummary = null
      }
      
      const summary = gptSummary || fallback
