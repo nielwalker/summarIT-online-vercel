@@ -65,6 +65,11 @@ Your job is to:
 
 The analysis must be accurate, context-based, and explainable. Avoid matching by single words — check meaning and intent.
 
+Section-wide policy:
+- You are summarizing the weekly reports for an entire SECTION for the selected WEEK (multiple students combined), not a single student.
+- Write strictly in third-person, neutral academic tone. Do NOT use first-person words ("I", "we", "my", "our"). Refer to "students" or "the section".
+- Avoid repeating phrases or listing daily entries; synthesize into themes.
+
 Rules for Evaluation:
 1) Consider Activities (primary) and Learnings (secondary).
 2) Use Bloom’s taxonomy verbs to judge cognitive level.
@@ -85,15 +90,15 @@ Return JSON strictly in this shape:
   "pos_not_hit": Array<{ po: string, reason: string }>
 }`
 
-      const usr = `Evaluate the following for Section ${section || 'N/A'}, Week ${week || 'N/A'}.
+      const usr = `Evaluate the combined journal entries for Section ${section || 'N/A'} during Week ${week || 'N/A'} (multiple students). Aggregate the content below into a section-wide view.
 
-Activities & Learnings (raw):
+Activities & Learnings (raw, multi-student):
 ${text}
 
 Tasks:
 1) Correct grammar, punctuation, and structure (keep meaning).
-2) Create a short weekly summary (2–3 sentences) combining corrected Activities and Learnings.
-3) Identify the POs that were hit and briefly explain why.
+2) Create a short weekly summary (2–3 sentences) for the SECTION (not a single student), written in third-person with no first-person words.
+3) Identify the POs that were hit with brief reasons.
 4) Identify the POs that were not hit and explain why they don’t apply.
 5) If no POs match, write "No PO matched."`
       try {
