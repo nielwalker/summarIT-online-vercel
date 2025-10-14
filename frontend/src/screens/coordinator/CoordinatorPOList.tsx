@@ -189,14 +189,14 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
         status: (r.activities || r.learnings) ? 'Submitted' as const : 'Missing' as const
       }))
       
-      // Sort by date and limit to 6 entries (one per day)
+      // Sort by date and limit to 5 entries (one per day)
       const sortedMonitoring = monitoringReports
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 6)
+        .slice(0, 5)
       
-      // Pad with missing entries if less than 6
+      // Pad with missing entries if less than 5
       const paddedRows: Array<{ date: string; hours: number; status: 'Submitted' | 'Missing' }> = [...sortedMonitoring]
-      while (paddedRows.length < 6) {
+      while (paddedRows.length < 5) {
         paddedRows.push({ date: '—', hours: 0, status: 'Missing' })
       }
       setAnalysis({ scores, bullets: items, summary, weekRows: paddedRows })

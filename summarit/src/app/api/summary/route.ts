@@ -7,6 +7,73 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
+// In-memory cache for storing learnings by studentId and week
+const learningsCache = new Map<string, {
+  studentId: string;
+  week: number;
+  learnings: Array<{
+    id: number;
+    date: string;
+    activities: string;
+    learnings: string;
+    weekNumber: number;
+  }>;
+  lastUpdated: number;
+}>()
+
+// Cache expiry time (5 minutes)
+const CACHE_EXPIRY = 5 * 60 * 1000
+
+// Helper function to get cache key
+function getCacheKey(studentId: string, week: number): string {
+  return `${studentId}-${week}`
+}
+
+// Helper function to clean expired cache entries
+function cleanExpiredCache() {
+  const now = Date.now()
+  const entries = Array.from(learningsCache.entries())
+  for (const [key, value] of entries) {
+    if (now - value.lastUpdated > CACHE_EXPIRY) {
+      learningsCache.delete(key)
+    }
+  }
+}
+
+// Helper function to append new entry to cache
+function appendToCache(studentId: string, week: number, newEntry: any) {
+  const cacheKey = getCacheKey(studentId, week)
+  const cachedData = learningsCache.get(cacheKey)
+  
+  if (cachedData) {
+    // Check if entry already exists (by ID or date)
+    const existingIndex = cachedData.learnings.findIndex(entry => 
+      entry.id === newEntry.id || 
+      (entry.date === newEntry.date && entry.weekNumber === newEntry.weekNumber)
+    )
+    
+    if (existingIndex >= 0) {
+      // Update existing entry
+      cachedData.learnings[existingIndex] = newEntry
+    } else {
+      // Append new entry
+      cachedData.learnings.push(newEntry)
+    }
+    
+    cachedData.lastUpdated = Date.now()
+    console.log('Updated cache for:', cacheKey, 'Total entries:', cachedData.learnings.length)
+  } else {
+    // Create new cache entry
+    learningsCache.set(cacheKey, {
+      studentId,
+      week,
+      learnings: [newEntry],
+      lastUpdated: Date.now()
+    })
+    console.log('Created new cache for:', cacheKey, 'Entries:', 1)
+  }
+}
+
 // Helper function to calculate string similarity (Jaccard similarity)
 function calculateSimilarity(str1: string, str2: string): number {
   const words1 = new Set(str1.split(/\s+/).filter(w => w.length > 2))
@@ -30,6 +97,27 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders as Record<string, string> })
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json().catch(() => null) as any
+    const studentId = body?.studentId as string | undefined
+    const week = body?.week as number | undefined
+    const newEntry = body?.entry as any | undefined
+
+    if (!studentId || !week || !newEntry) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: corsHeaders as Record<string, string> })
+    }
+
+    // Append new entry to cache
+    appendToCache(studentId, week, newEntry)
+
+    return NextResponse.json({ success: true, message: 'Cache updated' }, { headers: corsHeaders as Record<string, string> })
+  } catch (error: any) {
+    console.error('Cache update error:', error)
+    return NextResponse.json({ error: 'Failed to update cache' }, { status: 500, headers: corsHeaders as Record<string, string> })
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null) as any
@@ -41,18 +129,48 @@ export async function POST(req: NextRequest) {
     const isOverall = body?.isOverall as boolean | undefined
 
     console.log('Summary request:', { section, studentId, week, isOverall, analysisType })
-    const reports = await getReports(section, studentId)
-    console.log('All reports from DB:', reports.length, 'Week numbers:', reports.map(r => r.weekNumber))
-    const filtered = Array.isArray(reports)
-      ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
-      : []
     
-    // For coordinator: get reports for the selected week only
-    const reportsForSummary = analysisType === 'coordinator' 
-      ? filtered // Get reports for the selected week only
-      : filtered.filter(r => !r.excuse) // For chairman, use filtered reports
+    // Clean expired cache entries
+    cleanExpiredCache()
     
-    console.log('All reports for student:', reports.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', reportsForSummary.map(r => r.weekNumber))
+    // Check if we have cached data for this student and week
+    const cacheKey = getCacheKey(studentId || '', week || 1)
+    const cachedData = learningsCache.get(cacheKey)
+    
+    let reportsForSummary: any[] = []
+    
+    if (cachedData && (Date.now() - cachedData.lastUpdated < CACHE_EXPIRY)) {
+      // Use cached data
+      console.log('Using cached data for:', cacheKey)
+      reportsForSummary = cachedData.learnings
+    } else {
+      // Fetch fresh data from database
+      console.log('Fetching fresh data from database')
+      const reports = await getReports(section, studentId)
+      console.log('All reports from DB:', reports.length, 'Week numbers:', reports.map(r => r.weekNumber))
+      
+      const filtered = Array.isArray(reports)
+        ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
+        : []
+      
+      // For coordinator: get reports for the selected week only
+      reportsForSummary = analysisType === 'coordinator' 
+        ? filtered // Get reports for the selected week only
+        : filtered.filter(r => !r.excuse) // For chairman, use filtered reports
+      
+      // Cache the data
+      if (studentId && week) {
+        learningsCache.set(cacheKey, {
+          studentId,
+          week,
+          learnings: reportsForSummary,
+          lastUpdated: Date.now()
+        })
+        console.log('Cached data for:', cacheKey, 'Entries:', reportsForSummary.length)
+      }
+    }
+    
+    console.log('Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', reportsForSummary.map(r => r.weekNumber))
     
     // Smart deduplication and compression for learnings
     const combinedEntries = reportsForSummary
