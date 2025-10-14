@@ -16,8 +16,8 @@ function createBlankEntry(): WeekEntry {
 }
 
 function createInitialWeeks(): WeekEntry[][] {
-  // 13 weeks, 6 rows per week
-  return Array.from({ length: 13 }, () => Array.from({ length: 6 }, () => createBlankEntry()))
+  // 13 weeks, 5 rows per week
+  return Array.from({ length: 13 }, () => Array.from({ length: 5 }, () => createBlankEntry()))
 }
 
 export function WeeklyReportTable() {
@@ -187,7 +187,7 @@ export function WeeklyReportTable() {
       }
       for (const [wk, list] of buckets) {
         const wkIdx = Math.max(0, Math.min(12, wk - 1))
-        for (let i = 0; i < Math.min(6, list.length); i++) {
+        for (let i = 0; i < Math.min(5, list.length); i++) {
           grid[wkIdx][i] = list[i]
         }
       }
@@ -233,13 +233,13 @@ export function WeeklyReportTable() {
       return
     }
 
-    // Validation: Check if week already has 6 entries (excluding current row if it's an update)
+    // Validation: Check if week already has 5 entries (excluding current row if it's an update)
     const existingEntries = currentWeekEntries.filter((e, idx) => 
       idx !== rowIdx && (e.id || (e.date !== '' && (e.submitted || e.activities.trim() || e.learnings.trim())))
     )
     
-    if (existingEntries.length >= 6 && !entry.id) {
-      alert(`Week ${currentWeek} already has 6 entries. You cannot add more entries to this week.`)
+    if (existingEntries.length >= 5 && !entry.id) {
+      alert(`Week ${currentWeek} already has 5 entries. You cannot add more entries to this week.`)
       return
     }
 
