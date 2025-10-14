@@ -52,12 +52,29 @@ function extractPosArrays(raw: string | null | undefined): { hit: Array<{ po: st
 
 function formatPosExplanation(title: string, items: Array<{ po: string; reason: string }>): string {
   if (!items || items.length === 0) return `${title}: None.`
-  const lines = items.map(it => {
-    const po = typeof it.po === 'string' ? it.po : String(it.po)
-    const reason = typeof it.reason === 'string' ? it.reason : ''
-    return `${po} – ${reason}`.trim()
-  })
-  return `${title}: ${lines.join('; ')}`
+  
+  if (title.includes('hit')) {
+    // For achieved POs, create a flowing paragraph without individual PO numbers
+    const activities = items.map(it => {
+      const reason = typeof it.reason === 'string' ? it.reason : ''
+      // Extract the activity description after "through activities involving"
+      const activityMatch = reason.match(/through activities involving (.+)$/)
+      return activityMatch ? activityMatch[1] : reason
+    }).filter(Boolean)
+    
+    const uniqueActivities = Array.from(new Set(activities))
+    const activityText = uniqueActivities.join(', ')
+    
+    return `${title}: Students successfully demonstrated various program outcomes through their engagement in ${activityText}. These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios.`
+  } else {
+    // For not achieved POs, keep the specific explanations
+    const lines = items.map(it => {
+      const po = typeof it.po === 'string' ? it.po : String(it.po)
+      const reason = typeof it.reason === 'string' ? it.reason : ''
+      return `${po} – ${reason}`.trim()
+    })
+    return `${title}: ${lines.join('; ')}`
+  }
 }
 
 export async function OPTIONS() {
@@ -183,9 +200,28 @@ export async function POST(req: NextRequest) {
             reason: `Students demonstrated ${poNames[i]} through activities involving ${matchedKeywords.slice(0, 3).join(', ')}`
           })
         } else {
+          // Provide specific reasons why each PO wasn't achieved
+          const specificReasons: { [key: string]: string } = {
+            'PO1': 'Students did not demonstrate application of mathematical or scientific knowledge in problem-solving',
+            'PO2': 'Students did not follow established best practices or industry standards in their work',
+            'PO3': 'Students did not perform complex analysis or troubleshooting of computing problems',
+            'PO4': 'Students did not identify or analyze user needs and requirements',
+            'PO5': 'Students did not engage in system design, implementation, or evaluation activities',
+            'PO6': 'Students did not consider environmental, safety, or sustainability factors in their solutions',
+            'PO7': 'Students did not utilize appropriate modern tools or technologies effectively',
+            'PO8': 'Students did not demonstrate teamwork, collaboration, or leadership skills',
+            'PO9': 'Students did not participate in project planning, scheduling, or documentation activities',
+            'PO10': 'Students did not engage in effective communication, presentation, or reporting',
+            'PO11': 'Students did not assess the societal or organizational impact of their work',
+            'PO12': 'Students did not demonstrate ethical considerations, privacy awareness, or security practices',
+            'PO13': 'Students did not show evidence of independent learning or skill development',
+            'PO14': 'Students did not engage in research, innovation, or development activities',
+            'PO15': 'Students did not demonstrate awareness of Filipino culture, heritage, or values'
+          }
+          
           notHit.push({
             po: poNames[i],
-            reason: `No evidence of ${poNames[i]} found in the reported activities and learnings`
+            reason: specificReasons[poNames[i]] || `No evidence of ${poNames[i]} found in the reported activities and learnings`
           })
         }
       }
