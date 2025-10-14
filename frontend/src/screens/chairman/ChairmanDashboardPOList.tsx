@@ -117,6 +117,18 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
         })
       })
       
+      // Also test the PO explanations endpoint
+      const testResp = await fetch(getApiUrl('/api/test-po'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      
+      if (testResp.ok) {
+        const testData = await testResp.json()
+        console.log('Test PO Response:', testData)
+      }
+      
       let finalScores = localScores
       let finalSummary = text ? text.slice(0, 240) : 'No data available'
       

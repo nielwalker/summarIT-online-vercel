@@ -89,6 +89,11 @@ export async function POST(req: NextRequest) {
     let result: string | null = null
     let rawContent: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
+    
+    console.log('API Key available:', !!apiKey)
+    console.log('Use GPT:', useGPT)
+    console.log('Text length:', text.length)
+    
     if (apiKey && useGPT && text) {
       const sys = `You are an evaluator for BSIT internship journals.\n\nYour job is to:\n1. Correct and refine the student’s writing (Activities and Learnings) so it’s grammatically correct, well-punctuated, and clearly structured, without changing meaning.\n2. Identify which BSIT Program Outcomes (PO1–PO15) are achieved based on the corrected text.\n\nThe analysis must be accurate, context-based, and explainable. Avoid matching by single words — check meaning and intent.\n\nSection-wide policy:\n- You are summarizing the weekly reports for an entire SECTION for the selected WEEK (multiple students combined), not a single student.\n- Write strictly in third-person, neutral academic tone. Do NOT use first-person words ("I", "we", "my", "our"). Refer to "students" or "the section".\n- Avoid repeating phrases or listing daily entries; synthesize into themes.\n\nRules for Evaluation:\n1) Consider Activities (primary) and Learnings (secondary).\n2) Use Bloom’s taxonomy verbs to judge cognitive level.\n3) Use keyword/synonym hints only as guidance, not triggers.\n4) For each PO, explain why it applies and why others do not (if not hit).\n5) Ignore vague filler statements.\n6) Before summarizing, automatically correct grammar/punctuation/structure of both Activities and Learnings (keep meaning).\n\nReference hints (guidance only):\nPO1 apply/compute/solve; PO2 standards/quality; PO3 analyze/test/debug; PO4 user needs/feedback; PO5 design/develop/implement; PO6 integrate/environment/safety; PO7 tools/configure; PO8 collaborate/team; PO9 plan/schedule/docs; PO10 communicate/present/report; PO11 impact/society; PO12 ethics/privacy/security; PO13 self-study/research; PO14 research/innovation; PO15 culture/heritage.\n\nReturn JSON strictly in this shape:\n{\n  "corrected_activities": string,\n  "corrected_learnings": string,\n  "summary for this section on a week": string,\n  "pos_hit": Array<{ po: string, reason: string }>,\n  "pos_not_hit": Array<{ po: string, reason: string }>
 }`
@@ -138,7 +143,54 @@ export async function POST(req: NextRequest) {
     }
 
     const finalSummary = normalizeSummary(result) || normalizeSummary(fallback)
-    const { hit, notHit } = extractPosArrays(rawContent)
+    let { hit, notHit } = extractPosArrays(rawContent)
+    
+    // Always generate PO explanations from keyword analysis (fallback method)
+    if (text) {
+      console.log('Generating fallback PO explanations from keyword analysis')
+      const keywordSets: string[][] = [
+        ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],
+        ['best practice', 'standard', 'policy', 'method', 'procedure', 'protocol'],
+        ['analyze', 'analysis', 'problem', 'root cause', 'diagnose', 'troubleshoot'],
+        ['user need', 'requirement', 'stakeholder', 'ux', 'usability'],
+        ['design', 'implement', 'evaluate', 'build', 'develop', 'test', 'setup', 'configure', 'configuration', 'install'],
+        ['safety', 'health', 'environment', 'security', 'ethical'],
+        ['tool', 'framework', 'library', 'technology', 'platform'],
+        ['team', 'collaborat', 'leader', 'group'],
+        ['plan', 'schedule', 'timeline', 'project plan'],
+        ['communicat', 'present', 'documentation', 'write', 'report'],
+        ['impact', 'society', 'organization', 'community'],
+        ['ethical', 'privacy', 'legal', 'compliance'],
+        ['learn', 'self-study', 'latest', 'new skill'],
+        ['research', 'experiment', 'study', 'investigation'],
+        ['filipino', 'heritage', 'culture', 'tradition']
+      ]
+      
+      const lower = text.toLowerCase()
+      const poNames = ['PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6', 'PO7', 'PO8', 'PO9', 'PO10', 'PO11', 'PO12', 'PO13', 'PO14', 'PO15']
+      
+      hit = []
+      notHit = []
+      
+      for (let i = 0; i < keywordSets.length; i++) {
+        const keywords = keywordSets[i]
+        const hasMatch = keywords.some(keyword => lower.includes(keyword))
+        
+        if (hasMatch) {
+          const matchedKeywords = keywords.filter(keyword => lower.includes(keyword))
+          hit.push({
+            po: poNames[i],
+            reason: `Students demonstrated ${poNames[i]} through activities involving ${matchedKeywords.slice(0, 3).join(', ')}`
+          })
+        } else {
+          notHit.push({
+            po: poNames[i],
+            reason: `No evidence of ${poNames[i]} found in the reported activities and learnings`
+          })
+        }
+      }
+    }
+    
     const posHitExplanation = formatPosExplanation('Explanation on the POs hit', hit)
     const posNotHitExplanation = formatPosExplanation('Explanation on the POs not hit', notHit)
 
