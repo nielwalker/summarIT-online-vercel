@@ -67,13 +67,17 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
     
     return `${title}: Students successfully demonstrated various program outcomes through their engagement in ${activityText}. These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios.`
   } else {
-    // For not achieved POs, keep the specific explanations
-    const lines = items.map(it => {
-      const po = typeof it.po === 'string' ? it.po : String(it.po)
+    // For not achieved POs, create a different explanation format
+    const reasons = items.map(it => {
       const reason = typeof it.reason === 'string' ? it.reason : ''
-      return `${po} – ${reason}`.trim()
-    })
-    return `${title}: ${lines.join('; ')}`
+      // Remove "Students did not" and make it more natural
+      return reason.replace(/^Students did not /, '').toLowerCase()
+    }).filter(Boolean)
+    
+    const uniqueReasons = Array.from(new Set(reasons))
+    const reasonText = uniqueReasons.join(', ')
+    
+    return `${title}: The following areas were not demonstrated in the student activities: ${reasonText}. These gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities.`
   }
 }
 
