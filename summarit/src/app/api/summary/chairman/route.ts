@@ -36,22 +36,38 @@ export async function POST(req: NextRequest) {
     let result: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && useGPT && text) {
-      const sys = `You are an expert evaluator analyzing BSIT internship journals for chairpersons.\nYour goal is to provide ONLY an explanation of which Program Outcomes (POs) have been achieved and which have not been achieved.\n- Focus ONLY on explaining which POs have been hit/achieved and which have not.\n- Do NOT provide any summary of activities or learnings.\n- Do NOT provide any general text about the student's work.\n- Simply list which POs were achieved and which were not achieved.\n- Use clear, concise language.`
-      const usr = `Entry:\n${text}`
+      const sys = `You are a professional summarization assistant for BSIT chairman reports.\n\nCreate a human-written weekly summary (2–3 sentences) based ONLY on the provided entries for the selected section and week.\n- Avoid repeating phrases or listing daily entries.\n- Do not enumerate POs or include PO numbers.\n- Use a concise, professional tone.\nReturn only JSON in the format: { "summary for this section on a week": "..." }` 
+      const usr = `Section: ${section || 'N/A'}\nWeek: ${week || 'N/A'}\n\nEntries for this section and week:\n${text}`
       try {
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.2 })
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.4, max_tokens: 220 })
         })
         if (resp.ok) {
           const data = await resp.json()
-          result = data?.choices?.[0]?.message?.content || null
+          const content = data?.choices?.[0]?.message?.content || ''
+          const match = content.match(/```json[\s\S]*?```/i) || content.match(/\{[\s\S]*\}/)
+          if (match) {
+            const inner = match[0].replace(/```json|```/gi, '')
+            const parsed = JSON.parse(inner)
+            result = parsed['summary for this section on a week'] || parsed.summary || content
+          } else {
+            result = content
+          }
         }
       } catch {}
     }
 
-    return NextResponse.json({ summary: result || text || 'No journal entries found.' }, { headers: corsHeaders as Record<string, string> })
+    // Build a simple paragraph fallback when GPT is unavailable
+    let fallback = 'No journal entries found.'
+    if (text) {
+      const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean)
+      const take = sentences.slice(0, Math.min(3, sentences.length))
+      fallback = take.join('. ') + '.'
+    }
+
+    return NextResponse.json({ summary: result || fallback }, { headers: corsHeaders as Record<string, string> })
   } catch (err: any) {
     return NextResponse.json({ error: 'Failed to analyze' }, { status: 500, headers: corsHeaders as Record<string, string> })
   }
