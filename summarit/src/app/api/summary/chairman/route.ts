@@ -34,10 +34,18 @@ function extractPosArrays(raw: string | null | undefined): { hit: Array<{ po: st
     let content = String(raw)
     content = content.replace(/```json[\s\S]*?```/gi, (m) => m.replace(/```json|```/gi, ''))
     const parsed = JSON.parse(content)
+    
+    console.log('Extracting PO arrays from:', parsed)
+    
     const pos_hit = Array.isArray(parsed.pos_hit) ? parsed.pos_hit : []
     const pos_not_hit = Array.isArray(parsed.pos_not_hit) ? parsed.pos_not_hit : []
+    
+    console.log('Extracted pos_hit:', pos_hit)
+    console.log('Extracted pos_not_hit:', pos_not_hit)
+    
     return { hit: pos_hit, notHit: pos_not_hit }
-  } catch {
+  } catch (error) {
+    console.error('Error extracting PO arrays:', error)
     return { hit: [], notHit: [] }
   }
 }
@@ -90,12 +98,33 @@ export async function POST(req: NextRequest) {
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.4, max_tokens: 220 })
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.4, max_tokens: 800 })
         })
         if (resp.ok) {
           const data = await resp.json()
           rawContent = data?.choices?.[0]?.message?.content || ''
-          result = normalizeSummary(rawContent)
+          console.log('GPT Raw Response:', rawContent)
+          
+          // Try to extract JSON from the response
+          try {
+            const jsonMatch = rawContent?.match(/```json[\s\S]*?```/i) || rawContent?.match(/\{[\s\S]*\}/)
+            if (jsonMatch) {
+              const jsonStr = jsonMatch[0].replace(/```json|```/gi, '')
+              const parsed = JSON.parse(jsonStr)
+              console.log('Parsed GPT Response:', parsed)
+              
+              // Extract summary
+              result = parsed['summary for this section on a week'] || parsed.summary || ''
+              
+              // Store the parsed JSON for PO extraction
+              rawContent = JSON.stringify(parsed)
+            } else {
+              result = normalizeSummary(rawContent)
+            }
+          } catch (parseError) {
+            console.error('JSON Parse Error:', parseError)
+            result = normalizeSummary(rawContent)
+          }
         }
       } catch {}
     }
@@ -112,6 +141,14 @@ export async function POST(req: NextRequest) {
     const { hit, notHit } = extractPosArrays(rawContent)
     const posHitExplanation = formatPosExplanation('Explanation on the POs hit', hit)
     const posNotHitExplanation = formatPosExplanation('Explanation on the POs not hit', notHit)
+
+    console.log('Final response:', { 
+      summary: finalSummary, 
+      posHitExplanation, 
+      posNotHitExplanation,
+      hitCount: hit.length,
+      notHitCount: notHit.length
+    })
 
     return NextResponse.json({ summary: finalSummary, posHitExplanation, posNotHitExplanation }, { headers: corsHeaders as Record<string, string> })
   } catch (err: any) {
