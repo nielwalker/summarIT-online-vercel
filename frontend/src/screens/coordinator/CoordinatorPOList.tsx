@@ -78,7 +78,7 @@ export default function CoordinatorPOList({ section, studentId, selectedWeek, sh
       if (text.trim()) {
         try {
           console.log('Sending summary request:', { section, studentId, selectedWeek })
-          const summaryResp = await fetch(getApiUrl('/api/summary'), {
+          const summaryResp = await fetch(getApiUrl('/api/summary/coordinator'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

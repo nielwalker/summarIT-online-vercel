@@ -287,7 +287,7 @@ export async function POST(req: NextRequest) {
     let gptSummary: string | null = null
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
-      // Coordinator weekly summary: rewrite into 2–3 natural sentences
+      // Coordinator weekly summary: rewrite into natural sentences
       try {
         const sys = `You are a professional summarization assistant for BSIT internship journals.
 
@@ -295,13 +295,12 @@ ABSOLUTELY CRITICAL - YOU MUST FOLLOW THESE RULES:
 
 1. DO NOT COPY, MERGE, OR CONCATENATE THE INPUT TEXT
 2. DO NOT LIST INDIVIDUAL LEARNINGS OR ACTIVITIES  
-3. DO NOT USE PHRASES LIKE "The student learned..." or "They learned..."
+3. USE PHRASES LIKE "The student learned..."
 4. CREATE A COMPLETELY NEW, ORIGINAL SUMMARY
-5. SYNTHESIZE ALL THE INPUT INTO 2-3 COHESIVE SENTENCES
 6. WRITE IN THIRD PERSON PROFESSIONAL TONE
 7. FOCUS ON THE MOST SIGNIFICANT LEARNING OUTCOMES
 8. MAKE IT SOUND LIKE A FORMAL WEEKLY PROGRESS EVALUATION
-
+9. **RETURN THE SUMMARY AS ONE WELL-FORMATTED PARAGRAPH.**
 EXAMPLE OF WHAT YOU SHOULD DO:
 - Input: "Understanding hosting options, familiarity with development tools, knowledge of database technologies"
 - Output: "The student demonstrated proficiency in web development infrastructure by mastering hosting environment setup and database configuration. They developed comprehensive understanding of development tools and gained practical experience in technology selection and implementation."

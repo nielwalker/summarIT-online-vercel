@@ -103,7 +103,7 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
       const { scores: localScores, hitsPerPO } = extractHighlights(text)
       
       // Fetch contextual summary (hybrid, database-backed, week-scoped) with GPT analysis
-      const sumResp = await fetch(getApiUrl('/api/summary'), {
+      const sumResp = await fetch(getApiUrl('/api/summary/chairman'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
