@@ -272,9 +272,24 @@ export async function POST(req: NextRequest) {
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings from the SELECTED WEEK of a student's internship. Your task is to create a concise summary (2–3 sentences) that captures their key learnings for this specific week.\n- The input has already been cleaned of duplicates and similar phrases from the selected week.\n- Create a coherent summary that captures the main learning insights from this week only.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a weekly learning summary for the selected week.\nReturn JSON: { "summary": string }.`
+        const sys = `You are a professional summarization assistant for BSIT internship journals.
 
-        const usr = `Cleaned learnings from selected week to summarize:\n${text}`
+CRITICAL INSTRUCTIONS:
+- You MUST create a NEW, ORIGINAL summary that synthesizes the input into key learning themes
+- DO NOT simply copy, merge, or concatenate the input text
+- DO NOT list individual learnings or activities
+- DO NOT use phrases like "The student learned..." or "They learned..."
+- CREATE a cohesive narrative that tells the story of their learning progression
+- SYNTHESIZE the information into 2-3 sentences that capture the essence
+- WRITE in third person professional tone (e.g., "The student developed...", "They gained experience in...")
+- FOCUS on the most significant learning outcomes and skill development
+- MAKE it sound like a formal weekly progress evaluation
+
+Your output should be a completely rewritten summary, not a copy of the input.
+
+Return JSON: { "summary": string }`
+
+        const usr = `Raw learnings data to synthesize into a professional summary:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -288,18 +303,24 @@ export async function POST(req: NextRequest) {
         if (resp.ok) {
           const data = await resp.json()
           const content = data?.choices?.[0]?.message?.content || ''
+          console.log('GPT Response:', content)
           try {
             const match = content.match(/```json[\s\S]*?```/i) || content.match(/\{[\s\S]*\}/)
             if (match) {
               const inner = match[0].replace(/```json|```/gi, '')
               const parsed = JSON.parse(inner)
               gptSummary = parsed.summary || content
+              console.log('Parsed GPT Summary:', gptSummary)
             } else {
               gptSummary = content
+              console.log('Using raw GPT content:', gptSummary)
             }
-          } catch {
+          } catch (parseError) {
+            console.log('JSON parse error, using raw content:', parseError)
             gptSummary = content
           }
+        } else {
+          console.log('GPT API error:', resp.status, resp.statusText)
         }
       } catch (err) {
         console.error('GPT summarization failed:', err)
@@ -378,10 +399,19 @@ ${text}`
        // Create a more professional fallback summary for the selected week
        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20)
        if (sentences.length > 0) {
-         const keySentences = sentences.slice(0, 2) // Take first 2 meaningful sentences for weekly summary
-         fallback = keySentences
+         // Take the most meaningful sentences and create a summary
+         const keySentences = sentences.slice(0, Math.min(2, sentences.length))
+         const summaryText = keySentences
            .map(s => s.trim().charAt(0).toUpperCase() + s.trim().slice(1))
            .join('. ') + '.'
+         
+         // If the summary is too long, truncate it intelligently
+         if (summaryText.length > 200) {
+           const words = summaryText.split(' ')
+           fallback = words.slice(0, 30).join(' ') + '...'
+         } else {
+           fallback = summaryText
+         }
        }
      }
      
