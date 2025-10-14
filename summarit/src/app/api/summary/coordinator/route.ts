@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 Your job is to read multiple daily learnings for one week and generate a single, cohesive paragraph summary.
 - Summarize the **core learnings**, skills developed, and key activities in a natural, academic tone.
 - Avoid repeating phrases or listing daily entries.
-- The output must sound like a human-written weekly summary.
+- The output must sound like a human-written weekly summary (2-3 sentences).
 Return only JSON in the format: { "summary": "..." }`
 
         const usr = `You have ${reportsForSummary.length} daily reports from Week ${week} for student ${studentId}.
