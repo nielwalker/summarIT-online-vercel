@@ -47,8 +47,13 @@ export async function POST(req: NextRequest) {
       ? (isOverall ? reports : reports.filter(r => !week || Number(r.weekNumber || 1) === Number(week)))
       : []
     
-    const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
-    console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
+    // For coordinator: get ALL weeks of learnings for the student, not just selected week
+    const reportsForSummary = analysisType === 'coordinator' 
+      ? reports // Get ALL reports for the student across all weeks
+      : filtered.filter(r => !r.excuse) // For chairman, use filtered reports
+    
+    console.log('All reports for student:', reports.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', reportsForSummary.map(r => r.weekNumber))
+    
     // Smart deduplication and compression for learnings
     const combinedEntries = reportsForSummary
       .map(r => `${r.learnings || ''}`.trim())
@@ -149,9 +154,9 @@ export async function POST(req: NextRequest) {
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings for a selected week. Your task is to create a final polished summary (2–3 sentences) that flows naturally.\n- The input has already been cleaned of duplicates and similar phrases.\n- Create a coherent summary that captures the key learning insights.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a formal weekly learning summary.\nReturn JSON: { "summary": string }.`
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings from ALL weeks of a student's internship. Your task is to create a comprehensive summary (3–5 sentences) that captures their overall learning journey.\n- The input has already been cleaned of duplicates and similar phrases across all weeks.\n- Create a coherent summary that captures the key learning insights from their entire internship.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a comprehensive learning summary covering their full internship period.\nReturn JSON: { "summary": string }.`
 
-        const usr = `Cleaned weekly learnings to summarize:\n${text}`
+        const usr = `Cleaned learnings from all weeks to summarize:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
