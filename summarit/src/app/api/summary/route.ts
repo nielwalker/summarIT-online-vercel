@@ -7,6 +7,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
+// Helper function to calculate string similarity (Jaccard similarity)
+function calculateSimilarity(str1: string, str2: string): number {
+  const words1 = new Set(str1.split(/\s+/).filter(w => w.length > 2))
+  const words2 = new Set(str2.split(/\s+/).filter(w => w.length > 2))
+  
+  const words1Array = Array.from(words1)
+  const words2Array = Array.from(words2)
+  
+  const intersection = new Set(words1Array.filter(x => words2.has(x)))
+  const union = new Set([...words1Array, ...words2Array])
+  
+  return intersection.size / union.size
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders as Record<string, string> })
 }
@@ -30,13 +49,63 @@ export async function POST(req: NextRequest) {
     
     const reportsForSummary = analysisType === 'coordinator' ? filtered : filtered.filter(r => !r.excuse)
     console.log('All reports for week:', filtered.length, 'Reports for summary:', reportsForSummary.length, 'Analysis type:', analysisType, 'Week numbers:', filtered.map(r => r.weekNumber))
-    // Combine only learnings from daily reports for the selected week into a paragraph form
+    // Smart deduplication and compression for learnings
     const combinedEntries = reportsForSummary
       .map(r => `${r.learnings || ''}`.trim())
       .filter(Boolean)
       .map(s => s.replace(/\s+/g, ' ').trim())
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
-    const text = combinedEntries.join(' ').trim()
+    
+    // Step 1: Collect all daily learnings
+    const rawText = combinedEntries.join(' ').trim()
+    
+    // Step 2: Merge & Clean - normalize and split into sentences
+    const normalizedText = rawText.toLowerCase()
+      .replace(/[^\w\s.,!?]/g, '') // Remove special chars except basic punctuation
+      .replace(/\s+/g, ' ')
+      .trim()
+    
+    // Step 3: Split into sentences and clean
+    const sentences = normalizedText
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 10) // Filter out very short fragments
+    
+    // Step 4: Remove duplicates and similar sentences
+    const uniqueSentences = new Set<string>()
+    const compressedSentences: string[] = []
+    
+    for (const sentence of sentences) {
+      let isDuplicate = false
+      
+      // Check for exact duplicates
+      if (uniqueSentences.has(sentence)) {
+        isDuplicate = true
+      }
+      
+      // Check for similar sentences (basic similarity check)
+      if (!isDuplicate) {
+        const existingSentences = Array.from(uniqueSentences)
+        for (const existing of existingSentences) {
+          const similarity = calculateSimilarity(sentence, existing)
+          if (similarity > 0.7) { // 70% similarity threshold
+            isDuplicate = true
+            break
+          }
+        }
+      }
+      
+      if (!isDuplicate) {
+        uniqueSentences.add(sentence)
+        compressedSentences.push(sentence)
+      }
+    }
+    
+    // Step 5: Rebuild summary with proper formatting
+    const text = compressedSentences
+      .map(s => capitalizeFirst(s))
+      .join('. ')
+      .trim() + (compressedSentences.length > 0 ? '.' : '')
     console.log('Text length:', text.length, 'Text preview:', text.substring(0, 200) + '...')
     console.log('Individual report texts:', reportsForSummary.map(r => ({ week: r.weekNumber, activities: r.activities?.substring(0, 50), learnings: r.learnings?.substring(0, 50) })))
 
@@ -80,9 +149,9 @@ export async function POST(req: NextRequest) {
     if (apiKey && text && useGPT && analysisType === 'coordinator') {
       // Coordinator weekly summary: rewrite into 2–3 natural sentences
       try {
-        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive a paragraph containing all the student's learnings for a selected week. Your task is to summarize this paragraph into a concise, well-structured summary (2–3 sentences).\n- Do not simply copy or list the content.\n- Create a coherent summary that captures the main learnings and insights.\n- Use proper grammar, punctuation, and flow.\n- Remove repetitive or filler content.\n- Keep the original meaning but make it more concise.\nReturn JSON: { "summary": string }.`
+        const sys = `You are a summarization assistant for BSIT internship journals.\n\nYou will receive cleaned and deduplicated learnings for a selected week. Your task is to create a final polished summary (2–3 sentences) that flows naturally.\n- The input has already been cleaned of duplicates and similar phrases.\n- Create a coherent summary that captures the key learning insights.\n- Use proper grammar, punctuation, and professional tone.\n- Make it sound like a formal weekly learning summary.\nReturn JSON: { "summary": string }.`
 
-        const usr = `Weekly paragraph to summarize:\n${text}`
+        const usr = `Cleaned weekly learnings to summarize:\n${text}`
 
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -113,7 +182,7 @@ export async function POST(req: NextRequest) {
         console.error('GPT summarization failed:', err)
       }
     } else if (apiKey && text && useGPT && analysisType === 'chairman') {
-      // Enhanced Chairman-specific GPT analysis
+      // Enhanced Chairman-specific GPT analysis with cleaned input
       const sys = `You are an expert evaluator analyzing BSIT internship journals for chairpersons.
 
 Your goal is to provide ONLY an explanation of which Program Outcomes (POs) have been achieved and which have not been achieved.
@@ -127,7 +196,7 @@ The analysis should:
 
 CRITICAL: Provide ONLY PO achievement explanations. No summaries, no activities, no learnings. Just PO hit/miss status.`
 
-      const usr = `Analyze the following student journal entry and provide ONLY an explanation of which Program Outcomes (POs) have been achieved:
+      const usr = `Analyze the following cleaned student journal entry and provide ONLY an explanation of which Program Outcomes (POs) have been achieved:
 
 **If data is for one week:**
 - Analyze which POs were achieved in this week's activities and learnings.
@@ -142,7 +211,7 @@ Requirements:
 - Do NOT provide any general text about the student's work.
 - Focus solely on PO hit/miss status.
 
-Entry:
+Cleaned Entry:
 ${text}`
 
       try {
