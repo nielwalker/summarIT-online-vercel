@@ -62,12 +62,11 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
   
   const bulletList = bulletPoints.join('\n')
   
-  if (title.includes('hit')) {
-    const defaultConclusion = "These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios."
-    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
+  // Only use GPT-generated conclusion, no fallback
+  if (conclusion) {
+    return `${title}:\n${bulletList}\n\n${conclusion}`
   } else {
-    const defaultConclusion = "These gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities."
-    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
+    return `${title}:\n${bulletList}`
   }
 }
 
@@ -113,7 +112,7 @@ export async function POST(req: NextRequest) {
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.4, max_tokens: 800 })
+          body: JSON.stringify({ model: 'gpt-4o-mini', messages: [ { role: 'system', content: sys }, { role: 'user', content: usr } ], temperature: 0.4, max_tokens: 1200 })
         })
         if (resp.ok) {
           const data = await resp.json()
@@ -144,15 +143,8 @@ export async function POST(req: NextRequest) {
       } catch {}
     }
 
-    // Build a simple paragraph fallback when GPT is unavailable
-    let fallback = 'No journal entries found.'
-    if (text) {
-      const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean)
-      const take = sentences.slice(0, Math.min(3, sentences.length))
-      fallback = take.join('. ') + '.'
-    }
-
-    const finalSummary = normalizeSummary(result) || normalizeSummary(fallback)
+    // Only use GPT-generated summary, no fallback
+    const finalSummary = normalizeSummary(result) || 'No analysis available - GPT processing required.'
     let { hit, notHit } = extractPosArrays(rawContent)
     
     // Extract conclusions from GPT response if available
@@ -169,69 +161,12 @@ export async function POST(req: NextRequest) {
       console.error('Error extracting conclusions:', error)
     }
     
-    // Always generate PO explanations from keyword analysis (fallback method)
-    if (text) {
-      console.log('Generating fallback PO explanations from keyword analysis')
-      const keywordSets: string[][] = [
-        ['math', 'mathematics', 'science', 'algorithm', 'compute', 'analysis'],
-        ['best practice', 'standard', 'policy', 'method', 'procedure', 'protocol'],
-        ['analyze', 'analysis', 'problem', 'root cause', 'diagnose', 'troubleshoot'],
-        ['user need', 'requirement', 'stakeholder', 'ux', 'usability'],
-        ['design', 'implement', 'evaluate', 'build', 'develop', 'test', 'setup', 'configure', 'configuration', 'install'],
-        ['safety', 'health', 'environment', 'security', 'ethical'],
-        ['tool', 'framework', 'library', 'technology', 'platform'],
-        ['team', 'collaborat', 'leader', 'group'],
-        ['plan', 'schedule', 'timeline', 'project plan'],
-        ['communicat', 'present', 'documentation', 'write', 'report'],
-        ['impact', 'society', 'organization', 'community'],
-        ['ethical', 'privacy', 'legal', 'compliance'],
-        ['learn', 'self-study', 'latest', 'new skill'],
-        ['research', 'experiment', 'study', 'investigation'],
-        ['filipino', 'heritage', 'culture', 'tradition']
-      ]
-      
-      const lower = text.toLowerCase()
-      const poNames = ['PO1', 'PO2', 'PO3', 'PO4', 'PO5', 'PO6', 'PO7', 'PO8', 'PO9', 'PO10', 'PO11', 'PO12', 'PO13', 'PO14', 'PO15']
-      
+    // Only use GPT-generated PO analysis, no fallback
+    if (!hit || hit.length === 0) {
       hit = []
+    }
+    if (!notHit || notHit.length === 0) {
       notHit = []
-      
-      for (let i = 0; i < keywordSets.length; i++) {
-        const keywords = keywordSets[i]
-        const hasMatch = keywords.some(keyword => lower.includes(keyword))
-        
-        if (hasMatch) {
-          const matchedKeywords = keywords.filter(keyword => lower.includes(keyword))
-          hit.push({
-            po: poNames[i],
-            reason: `Students demonstrated ${poNames[i]} through activities involving ${matchedKeywords.slice(0, 3).join(', ')}`
-          })
-        } else {
-          // Provide specific reasons why each PO wasn't achieved
-          const specificReasons: { [key: string]: string } = {
-            'PO1': 'Students did not demonstrate application of mathematical or scientific knowledge in problem-solving',
-            'PO2': 'Students did not follow established best practices or industry standards in their work',
-            'PO3': 'Students did not perform complex analysis or troubleshooting of computing problems',
-            'PO4': 'Students did not identify or analyze user needs and requirements',
-            'PO5': 'Students did not engage in system design, implementation, or evaluation activities',
-            'PO6': 'Students did not consider environmental, safety, or sustainability factors in their solutions',
-            'PO7': 'Students did not utilize appropriate modern tools or technologies effectively',
-            'PO8': 'Students did not demonstrate teamwork, collaboration, or leadership skills',
-            'PO9': 'Students did not participate in project planning, scheduling, or documentation activities',
-            'PO10': 'Students did not engage in effective communication, presentation, or reporting',
-            'PO11': 'Students did not assess the societal or organizational impact of their work',
-            'PO12': 'Students did not demonstrate ethical considerations, privacy awareness, or security practices',
-            'PO13': 'Students did not show evidence of independent learning or skill development',
-            'PO14': 'Students did not engage in research, innovation, or development activities',
-            'PO15': 'Students did not demonstrate awareness of Filipino culture, heritage, or values'
-          }
-          
-          notHit.push({
-            po: poNames[i],
-            reason: specificReasons[poNames[i]] || `No evidence of ${poNames[i]} found in the reported activities and learnings`
-          })
-        }
-      }
     }
     
     const posHitExplanation = formatPosExplanation('Explanation on the POs hit', hit, hitConclusion)
