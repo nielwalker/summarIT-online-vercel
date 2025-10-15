@@ -67,14 +67,34 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
     
     return `${title}: Students successfully demonstrated various program outcomes through their engagement in ${activityText}. These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios.`
   } else {
-    // For not achieved POs, create a different explanation format
-    const reasons = items.map(it => {
+    // For not achieved POs, create a completely different explanation
+    const specificReasons = items.map(it => {
+      const po = typeof it.po === 'string' ? it.po : String(it.po)
       const reason = typeof it.reason === 'string' ? it.reason : ''
-      // Remove "Students did not" and make it more natural
-      return reason.replace(/^Students did not /, '').toLowerCase()
+      
+      // Create specific explanations for each PO
+      const poExplanations: { [key: string]: string } = {
+        'PO1': 'mathematical or scientific knowledge application',
+        'PO2': 'following established best practices and industry standards',
+        'PO3': 'complex problem analysis and troubleshooting',
+        'PO4': 'user needs identification and analysis',
+        'PO5': 'system design, implementation, or evaluation',
+        'PO6': 'environmental, safety, or sustainability considerations',
+        'PO7': 'utilizing appropriate modern tools and technologies',
+        'PO8': 'teamwork, collaboration, or leadership skills',
+        'PO9': 'project planning, scheduling, or documentation activities',
+        'PO10': 'effective communication, presentation, or reporting',
+        'PO11': 'assessing societal or organizational impact',
+        'PO12': 'ethical considerations, privacy awareness, or security practices',
+        'PO13': 'independent learning or skill development',
+        'PO14': 'research, innovation, or development activities',
+        'PO15': 'awareness of Filipino culture, heritage, or values'
+      }
+      
+      return poExplanations[po] || 'specific competencies'
     }).filter(Boolean)
     
-    const uniqueReasons = Array.from(new Set(reasons))
+    const uniqueReasons = Array.from(new Set(specificReasons))
     const reasonText = uniqueReasons.join(', ')
     
     return `${title}: The following areas were not demonstrated in the student activities: ${reasonText}. These gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities.`
