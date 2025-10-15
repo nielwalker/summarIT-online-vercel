@@ -229,12 +229,6 @@ export default function ChairmanDashboardPOList({ section, selectedWeek }: Props
           )}
         </div>
       )}
-      <ul style={{ margin: 0, paddingLeft: 20, color: '#000000' }}>
-        {bullets.map(b => (
-          <li key={b.idx}><strong>{PO_DEFS[b.idx].label}</strong> ({b.score}%) — {PO_DEFS[b.idx].desc}{b.hits.length ? ` — hits: ${b.hits.join(', ')}` : ''}</li>
-        ))}
-        {bullets.length === 0 && <li>No PO matched.</li>}
-      </ul>
       {!loading && chartData.some(d => d.value > 0) && (
         <div style={{ width: '100%', marginTop: 24 }}>
           {/* Graph Section */}

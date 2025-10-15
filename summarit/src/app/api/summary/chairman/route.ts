@@ -65,7 +65,7 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
   if (title.includes('hit')) {
     return `${title}:\n${bulletList}\n\nThese activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios.`
   } else {
-    return `${title}:\n${bulletList}\n\nThese gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities.`
+    return `${title}:\n${bulletList}\n\n .`
   }
 }
 
