@@ -50,7 +50,7 @@ function extractPosArrays(raw: string | null | undefined): { hit: Array<{ po: st
   }
 }
 
-function formatPosExplanation(title: string, items: Array<{ po: string; reason: string }>): string {
+function formatPosExplanation(title: string, items: Array<{ po: string; reason: string }>, conclusion?: string): string {
   if (!items || items.length === 0) return `${title}: None.`
   
   // Create bullet points for each PO
@@ -63,9 +63,11 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
   const bulletList = bulletPoints.join('\n')
   
   if (title.includes('hit')) {
-    return `${title}:\n${bulletList}\n\nThese activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios.`
+    const defaultConclusion = "These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios."
+    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
   } else {
-    return `${title}:\n${bulletList}\n\n .`
+    const defaultConclusion = "These gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities."
+    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
   }
 }
 
@@ -104,10 +106,9 @@ export async function POST(req: NextRequest) {
     console.log('Text length:', text.length)
     
     if (apiKey && useGPT && text) {
-      const sys = `You are an evaluator for BSIT internship journals.\n\nYour job is to:\n1. Correct and refine the student's writing (Activities and Learnings) so it's grammatically correct, well-punctuated, and clearly structured, without changing meaning.\n2. Identify which BSIT Program Outcomes (PO1–PO15) are achieved based on the corrected text.\n\nThe analysis must be accurate, context-based, and explainable. Avoid matching by single words — check meaning and intent.\n\nSection-wide policy:\n- You are summarizing the weekly reports for an entire SECTION for the selected WEEK (multiple students combined), not a single student.\n- Write strictly in third-person, neutral academic tone. Do NOT use first-person words ("I", "we", "my", "our"). Refer to "students" or "the section".\n- Avoid repeating phrases or listing daily entries; synthesize into themes.\n\nRules for Evaluation:\n1) Consider Activities (primary) and Learnings (secondary).\n2) Use Bloom's taxonomy verbs to judge cognitive level.\n3) Use keyword/synonym hints only as guidance, not triggers.\n4) For each PO, explain why it applies and why others do not (if not hit).\n5) Ignore vague filler statements.\n6) Before summarizing, automatically correct grammar/punctuation/structure of both Activities and Learnings (keep meaning).\n\nReference hints (guidance only):\nPO1 apply/compute/solve; PO2 standards/quality; PO3 analyze/test/debug; PO4 user needs/feedback; PO5 design/develop/implement; PO6 integrate/environment/safety; PO7 tools/configure; PO8 collaborate/team; PO9 plan/schedule/docs; PO10 communicate/present/report; PO11 impact/society; PO12 ethics/privacy/security; PO13 self-study/research; PO14 research/innovation; PO15 culture/heritage.\n\nIMPORTANT: For pos_hit and pos_not_hit arrays, provide detailed, specific explanations for each PO:\n- For pos_hit: Explain exactly how students demonstrated each PO through their activities\n- For pos_not_hit: Explain specifically why each PO was not achieved, what was missing\n- Make explanations clear, educational, and actionable\n\nReturn JSON strictly in this shape:\n{\n  "corrected_activities": string,\n  "corrected_learnings": string,\n  "summary for this section on a week": string,\n  "pos_hit": Array<{ po: string, reason: string }>,\n  "pos_not_hit": Array<{ po: string, reason: string }>
-}`
+      const sys = `You are an evaluator for BSIT internship journals.\n\nYour job is to:\n1. Correct and refine the student's writing (Activities and Learnings) so it's grammatically correct, well-punctuated, and clearly structured, without changing meaning.\n2. Identify which BSIT Program Outcomes (PO1–PO15) are achieved based on the corrected text.\n\nThe analysis must be accurate, context-based, and explainable. Avoid matching by single words — check meaning and intent.\n\nSection-wide policy:\n- You are summarizing the weekly reports for an entire SECTION for the selected WEEK (multiple students combined), not a single student.\n- Write strictly in third-person, neutral academic tone. Do NOT use first-person words ("I", "we", "my", "our"). Refer to "students" or "the section".\n- Avoid repeating phrases or listing daily entries; synthesize into themes.\n\nRules for Evaluation:\n1) Consider Activities (primary) and Learnings (secondary).\n2) Use Bloom's taxonomy verbs to judge cognitive level.\n3) Use keyword/synonym hints only as guidance, not triggers.\n4) For each PO, explain why it applies and why others do not (if not hit).\n5) Ignore vague filler statements.\n6) Before summarizing, automatically correct grammar/punctuation/structure of both Activities and Learnings (keep meaning).\n\nReference hints (guidance only):\nPO1 apply/compute/solve; PO2 standards/quality; PO3 analyze/test/debug; PO4 user needs/feedback; PO5 design/develop/implement; PO6 integrate/environment/safety; PO7 tools/configure; PO8 collaborate/team; PO9 plan/schedule/docs; PO10 communicate/present/report; PO11 impact/society; PO12 ethics/privacy/security; PO13 self-study/research; PO14 research/innovation; PO15 culture/heritage.\n\nIMPORTANT: For pos_hit and pos_not_hit arrays, provide detailed, specific explanations for each PO:\n- For pos_hit: Explain exactly how students demonstrated each PO through their activities\n- For pos_not_hit: Explain specifically why each PO was not achieved, what was missing\n- Make explanations clear, educational, and actionable\n\nReturn JSON strictly in this shape:\n{\n  "corrected_activities": string,\n  "corrected_learnings": string,\n  "summary for this section on a week": string,\n  "pos_hit": Array<{ po: string, reason: string }>,\n  "pos_not_hit": Array<{ po: string, reason: string }>,\n  "pos_hit_conclusion": string,\n  "pos_not_hit_conclusion": string\n}`
 
-      const usr = `Evaluate the combined journal entries for Section ${section || 'N/A'} during Week ${week || 'N/A'} (multiple students). Aggregate the content below into a section-wide view.\n\nActivities & Learnings (raw, multi-student):\n${text}\n\nTasks:\n1) Correct grammar, punctuation, and structure (keep meaning).\n2) Create a short weekly summary (2–3 sentences) for the SECTION (not a single student), written in third-person with no first-person words.\n3) For pos_hit: List each PO that was achieved and provide a detailed explanation of HOW students demonstrated it through their specific activities.\n4) For pos_not_hit: List each PO that was not achieved and provide a specific explanation of WHY it wasn't achieved and what was missing from the activities.\n5) Make all explanations clear, educational, and actionable for improvement.\n6) If no POs match, write "No PO matched."`
+      const usr = `Evaluate the combined journal entries for Section ${section || 'N/A'} during Week ${week || 'N/A'} (multiple students). Aggregate the content below into a section-wide view.\n\nActivities & Learnings (raw, multi-student):\n${text}\n\nTasks:\n1) Correct grammar, punctuation, and structure (keep meaning).\n2) Create a short weekly summary (2–3 sentences) for the SECTION (not a single student), written in third-person with no first-person words.\n3) For pos_hit: List each PO that was achieved and provide a detailed explanation of HOW students demonstrated it through their specific activities.\n4) For pos_not_hit: List each PO that was not achieved and provide a specific explanation of WHY it wasn't achieved and what was missing from the activities.\n5) For pos_hit_conclusion: Write a 1-2 sentence conclusion that summarizes the overall impact and value of the achieved POs for student development.\n6) For pos_not_hit_conclusion: Write a 1-2 sentence conclusion that explains the significance of the gaps and provides guidance for future improvement.\n7) Make all explanations clear, educational, and actionable for improvement.\n8) If no POs match, write "No PO matched."`
       try {
         const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -153,6 +154,20 @@ export async function POST(req: NextRequest) {
 
     const finalSummary = normalizeSummary(result) || normalizeSummary(fallback)
     let { hit, notHit } = extractPosArrays(rawContent)
+    
+    // Extract conclusions from GPT response if available
+    let hitConclusion: string | undefined
+    let notHitConclusion: string | undefined
+    
+    try {
+      if (rawContent) {
+        const parsed = JSON.parse(rawContent)
+        hitConclusion = parsed.pos_hit_conclusion
+        notHitConclusion = parsed.pos_not_hit_conclusion
+      }
+    } catch (error) {
+      console.error('Error extracting conclusions:', error)
+    }
     
     // Always generate PO explanations from keyword analysis (fallback method)
     if (text) {
@@ -219,8 +234,8 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    const posHitExplanation = formatPosExplanation('Explanation on the POs hit', hit)
-    const posNotHitExplanation = formatPosExplanation('Explanation on the POs not hit', notHit)
+    const posHitExplanation = formatPosExplanation('Explanation on the POs hit', hit, hitConclusion)
+    const posNotHitExplanation = formatPosExplanation('Explanation on the POs not hit', notHit, notHitConclusion)
 
     console.log('Final response:', { 
       summary: finalSummary, 
