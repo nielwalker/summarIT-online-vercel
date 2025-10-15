@@ -62,12 +62,18 @@ function formatPosExplanation(title: string, items: Array<{ po: string; reason: 
   
   const bulletList = bulletPoints.join('\n')
   
+  console.log(`Formatting ${title} with conclusion:`, conclusion)
+  
   if (title.includes('hit')) {
     const defaultConclusion = "These activities show their practical application of computing knowledge, problem-solving skills, and professional development in real-world scenarios."
-    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
+    const finalConclusion = conclusion || defaultConclusion
+    console.log(`Using conclusion for hit:`, finalConclusion)
+    return `${title}:\n${bulletList}\n\n${finalConclusion}`
   } else {
     const defaultConclusion = "These gaps indicate opportunities for students to expand their learning and develop additional competencies in future internship activities."
-    return `${title}:\n${bulletList}\n\n${conclusion || defaultConclusion}`
+    const finalConclusion = conclusion || defaultConclusion
+    console.log(`Using conclusion for not hit:`, finalConclusion)
+    return `${title}:\n${bulletList}\n\n${finalConclusion}`
   }
 }
 
@@ -164,6 +170,8 @@ export async function POST(req: NextRequest) {
         const parsed = JSON.parse(rawContent)
         hitConclusion = parsed.pos_hit_conclusion
         notHitConclusion = parsed.pos_not_hit_conclusion
+        console.log('GPT Conclusions - Hit:', hitConclusion)
+        console.log('GPT Conclusions - Not Hit:', notHitConclusion)
       }
     } catch (error) {
       console.error('Error extracting conclusions:', error)
